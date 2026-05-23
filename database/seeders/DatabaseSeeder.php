@@ -63,57 +63,26 @@ class DatabaseSeeder extends Seeder
             ]))
             ->values();
 
-        DB::table('depot_article')->upsert(
-            $assignments->all(),
-            ['depot_id', 'article_id'],
-            ['quantity', 'updated_at'],
-        );
+        // Seed missing availability without overwriting live depot quantities.
+        DB::table('depot_article')->insertOrIgnore($assignments->all());
     }
 
     private function articleCatalog(): array
     {
-        $path = '/Users/mac/Downloads/ETAT SL3A 2026.docx';
+        $path = database_path('data/articles.csv');
 
-        if (class_exists(\ZipArchive::class) && file_exists($path)) {
-            $zip = new \ZipArchive();
-
-            if ($zip->open($path) === true) {
-                $xml = $zip->getFromName('word/document.xml') ?: '';
-                $zip->close();
-
-                $text = preg_replace('/<w:tab\\/>/', ' ', $xml);
-                $text = preg_replace('/<\\/w:p>/', "\n", (string) $text);
-                $text = html_entity_decode(strip_tags((string) $text), ENT_QUOTES | ENT_XML1, 'UTF-8');
-                $lines = collect(preg_split('/\\R+/', $text))
-                    ->map(fn ($line) => trim($line))
-                    ->filter()
-                    ->values();
-
-                $skip = ['سعر الجملة', 'سعر التقسيط', 'سعر الشراء', 'السلعة', 'كود', 'لائحة السلعة', 'POS'];
-                $articles = [];
-
-                for ($i = 1; $i < $lines->count(); $i++) {
-                    $code = $lines[$i];
-                    $name = $lines[$i - 1];
-
-                    if (preg_match('/^\\d{5}$/', $code) && ! in_array($name, $skip, true) && ! isset($articles[$code])) {
-                        $cleanName = @iconv('UTF-8', 'UTF-8//IGNORE', $name) ?: preg_replace('/[^\x20-\x7E\p{Arabic}\p{N}\s.,:;()\\-\\/]/u', '', $name);
-                        $articles[$code] = ['reference' => $code, 'name' => trim($cleanName)];
-                    }
-                }
-
-                if ($articles !== []) {
-                    return array_values($articles);
-                }
-            }
+        if (! file_exists($path)) {
+            throw new \RuntimeException('Le catalogue articles est introuvable : '.$path);
         }
 
-        return [
-            ['reference' => '00001', 'name' => 'لندوي اطلس 25كلغ'],
-            ['reference' => '00021', 'name' => 'إتري بلاست 03 كلغ'],
-            ['reference' => '00022', 'name' => 'إتري بلاست 5كلغ'],
-            ['reference' => '00023', 'name' => 'إتري بلاست 10كلغ'],
-            ['reference' => '00025', 'name' => 'إتري بلاست 1كلغ'],
-        ];
+        return collect(file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
+            ->map(function (string $line): array {
+                [$reference, $name] = array_pad(explode('|', $line, 2), 2, '');
+
+                return ['reference' => trim($reference), 'name' => trim($name)];
+            })
+            ->filter(fn (array $article) => $article['reference'] !== '' && $article['name'] !== '')
+            ->values()
+            ->all();
     }
 }

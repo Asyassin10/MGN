@@ -14,6 +14,7 @@ use App\Models\Fournisseur;
 use App\Models\FournisseurReleveCompte;
 use App\Models\Operation;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -163,6 +164,23 @@ class CrudIntegrityTest extends TestCase
             'releve' => $alphaReleve,
             'return' => 'index',
         ]))->assertRedirect(route('fournisseurs.releves.index'));
+    }
+
+    public function test_database_seeder_imports_the_complete_bundled_article_catalog(): void
+    {
+        $depot = Depot::create(['name' => 'Dépôt Central', 'location' => 'Casablanca']);
+        $article = Article::create(['reference' => '00001', 'name' => 'Article existant']);
+        $depot->articles()->attach($article, ['quantity' => 27]);
+
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertDatabaseCount('articles', 312);
+        $this->assertDatabaseHas('articles', [
+            'reference' => '00312',
+            'name' => 'لندوي بلون د بلون اطلس 25كلغ',
+        ]);
+        $this->assertDatabaseCount('depot_article', 936);
+        $this->assertSame(27, $this->quantity($depot, $article));
     }
 
     public function test_operation_update_reverses_old_stock_before_applying_new_stock(): void
