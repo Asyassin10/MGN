@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Droguerie Palmeraie</title>
+  <desc id="desc">Palm tree logo for Droguerie Palmeraie</desc>
+  <defs>
+    <linearGradient id="palmLeaf" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#facc15" />
+      <stop offset="55%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#b91c1c" />
+    </linearGradient>
+    <linearGradient id="palmTrunk" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#b91c1c" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#ffffff" />
+  <g transform="translate(256 162)">
+    <g fill="url(#palmLeaf)">
+      <path d="M0 0C-54-72-128-84-180-66c32 6 59 18 84 36-28 0-52 4-73 14 25 5 48 14 69 28-19 0-37 5-52 14 28 2 56 11 84 28L0 0Z" />
+      <path d="M0 0C54-72 128-84 180-66c-32 6-59 18-84 36 28 0 52 4 73 14-25 5-48 14-69 28 19 0 37 5 52 14-28 2-56 11-84 28L0 0Z" />
+      <path d="M0 0C-92-30-158 6-188 52c31-12 60-17 90-16-22 16-39 33-50 52 25-8 50-11 75-10-14 14-24 30-29 46 26-13 55-22 90-26L0 0Z" />
+      <path d="M0 0C92-30 158 6 188 52c-31-12-60-17-90-16 22 16 39 33 50 52-25-8-50-11-75-10 14 14 24 30 29 46-26-13-55-22-90-26L0 0Z" />
+    </g>
+    <path d="M-8 10h16l12 150h-40L-8 10Z" fill="url(#palmTrunk)" />
+    <path d="M-2 64h10l17 168h-44L-2 64Z" fill="url(#palmTrunk)" />
+  </g>
+  <g font-family="Inter, Arial, sans-serif" text-anchor="middle">
+    <text x="256" y="364" fill="#1e3a8a" font-size="44" font-weight="800" letter-spacing="2">DROGUERIE</text>
+    <text x="256" y="412" fill="#c46b2d" font-size="36" font-weight="500" letter-spacing="1.5">PALMERAIE</text>
+  </g>
+</svg>

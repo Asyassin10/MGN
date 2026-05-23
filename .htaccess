@@ -1,0 +1,8 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Allow Laravel to run from an htdocs subfolder like /myapp
+    # without exposing the application root as the web document root.
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule>
