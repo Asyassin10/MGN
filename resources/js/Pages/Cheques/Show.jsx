@@ -9,7 +9,7 @@ import { money } from '@/lib/utils';
 
 export default function Show({ cheque }) {
     return (
-        <AppLayout title={`Chèque ${cheque.numero_cheque}`} actions={<><a href={route('cheques.pdf', cheque.id)}><Button variant="outline"><FileText className="h-4 w-4" />PDF</Button></a><Link href={route('cheques.edit', cheque.id)}><Button>Modifier</Button></Link><DeleteButton action={route('cheques.destroy', cheque.id)} title={`Supprimer le chèque ${cheque.numero_cheque} ?`} /></>}>
+        <AppLayout title={`Chèque ${cheque.numero_cheque}`} actions={<><a href={route('cheques.pdf', cheque.id)} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a><Link href={route('cheques.edit', cheque.id)}><Button>Modifier</Button></Link><DeleteButton action={route('cheques.destroy', cheque.id)} title={`Supprimer le chèque ${cheque.numero_cheque} ?`} /></>}>
             <div className="grid gap-4 md:grid-cols-3">
                 <Card><CardContent><div className="text-xs uppercase text-zinc-500">Tier</div><div className="mt-2 font-medium">{cheque.tier || '-'}</div></CardContent></Card>
                 <Card><CardContent><div className="text-xs uppercase text-zinc-500">Banque</div><div className="mt-2 font-medium">{cheque.banque}</div></CardContent></Card>

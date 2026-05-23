@@ -9,7 +9,7 @@ import { money } from '@/lib/utils';
 
 export default function PartyChequeShow({ title, routeName, ownerLabel, ownerValue, cheque }) {
     return (
-        <AppLayout title={title} actions={<><a href={route(`${routeName}.pdf`, cheque.id)}><Button variant="outline"><FileText className="h-4 w-4" />PDF</Button></a><Link href={route(`${routeName}.edit`, cheque.id)}><Button>Modifier</Button></Link><DeleteButton action={route(`${routeName}.destroy`, cheque.id)} title={`Supprimer le chèque ${cheque.numero_cheque} ?`} /></>}>
+        <AppLayout title={title} actions={<><a href={route(`${routeName}.pdf`, cheque.id)} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a><Link href={route(`${routeName}.edit`, cheque.id)}><Button>Modifier</Button></Link><DeleteButton action={route(`${routeName}.destroy`, cheque.id)} title={`Supprimer le chèque ${cheque.numero_cheque} ?`} /></>}>
             <div className="grid gap-4 md:grid-cols-3">
                 <Card><CardContent><div className="text-xs uppercase text-zinc-500">{ownerLabel}</div><div className="mt-2 font-medium">{ownerValue || '-'}</div></CardContent></Card>
                 <Card><CardContent><div className="text-xs uppercase text-zinc-500">Type</div><div className="mt-2 font-medium">{cheque.type}</div></CardContent></Card>

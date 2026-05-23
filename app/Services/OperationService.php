@@ -124,7 +124,7 @@ class OperationService
     {
         $operation->load(['depot', 'employee', 'lines.article']);
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Operation '.$operation->reference,
             'subtitle' => 'Bon de commande',
             'brand' => 'Droguerie Palmeraie',

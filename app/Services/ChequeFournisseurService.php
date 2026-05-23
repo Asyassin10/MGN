@@ -62,7 +62,7 @@ class ChequeFournisseurService
     {
         $cheque->load(['fournisseur', 'bank']);
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Cheque fournisseur '.$cheque->numero_cheque,
             'subtitle' => 'Cheque fournisseur',
             'brand' => 'Droguerie Palmeraie',

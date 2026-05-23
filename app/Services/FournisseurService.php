@@ -210,7 +210,7 @@ class FournisseurService
             ];
         }
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Releve compte '.$releve->code_client,
             'subtitle' => 'Releve compte fournisseur',
             'brand' => 'Droguerie Palmeraie',
@@ -238,7 +238,7 @@ class FournisseurService
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id || $payment->fournisseur_releve_compte_id !== $releve->id, 404);
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Paiement chèque '.$payment->numero_cheque,
             'subtitle' => 'Paiement fournisseur',
             'brand' => 'Droguerie Palmeraie',

@@ -43,7 +43,7 @@ class ChequeService
     {
         $cheque->load('tier');
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Cheque '.$cheque->numero_cheque,
             'subtitle' => 'Cheque',
             'brand' => 'Droguerie Palmeraie',

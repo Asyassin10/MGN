@@ -109,7 +109,7 @@ class ClientService
     {
         abort_if($payment->client_id !== $client->id, 404);
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Paiement client '.$client->nom,
             'subtitle' => 'Paiement client',
             'brand' => 'Droguerie Palmeraie',

@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FinancePdf
 {
-    public static function download(array $document, string $filename): Response
+    public static function preview(array $document, string $filename): Response
     {
         $logoPath = public_path('logo-palmeraie.svg');
 
@@ -18,6 +18,7 @@ class FinancePdf
                 : null,
         ]);
 
-        return $pdf->download($filename);
+        // Inline rendering lets the browser preview and download without persisting a PDF on disk.
+        return $pdf->stream($filename);
     }
 }

@@ -16,6 +16,7 @@ use App\Models\Operation;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -238,6 +239,25 @@ class CrudIntegrityTest extends TestCase
             ->assertSessionHas('error');
         $this->assertDatabaseHas('operations', ['id' => $blocked->id]);
         $this->assertSame(3, $this->quantity($depot, $article));
+    }
+
+    public function test_generated_pdf_is_streamed_inline_without_saving_a_public_file(): void
+    {
+        Storage::fake('public');
+        [$depot] = $this->stockFixture(10);
+        $operation = Operation::create([
+            'reference' => 'OP-PDF',
+            'type' => 'entree',
+            'depot_id' => $depot->id,
+            'employee_id' => null,
+            'note' => null,
+        ]);
+
+        $response = $this->get(route('operations.pdf', $operation));
+
+        $response->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('inline;', (string) $response->headers->get('content-disposition'));
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
     private function stockFixture(int $quantity): array

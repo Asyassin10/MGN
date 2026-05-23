@@ -62,7 +62,7 @@ class ChequeClientService
     {
         $cheque->load(['client', 'bank']);
 
-        return FinancePdf::download([
+        return FinancePdf::preview([
             'title' => 'Cheque client '.$cheque->numero_cheque,
             'subtitle' => 'Cheque client',
             'brand' => 'Droguerie Palmeraie',

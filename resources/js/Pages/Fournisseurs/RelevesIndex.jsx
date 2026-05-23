@@ -48,7 +48,7 @@ export default function RelevesIndex({ releves, fournisseurs, filters }) {
             render: (row) => (
                 <div className="flex flex-wrap gap-2">
                     <Link href={route('fournisseurs.releves.show', [row.fournisseur_id, row.id])}><Button size="sm" variant="outline">Voir</Button></Link>
-                    <a href={route('fournisseurs.releves.pdf', [row.fournisseur_id, row.id])}><Button size="sm" variant="outline"><FileText className="h-4 w-4" />PDF</Button></a>
+                    <a href={route('fournisseurs.releves.pdf', [row.fournisseur_id, row.id])} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a>
                     <CrudDialog title="Modifier relevé compte" action={route('fournisseurs.releves.update', [row.fournisseur_id, row.id])} method="patch" fields={fields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} />
                     <DeleteButton action={route('fournisseurs.releves.destroy', { fournisseur: row.fournisseur_id, releve: row.id, return: 'index' })} title={`Supprimer le relevé ${row.code_client} ?`} message="La suppression sera refusée tant que ce relevé contient des factures ou paiements." />
                 </div>

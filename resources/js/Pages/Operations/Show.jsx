@@ -19,7 +19,7 @@ export default function Show({ operation }) {
             title={operation.reference || `Opération #${operation.id}`}
             actions={
                 <>
-                    <a href={operation.pdf_url}><Button variant="outline"><FileText className="h-4 w-4" />PDF</Button></a>
+                    <a href={operation.pdf_url} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a>
                     <a href={operation.excel_url}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a>
                     <Link href={route('operations.edit', operation.id)}><Button>Modifier</Button></Link>
                     <Link href={route('operations.index')}><Button variant="outline">Retour</Button></Link>
