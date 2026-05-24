@@ -15,6 +15,7 @@ use App\Models\FournisseurPayment;
 use App\Models\FournisseurReleveCompte;
 use App\Models\Cheque;
 use App\Services\FournisseurService;
+use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -90,14 +91,16 @@ class FournisseurController extends Controller
 
     public function destroy(Fournisseur $fournisseur): RedirectResponse
     {
-        if (
-            $fournisseur->releveComptes()->exists()
-            || $fournisseur->factures()->exists()
-            || $fournisseur->payments()->exists()
-            || $fournisseur->cheques()->exists()
-            || Cheque::query()->whereMorphedTo('tier', $fournisseur)->exists()
-        ) {
-            return back()->with('error', 'Impossible de supprimer ce fournisseur : son historique doit être supprimé d’abord.');
+        $message = DeleteBlockers::message('ce fournisseur', [
+            'relevés compte' => $fournisseur->releveComptes()->count(),
+            'factures' => $fournisseur->factures()->count(),
+            'paiements' => $fournisseur->payments()->count(),
+            'chèques fournisseur' => $fournisseur->cheques()->count(),
+            'chèques' => Cheque::query()->whereMorphedTo('tier', $fournisseur)->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $fournisseur->delete();
@@ -145,8 +148,13 @@ class FournisseurController extends Controller
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
 
-        if ($releve->factures()->exists() || $releve->payments()->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce relevé : supprimez d’abord ses factures et paiements.');
+        $message = DeleteBlockers::message('ce relevé', [
+            'factures' => $releve->factures()->count(),
+            'paiements' => $releve->payments()->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $releve->delete();
@@ -275,4 +283,5 @@ class FournisseurController extends Controller
 
         return back()->with('success', 'Chèque supprimé.');
     }
+
 }

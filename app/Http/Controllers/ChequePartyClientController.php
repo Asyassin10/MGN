@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreChequePartyClientRequest;
 use App\Models\ChequePartyClient;
+use App\Support\DeleteBlockers;
 use App\Support\ExcelExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,8 +57,12 @@ class ChequePartyClientController extends Controller
 
     public function destroy(ChequePartyClient $chequePartyClient): RedirectResponse
     {
-        if ($chequePartyClient->cheques()->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce client : des chèques lui sont associés.');
+        $message = DeleteBlockers::message('ce client chèque', [
+            'chèques clients' => $chequePartyClient->cheques()->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $chequePartyClient->delete();

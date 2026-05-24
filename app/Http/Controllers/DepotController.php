@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateDepotRequest;
 use App\Models\Article;
 use App\Models\Depot;
 use App\Services\DepotService;
+use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -55,12 +56,13 @@ class DepotController extends Controller
 
     public function destroy(Depot $depot): RedirectResponse
     {
-        if ($depot->operations()->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce dépôt : des opérations y sont enregistrées.');
-        }
+        $message = DeleteBlockers::message('ce dépôt', [
+            'opérations' => $depot->operations()->count(),
+            'articles avec stock non nul' => $depot->articles()->wherePivot('quantity', '!=', 0)->count(),
+        ]);
 
-        if ($depot->articles()->wherePivot('quantity', '!=', 0)->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce dépôt : son stock doit être nul.');
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $depot->articles()->detach();

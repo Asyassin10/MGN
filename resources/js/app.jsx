@@ -15,7 +15,7 @@ createInertiaApp({
         createRoot(el).render(
             <>
                 <App {...props} />
-                <Toaster richColors position="top-right" />
+                <Toaster richColors closeButton duration={Infinity} position="top-right" />
             </>,
         );
     },

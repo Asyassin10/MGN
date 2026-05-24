@@ -6,6 +6,7 @@ use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
 use App\Services\EmployeeService;
+use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,8 +45,12 @@ class EmployeeController extends Controller
 
     public function destroy(Employee $employee): RedirectResponse
     {
-        if ($employee->operations()->exists()) {
-            return back()->with('error', 'Impossible de supprimer cet employé : des opérations lui sont associées.');
+        $message = DeleteBlockers::message('cet employé', [
+            'opérations' => $employee->operations()->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $employee->delete();

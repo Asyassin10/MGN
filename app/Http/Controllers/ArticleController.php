@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateArticleRequest;
 use App\Models\Article;
 use App\Models\Depot;
 use App\Services\ArticleService;
+use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,12 +48,13 @@ class ArticleController extends Controller
 
     public function destroy(Article $article): RedirectResponse
     {
-        if ($article->operationLines()->exists()) {
-            return back()->with('error', 'Impossible de supprimer cet article : il existe dans l’historique des opérations.');
-        }
+        $message = DeleteBlockers::message('cet article', [
+            'lignes d’opérations' => $article->operationLines()->count(),
+            'dépôts avec stock non nul' => $article->depots()->wherePivot('quantity', '!=', 0)->count(),
+        ]);
 
-        if ($article->depots()->wherePivot('quantity', '!=', 0)->exists()) {
-            return back()->with('error', 'Impossible de supprimer cet article : son stock doit être nul dans tous les dépôts.');
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $article->depots()->detach();

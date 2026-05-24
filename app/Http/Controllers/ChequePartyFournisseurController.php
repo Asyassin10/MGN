@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreChequePartyFournisseurRequest;
 use App\Models\ChequePartyFournisseur;
+use App\Support\DeleteBlockers;
 use App\Support\ExcelExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,8 +57,12 @@ class ChequePartyFournisseurController extends Controller
 
     public function destroy(ChequePartyFournisseur $chequePartyFournisseur): RedirectResponse
     {
-        if ($chequePartyFournisseur->cheques()->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce fournisseur : des chèques lui sont associés.');
+        $message = DeleteBlockers::message('ce fournisseur chèque', [
+            'chèques fournisseurs' => $chequePartyFournisseur->cheques()->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $chequePartyFournisseur->delete();

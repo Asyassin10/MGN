@@ -6,15 +6,19 @@ use App\Models\Article;
 use App\Models\Bank;
 use App\Models\Cheque;
 use App\Models\ChequeClient;
+use App\Models\ChequeFournisseur;
 use App\Models\ChequePartyClient;
+use App\Models\ChequePartyFournisseur;
 use App\Models\Client;
 use App\Models\Depot;
 use App\Models\Employee;
 use App\Models\Fournisseur;
+use App\Models\FournisseurCheque;
 use App\Models\FournisseurReleveCompte;
 use App\Models\Operation;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -81,6 +85,178 @@ class CrudIntegrityTest extends TestCase
         $this->delete(route('banks.destroy', $bank))->assertSessionHas('error');
         $this->delete(route('banks.destroy', $standaloneBank))->assertSessionHas('error');
         $this->delete(route('cheque-party-clients.destroy', $party))->assertSessionHas('error');
+    }
+
+    public function test_empty_client_supplier_and_statement_can_be_deleted(): void
+    {
+        $client = Client::create(['nom' => 'Client vide']);
+        $fournisseur = Fournisseur::create(['nom' => 'Fournisseur vide']);
+        $releve = $fournisseur->releveComptes()->create(['code_client' => 'REL-VIDE', 'date_releve' => '2026-05-01']);
+
+        $this->delete(route('clients.destroy', $client))
+            ->assertRedirect(route('clients.index'))
+            ->assertSessionHas('success');
+        $this->delete(route('fournisseurs.releves.destroy', [$fournisseur, $releve]))
+            ->assertRedirect(route('fournisseurs.show', $fournisseur))
+            ->assertSessionHas('success');
+        $this->delete(route('fournisseurs.destroy', $fournisseur))
+            ->assertRedirect(route('fournisseurs.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSoftDeleted('clients', ['id' => $client->id]);
+        $this->assertSoftDeleted('fournisseurs', ['id' => $fournisseur->id]);
+        $this->assertDatabaseMissing('fournisseur_releve_comptes', ['id' => $releve->id]);
+    }
+
+    public function test_delete_errors_name_the_exact_blocking_history(): void
+    {
+        $client = Client::create(['nom' => 'Client avec historique']);
+        $client->entries()->create(['date_entree' => '2026-05-01', 'montant' => 50, 'description' => 'Vente']);
+        $client->payments()->create(['date_paiement' => '2026-05-02', 'montant' => 20, 'mode' => 'espece']);
+
+        $fournisseur = Fournisseur::create(['nom' => 'Fournisseur avec historique']);
+        $releve = $fournisseur->releveComptes()->create(['code_client' => 'REL-BLOCK', 'date_releve' => '2026-05-01']);
+        $releve->factures()->create([
+            'fournisseur_id' => $fournisseur->id,
+            'numero_facture' => 'FAC-BLOCK',
+            'date_facture' => '2026-05-01',
+            'montant' => 100,
+        ]);
+
+        $this->delete(route('clients.destroy', $client))
+            ->assertSessionHas('error', 'Impossible de supprimer ce client : supprimez d’abord 1 entrées et 1 paiements.');
+        $this->delete(route('fournisseurs.releves.destroy', [$fournisseur, $releve]))
+            ->assertSessionHas('error', 'Impossible de supprimer ce relevé : supprimez d’abord 1 factures.');
+        $this->delete(route('fournisseurs.destroy', $fournisseur))
+            ->assertSessionHas('error', 'Impossible de supprimer ce fournisseur : supprimez d’abord 1 relevés compte et 1 factures.');
+    }
+
+    public function test_delete_errors_are_specific_for_stock_cheque_bank_and_employee_records(): void
+    {
+        $employee = Employee::create(['name' => 'Employé historique']);
+        $depot = Depot::create(['name' => 'Dépôt historique']);
+        $article = Article::create(['reference' => 'ART-BLOCK', 'name' => 'Article historique']);
+        $depot->articles()->attach($article, ['quantity' => 9]);
+        $operation = Operation::create([
+            'reference' => 'OP-BLOCKERS',
+            'type' => 'entree',
+            'depot_id' => $depot->id,
+            'employee_id' => $employee->id,
+        ]);
+        $operation->lines()->create(['article_id' => $article->id, 'reference' => $article->reference, 'quantity' => 2]);
+
+        $bank = Bank::create(['name' => 'Banque historique']);
+        $clientParty = ChequePartyClient::create(['nom' => 'Client chèque historique']);
+        ChequeClient::create([
+            'client_id' => $clientParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CHC-BLOCK',
+            'banque' => $bank->name,
+            'montant' => 100,
+        ]);
+
+        $fournisseurParty = ChequePartyFournisseur::create(['nom' => 'Fournisseur chèque historique']);
+        ChequeFournisseur::create([
+            'fournisseur_id' => $fournisseurParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CHF-BLOCK',
+            'banque' => $bank->name,
+            'montant' => 200,
+        ]);
+        Cheque::create([
+            'type' => 'client',
+            'numero_cheque' => 'CH-BLOCK',
+            'banque' => $bank->name,
+            'montant' => 300,
+        ]);
+
+        $this->delete(route('employees.destroy', $employee))
+            ->assertSessionHas('error', 'Impossible de supprimer cet employé : supprimez d’abord 1 opérations.');
+        $this->delete(route('depots.destroy', $depot))
+            ->assertSessionHas('error', 'Impossible de supprimer ce dépôt : supprimez d’abord 1 opérations et 1 articles avec stock non nul.');
+        $this->delete(route('articles.destroy', $article))
+            ->assertSessionHas('error', 'Impossible de supprimer cet article : supprimez d’abord 1 lignes d’opérations et 1 dépôts avec stock non nul.');
+        $this->delete(route('cheque-party-clients.destroy', $clientParty))
+            ->assertSessionHas('error', 'Impossible de supprimer ce client chèque : supprimez d’abord 1 chèques clients.');
+        $this->delete(route('cheque-party-fournisseurs.destroy', $fournisseurParty))
+            ->assertSessionHas('error', 'Impossible de supprimer ce fournisseur chèque : supprimez d’abord 1 chèques fournisseurs.');
+        $this->delete(route('banks.destroy', $bank))
+            ->assertSessionHas('error', 'Impossible de supprimer cette banque : supprimez d’abord 1 chèques clients, 1 chèques fournisseurs et 1 chèques.');
+    }
+
+    public function test_due_cheques_command_moves_only_due_en_cours_cheques_to_in_caisse(): void
+    {
+        Carbon::setTestNow('2026-05-24 10:00:00');
+
+        $bank = Bank::create(['name' => 'Banque échéance']);
+        $clientParty = ChequePartyClient::create(['nom' => 'Client échéance']);
+        $fournisseurParty = ChequePartyFournisseur::create(['nom' => 'Fournisseur échéance']);
+        $fournisseur = Fournisseur::create(['nom' => 'Fournisseur interne']);
+
+        $standaloneDue = Cheque::create([
+            'type' => 'client',
+            'numero_cheque' => 'STD-DUE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-24',
+            'statut' => 'en_cours',
+        ]);
+        $standaloneFuture = Cheque::create([
+            'type' => 'client',
+            'numero_cheque' => 'STD-FUTURE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-25',
+            'statut' => 'en_cours',
+        ]);
+        $clientDue = ChequeClient::create([
+            'client_id' => $clientParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CLC-DUE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-24',
+            'statut' => 'en_cours',
+        ]);
+        $clientImpaye = ChequeClient::create([
+            'client_id' => $clientParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CLC-IMPAYE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-24',
+            'statut' => 'impaye',
+        ]);
+        $fournisseurDue = ChequeFournisseur::create([
+            'fournisseur_id' => $fournisseurParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CHF-DUE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-24',
+            'statut' => 'en_cours',
+        ]);
+        $internalFournisseurDue = FournisseurCheque::create([
+            'fournisseur_id' => $fournisseur->id,
+            'numero_cheque' => 'FIN-DUE',
+            'banque' => $bank->name,
+            'montant' => 100,
+            'date_echeance' => '2026-05-24',
+            'statut' => 'en_cours',
+        ]);
+
+        $this->artisan('cheques:mark-due-in-caisse')
+            ->expectsOutput('4 chèque(s) mis en caisse.')
+            ->assertExitCode(0);
+
+        $this->assertSame('encaisse', $standaloneDue->fresh()->statut);
+        $this->assertSame('en_cours', $standaloneFuture->fresh()->statut);
+        $this->assertSame('en_caisse', $clientDue->fresh()->statut);
+        $this->assertSame('impaye', $clientImpaye->fresh()->statut);
+        $this->assertSame('en_caisse', $fournisseurDue->fresh()->statut);
+        $this->assertSame('en_caisse', $internalFournisseurDue->fresh()->statut);
+
+        Carbon::setTestNow();
     }
 
     public function test_empty_supplier_statement_can_be_updated_and_deleted(): void

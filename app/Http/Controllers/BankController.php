@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\Cheque;
+use App\Support\DeleteBlockers;
 use App\Support\ExcelExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,12 +54,14 @@ class BankController extends Controller
 
     public function destroy(Bank $bank): RedirectResponse
     {
-        if (
-            $bank->chequeClients()->exists()
-            || $bank->chequeFournisseurs()->exists()
-            || Cheque::query()->where('banque', $bank->name)->exists()
-        ) {
-            return back()->with('error', 'Impossible de supprimer cette banque : elle est utilisée par des chèques.');
+        $message = DeleteBlockers::message('cette banque', [
+            'chèques clients' => $bank->chequeClients()->count(),
+            'chèques fournisseurs' => $bank->chequeFournisseurs()->count(),
+            'chèques' => Cheque::query()->where('banque', $bank->name)->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $bank->delete();

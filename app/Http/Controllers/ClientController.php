@@ -11,6 +11,7 @@ use App\Models\ClientEntry;
 use App\Models\ClientPayment;
 use App\Models\Cheque;
 use App\Services\ClientService;
+use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -70,8 +71,14 @@ class ClientController extends Controller
 
     public function destroy(Client $client): RedirectResponse
     {
-        if ($client->entries()->exists() || $client->payments()->exists() || Cheque::query()->whereMorphedTo('tier', $client)->exists()) {
-            return back()->with('error', 'Impossible de supprimer ce client : son historique doit être supprimé d’abord.');
+        $message = DeleteBlockers::message('ce client', [
+            'entrées' => $client->entries()->count(),
+            'paiements' => $client->payments()->count(),
+            'chèques' => Cheque::query()->whereMorphedTo('tier', $client)->count(),
+        ]);
+
+        if ($message) {
+            return back()->with('error', $message);
         }
 
         $client->delete();
@@ -129,4 +136,5 @@ class ClientController extends Controller
     {
         return $service->pdfPayment($client, $payment);
     }
+
 }
