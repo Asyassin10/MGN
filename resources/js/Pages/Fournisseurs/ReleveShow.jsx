@@ -26,11 +26,11 @@ function DateRangeFilter({ from, to, onChange, label = 'Période' }) {
             <Popover.Portal>
                 <Popover.Content align="start" className="z-50 mt-2 rounded-md border border-zinc-200 bg-white p-3">
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="grid gap-1 text-sm">
+                        <label className="grid gap-1 text-base">
                             <span className="font-medium text-zinc-700">Du</span>
                             <Input type="date" defaultValue={from || ''} onChange={(event) => onChange({ from: event.target.value, to })} />
                         </label>
-                        <label className="grid gap-1 text-sm">
+                        <label className="grid gap-1 text-base">
                             <span className="font-medium text-zinc-700">Au</span>
                             <Input type="date" defaultValue={to || ''} onChange={(event) => onChange({ from, to: event.target.value })} />
                         </label>
@@ -75,15 +75,15 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
             title={`Relevé ${releve.code_client}`}
             actions={<><Link href={route('fournisseurs.show', fournisseur.id)}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Liste des relevés</Button></Link><a href={route('fournisseurs.releves.pdf', [fournisseur.id, releve.id])} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF relevé</Button></a><CrudDialog title="Modifier relevé compte" action={route('fournisseurs.releves.update', [fournisseur.id, releve.id])} method="patch" fields={releveFields} defaults={releve} trigger={<Button variant="outline">Modifier relevé</Button>} /><DeleteButton action={route('fournisseurs.releves.destroy', [fournisseur.id, releve.id])} title={`Supprimer le relevé ${releve.code_client} ?`} message="La suppression sera refusée tant que ce relevé contient des factures ou paiements." /></>}
         >
-            <div className="mb-4 text-sm text-zinc-600">
+            <div className="mb-4 text-base text-zinc-600">
                 Fournisseur : <Link className="font-medium text-zinc-950 hover:underline" href={route('fournisseurs.show', fournisseur.id)}>{fournisseur.nom}</Link>
             </div>
             <div className="mb-4 grid gap-4 md:grid-cols-5">
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Code client</div><div className="mt-2 font-medium">{releve.code_client}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Date relevé</div><div className="mt-2 font-medium">{releve.date_releve}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Total relevé compte</div><div className="mt-2 font-medium">{money(releve.total_factures)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Total paiements</div><div className="mt-2 font-medium">{money(releve.total_paye)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Reste</div><div className="mt-2 font-medium">{money(releve.balance)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Code client</div><div className="mt-2 font-medium">{releve.code_client}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Date relevé</div><div className="mt-2 font-medium">{releve.date_releve}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Total relevé compte</div><div className="mt-2 font-medium">{money(releve.total_factures)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Total paiements</div><div className="mt-2 font-medium">{money(releve.total_paye)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Reste</div><div className="mt-2 font-medium">{money(releve.balance)}</div></CardContent></Card>
             </div>
 
             <Tabs value={activeTab} onValueChange={changeTab}>

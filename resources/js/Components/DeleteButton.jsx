@@ -25,7 +25,7 @@ export default function DeleteButton({ action, title = 'Supprimer cet élément 
             </DialogTrigger>
             <DialogContent className="max-w-md">
                 <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
-                <p className="mb-5 text-sm text-zinc-600">{message}</p>
+                <p className="mb-5 text-base text-zinc-600">{message}</p>
                 <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <Button type="button" variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
                     <Button type="button" variant="destructive" onClick={destroy}>Confirmer la suppression</Button>

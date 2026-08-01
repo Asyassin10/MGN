@@ -10,7 +10,7 @@ export default function Pagination({ links = [] }) {
                     key={`${link.label}-${index}`}
                     href={link.url || '#'}
                     preserveScroll
-                    className={`rounded-md border px-3 py-1.5 text-sm ${link.active ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-700'} ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
+                    className={`rounded-md border px-3 py-1.5 text-base ${link.active ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-700'} ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                     dangerouslySetInnerHTML={{ __html: link.label }}
                 />
             ))}

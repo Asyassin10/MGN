@@ -18,7 +18,7 @@ class ChequeFournisseurController extends Controller
 {
     public function index(Request $request, ChequeFournisseurService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'fournisseur_id', 'statut', 'banque', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
+        $filters = $request->only(['search', 'fournisseur_id', 'statut', 'banque', 'facture_recue', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -77,7 +77,10 @@ class ChequeFournisseurController extends Controller
 
     public function updateStatus(Request $request, ChequeFournisseur $chequeFournisseur): RedirectResponse
     {
-        $data = $request->validate(['statut' => ['required', Rule::in(ChequeFournisseur::STATUSES)]]);
+        $data = $request->validate([
+            'statut' => ['sometimes', 'required', Rule::in(ChequeFournisseur::STATUSES)],
+            'facture_recue' => ['sometimes', 'nullable', 'boolean'],
+        ]);
         $chequeFournisseur->update($data);
 
         return back()->with('success', 'Statut mis à jour.');

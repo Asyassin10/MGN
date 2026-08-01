@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 export function Table({ className, ...props }) {
-    return <table className={cn('w-full caption-bottom text-sm', className)} {...props} />;
+    return <table className={cn('w-full caption-bottom text-base', className)} {...props} />;
 }
 
 export function TableHeader(props) {
@@ -17,9 +17,9 @@ export function TableRow({ className, ...props }) {
 }
 
 export function TableHead({ className, ...props }) {
-    return <th className={cn('h-9 px-3 text-left text-xs font-medium uppercase text-zinc-500', className)} {...props} />;
+    return <th className={cn('h-10 px-3 text-left text-sm font-medium uppercase text-zinc-500', className)} {...props} />;
 }
 
 export function TableCell({ className, ...props }) {
-    return <td className={cn('px-3 py-2 text-zinc-800', className)} {...props} />;
+    return <td className={cn('px-3 py-3 text-zinc-800', className)} {...props} />;
 }

@@ -23,6 +23,7 @@ class StoreChequeFournisseurRequest extends FormRequest
             'date_emission' => ['nullable', 'date'],
             'date_echeance' => ['nullable', 'date'],
             'statut' => ['required', Rule::in(ChequeFournisseur::STATUSES)],
+            'facture_recue' => ['nullable', 'boolean'],
         ];
     }
 }

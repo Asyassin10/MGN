@@ -19,6 +19,7 @@ class StoreChequeRequest extends FormRequest
             'date_emission' => ['nullable', 'date'],
             'date_echeance' => ['nullable', 'date'],
             'statut' => ['required', Rule::in(['en_cours', 'encaisse', 'impaye'])],
+            'facture_recue' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'max:4096'],
         ];

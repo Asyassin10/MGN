@@ -28,11 +28,11 @@ export default function Show({ operation }) {
             }
         >
             <div className="mb-4 grid gap-4 md:grid-cols-5">
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Référence</div><div className="mt-2 font-medium">{operation.reference}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Date</div><div className="mt-2 font-medium">{operation.created_at}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Type</div><div className="mt-2"><Badge variant={operation.type === 'entree' ? 'green' : 'red'}>{operation.type}</Badge></div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Dépôt</div><div className="mt-2 font-medium">{operation.depot?.name || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Employé</div><div className="mt-2 font-medium">{operation.employee?.name || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Référence</div><div className="mt-2 font-medium">{operation.reference}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Date</div><div className="mt-2 font-medium">{operation.created_at}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Type</div><div className="mt-2"><Badge variant={operation.type === 'entree' ? 'green' : 'red'}>{operation.type}</Badge></div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Dépôt</div><div className="mt-2 font-medium">{operation.depot?.name || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Employé</div><div className="mt-2 font-medium">{operation.employee?.name || '-'}</div></CardContent></Card>
             </div>
 
             <DataTable columns={columns} rows={operation.lines} pagination={{ links: [] }} empty="Aucune ligne pour cette opération." />
@@ -40,8 +40,8 @@ export default function Show({ operation }) {
             {operation.note ? (
                 <Card className="mt-4">
                     <CardContent>
-                        <div className="text-xs uppercase text-zinc-500">Note</div>
-                        <div className="mt-2 text-sm">{operation.note}</div>
+                        <div className="text-sm uppercase text-zinc-500">Note</div>
+                        <div className="mt-2 text-base">{operation.note}</div>
                     </CardContent>
                 </Card>
             ) : null}

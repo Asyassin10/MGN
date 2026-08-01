@@ -61,7 +61,7 @@ export default function RelevesIndex({ releves, fournisseurs, filters }) {
             title="Relevés compte fournisseurs"
             actions={<><a href={route('fournisseurs.releves.index', { ...filters, export: 1 })}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a><Link href={route('fournisseurs.index')}><Button variant="outline">Voir les fournisseurs</Button></Link></>}
         >
-            <div className="mb-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+            <div className="mb-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-600">
                 Tous les relevés compte sont réunis ici. Pour ajouter un relevé, ouvrez d'abord le fournisseur concerné.
             </div>
             <div className="mb-4 grid gap-2 md:grid-cols-[minmax(20rem,1fr)_260px_300px]">

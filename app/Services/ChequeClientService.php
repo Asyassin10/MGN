@@ -46,11 +46,12 @@ class ChequeClientService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)->latest('date_echeance')->get();
-        return ExcelExport::download('cheque-clients-export', ['Numero', 'Client', 'Type', 'Banque', 'Montant', 'Emission', 'Echeance', 'Statut'], $rows->map(fn (ChequeClient $cheque) => [
+        return ExcelExport::download('cheque-clients-export', ['Numero', 'Client', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut'], $rows->map(fn (ChequeClient $cheque) => [
             $cheque->numero_cheque,
             $cheque->client?->nom,
             $cheque->type,
             $cheque->banque,
+            $cheque->tireur_signataire,
             $cheque->montant,
             $cheque->date_emission?->format('Y-m-d'),
             $cheque->date_echeance?->format('Y-m-d'),
@@ -106,6 +107,7 @@ class ChequeClientService
             'date_emission' => $cheque->date_emission?->format('Y-m-d'),
             'date_echeance' => $cheque->date_echeance?->format('Y-m-d'),
             'statut' => $cheque->statut,
+            'facture_recue' => $cheque->facture_recue,
         ];
     }
 
@@ -116,6 +118,7 @@ class ChequeClientService
             ->when($filters['client_id'] ?? null, fn ($query, $value) => $query->where('client_id', $value))
             ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
             ->when($filters['banque'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('banque', 'like', "%{$value}%")->orWhereHas('bank', fn ($bank) => $bank->where('name', 'like', "%{$value}%"))))
+            ->when(in_array($filters['facture_recue'] ?? null, ['0', '1'], true), fn ($query) => $query->where('facture_recue', $filters['facture_recue'] === '1'))
             ->when($filters['date_emission_from'] ?? null, fn ($query, $value) => $query->whereDate('date_emission', '>=', $value))
             ->when($filters['date_emission_to'] ?? null, fn ($query, $value) => $query->whereDate('date_emission', '<=', $value))
             ->when($filters['date_echeance_from'] ?? null, fn ($query, $value) => $query->whereDate('date_echeance', '>=', $value))

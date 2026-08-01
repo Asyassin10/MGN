@@ -26,12 +26,14 @@ class ChequeFournisseur extends Model
         'date_emission',
         'date_echeance',
         'statut',
+        'facture_recue',
     ];
 
     protected $casts = [
         'date_emission' => 'date',
         'date_echeance' => 'date',
         'montant' => 'decimal:2',
+        'facture_recue' => 'boolean',
     ];
 
     public function fournisseur(): BelongsTo

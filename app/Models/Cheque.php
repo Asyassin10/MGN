@@ -26,6 +26,7 @@ class Cheque extends Model
         'date_emission',
         'date_echeance',
         'statut',
+        'facture_recue',
         'note',
         'attachment',
     ];
@@ -34,6 +35,7 @@ class Cheque extends Model
         'date_emission' => 'date',
         'date_echeance' => 'date',
         'montant' => 'decimal:2',
+        'facture_recue' => 'boolean',
     ];
 
     public function tier(): MorphTo

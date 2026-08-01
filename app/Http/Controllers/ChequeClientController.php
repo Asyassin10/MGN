@@ -18,7 +18,7 @@ class ChequeClientController extends Controller
 {
     public function index(Request $request, ChequeClientService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'client_id', 'statut', 'banque', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
+        $filters = $request->only(['search', 'client_id', 'statut', 'banque', 'facture_recue', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -92,7 +92,10 @@ class ChequeClientController extends Controller
 
     public function updateStatus(Request $request, ChequeClient $chequeClient): RedirectResponse
     {
-        $data = $request->validate(['statut' => ['required', Rule::in(ChequeClient::STATUSES)]]);
+        $data = $request->validate([
+            'statut' => ['sometimes', 'required', Rule::in(ChequeClient::STATUSES)],
+            'facture_recue' => ['sometimes', 'nullable', 'boolean'],
+        ]);
         $chequeClient->update($data);
 
         return back()->with('success', 'Statut mis à jour.');

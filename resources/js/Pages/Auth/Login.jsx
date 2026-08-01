@@ -24,10 +24,10 @@ export default function Login() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={submit} className="grid gap-3">
-                            <label className="grid gap-1 text-sm">
+                            <label className="grid gap-1 text-base">
                                 <span className="font-medium text-zinc-700">PIN administrateur</span>
                                 <Input value={data.pin} onChange={(event) => setData('pin', event.target.value)} maxLength={6} inputMode="numeric" type="password" autoFocus />
-                                {errors.pin ? <span className="text-xs text-red-600">{errors.pin}</span> : null}
+                                {errors.pin ? <span className="text-sm text-red-600">{errors.pin}</span> : null}
                             </label>
                             <Button disabled={processing}>Connexion</Button>
                         </form>

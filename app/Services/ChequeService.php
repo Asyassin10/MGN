@@ -27,11 +27,12 @@ class ChequeService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)->latest('date_echeance')->get();
-        return ExcelExport::download('cheques-export', ['Numero', 'Type', 'Tier', 'Banque', 'Montant', 'Emission', 'Echeance', 'Statut'], $rows->map(fn (Cheque $cheque) => [
+        return ExcelExport::download('cheques-export', ['Numero', 'Type', 'Tier', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut'], $rows->map(fn (Cheque $cheque) => [
             $cheque->numero_cheque,
             $cheque->type,
             $cheque->tier?->nom,
             $cheque->banque,
+            $cheque->tireur_signataire,
             $cheque->montant,
             $cheque->date_emission?->format('Y-m-d'),
             $cheque->date_echeance?->format('Y-m-d'),
@@ -105,6 +106,7 @@ class ChequeService
             ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
             ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
             ->when($filters['banque'] ?? null, fn ($query, $value) => $query->where('banque', 'like', "%{$value}%"))
+            ->when(in_array($filters['facture_recue'] ?? null, ['0', '1'], true), fn ($query) => $query->where('facture_recue', $filters['facture_recue'] === '1'))
             ->when($filters['date_from'] ?? null, fn ($query, $value) => $query->whereDate('date_echeance', '>=', $value))
             ->when($filters['date_to'] ?? null, fn ($query, $value) => $query->whereDate('date_echeance', '<=', $value))
             ->when($filters['montant_min'] ?? null, fn ($query, $value) => $query->where('montant', '>=', $value))
@@ -129,6 +131,7 @@ class ChequeService
             'date_emission' => $cheque->date_emission?->format('Y-m-d'),
             'date_echeance' => $cheque->date_echeance?->format('Y-m-d'),
             'statut' => $cheque->statut,
+            'facture_recue' => $cheque->facture_recue,
             'note' => $cheque->note,
         ];
     }

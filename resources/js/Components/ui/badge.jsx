@@ -8,5 +8,5 @@ export function Badge({ className, variant = 'default', ...props }) {
         yellow: 'border-yellow-300 bg-yellow-50 text-yellow-800',
     };
 
-    return <span className={cn('inline-flex rounded-md border px-2 py-0.5 text-xs font-medium', variants[variant], className)} {...props} />;
+    return <span className={cn('inline-flex rounded-md border px-2 py-0.5 text-sm font-medium', variants[variant], className)} {...props} />;
 }

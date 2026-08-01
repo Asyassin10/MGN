@@ -54,7 +54,7 @@ function Kpi({ label, value, color, icon: Icon, currency = true, suffix = '' }) 
         <Card className={`border-l-4 ${cardColors[color]}`}>
             <CardContent className="flex min-h-24 items-center justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="text-xs font-medium uppercase text-zinc-500">{label}</div>
+                    <div className="text-sm font-medium uppercase text-zinc-500">{label}</div>
                     <div className="mt-2 break-words text-2xl font-semibold text-zinc-950">{displayValue}{suffix}</div>
                 </div>
                 <Icon className={`h-5 w-5 shrink-0 ${cardColors[color].split(' ').at(-1)}`} />
@@ -70,7 +70,7 @@ function ChartPanel({ title, children, empty = false, emptyText = 'Aucune donné
                 <CardTitle className="text-base">{title}</CardTitle>
             </CardHeader>
             <CardContent className="h-72 min-w-0">
-                {empty ? <div className="flex h-full items-center justify-center text-sm text-zinc-500">{emptyText}</div> : children}
+                {empty ? <div className="flex h-full items-center justify-center text-base text-zinc-500">{emptyText}</div> : children}
             </CardContent>
         </Card>
     );
@@ -80,7 +80,7 @@ function MoneyTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null;
 
     return (
-        <div className="border border-zinc-200 bg-white p-2 text-xs">
+        <div className="border border-zinc-200 bg-white p-2 text-sm">
             <div className="font-medium text-zinc-950">{label}</div>
             {payload.map((item) => (
                 <div key={item.dataKey || item.name} className="text-zinc-600">
@@ -95,7 +95,7 @@ function CountTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null;
 
     return (
-        <div className="border border-zinc-200 bg-white p-2 text-xs">
+        <div className="border border-zinc-200 bg-white p-2 text-sm">
             <div className="font-medium text-zinc-950">{label}</div>
             {payload.map((item) => (
                 <div key={item.dataKey || item.name} className="text-zinc-600">

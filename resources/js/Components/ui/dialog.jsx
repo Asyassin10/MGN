@@ -24,5 +24,5 @@ export function DialogHeader({ className, ...props }) {
 }
 
 export function DialogTitle({ className, ...props }) {
-    return <DialogPrimitive.Title className={cn('text-base font-semibold text-zinc-950', className)} {...props} />;
+    return <DialogPrimitive.Title className={cn('text-lg font-semibold text-zinc-950', className)} {...props} />;
 }

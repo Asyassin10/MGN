@@ -8,7 +8,7 @@ export default function BalanceCard({ label, value, positive = 'green' }) {
     return (
         <Card>
             <CardContent>
-                <div className="text-xs font-medium uppercase text-zinc-500">{label}</div>
+                <div className="text-sm font-medium uppercase text-zinc-500">{label}</div>
                 <div className={`mt-2 text-xl font-semibold ${color}`}>{money(value)}</div>
             </CardContent>
         </Card>

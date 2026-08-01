@@ -17,16 +17,16 @@ export default function Create() {
         >
             <Card className="max-w-2xl">
                 <CardContent>
-                    <p className="mb-4 text-sm text-zinc-600">Créez la fiche fournisseur. Les relevés compte pourront être ajoutés ensuite, si nécessaire.</p>
+                    <p className="mb-4 text-base text-zinc-600">Créez la fiche fournisseur. Les relevés compte pourront être ajoutés ensuite, si nécessaire.</p>
                     <form onSubmit={submit} className="grid gap-3">
                         {['nom', 'telephone', 'ville'].map((field) => (
-                            <label key={field} className="grid gap-1 text-sm">
+                            <label key={field} className="grid gap-1 text-base">
                                 <span className="font-medium capitalize">{field}</span>
                                 <Input value={data[field]} onChange={(e) => setData(field, e.target.value)} />
-                                {errors[field] && <span className="text-xs text-red-600">{errors[field]}</span>}
+                                {errors[field] && <span className="text-sm text-red-600">{errors[field]}</span>}
                             </label>
                         ))}
-                        <label className="grid gap-1 text-sm">
+                        <label className="grid gap-1 text-base">
                             <span className="font-medium">Note</span>
                             <Textarea value={data.note} onChange={(e) => setData('note', e.target.value)} />
                         </label>

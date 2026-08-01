@@ -10,6 +10,7 @@ use App\Http\Controllers\ChequePartyClientController;
 use App\Http\Controllers\ChequePartyFournisseurController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DepotController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FournisseurController;
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/operations/{operation}/pdf', [OperationController::class, 'pdf'])->name('operations.pdf');
     Route::resource('employees', EmployeeController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/settings/database-backup', [DatabaseBackupController::class, 'download'])->name('settings.database-backup.download');
     Route::patch('/settings/pin', [SettingsController::class, 'updatePin'])->name('settings.pin.update');
 
     Route::get('/fournisseurs/releves', [FournisseurController::class, 'relevesIndex'])->name('fournisseurs.releves.index');

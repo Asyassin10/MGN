@@ -36,13 +36,13 @@ export default function Show({ fournisseur, releves }) {
             actions={<><Link href={route('fournisseurs.index')}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Tous les fournisseurs</Button></Link><CrudDialog title="Nouveau relevé compte" action={route('fournisseurs.releves.store', fournisseur.id)} fields={releveFields} defaults={{ code_client: '', date_releve: '', note: '' }} trigger={<Button><Plus className="h-4 w-4" />Nouveau relevé</Button>} /><a href={route('fournisseurs.show', { fournisseur: fournisseur.id, export: 1 })}><Button variant="outline"><Download className="h-4 w-4" />Export</Button></a><CrudDialog title={`Modifier ${fournisseur.nom}`} action={route('fournisseurs.update', fournisseur.id)} method="patch" fields={fournisseurFields} defaults={fournisseur} trigger={<Button variant="outline">Modifier fournisseur</Button>} /><DeleteButton action={route('fournisseurs.destroy', fournisseur.id)} title={`Supprimer ${fournisseur.nom} ?`} message="La suppression sera refusée tant que ce fournisseur possède un historique financier ou des chèques." /></>}
         >
             <div className="mb-4 grid gap-4 md:grid-cols-4">
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Nom</div><div className="mt-2 font-medium">{fournisseur.nom}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Ville</div><div className="mt-2 font-medium">{fournisseur.ville || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Téléphone</div><div className="mt-2 font-medium">{fournisseur.telephone || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Solde</div><div className="mt-2"><Badge variant={fournisseur.balance > 0 ? 'red' : 'green'}>{money(fournisseur.balance)}</Badge></div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Nom</div><div className="mt-2 font-medium">{fournisseur.nom}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Ville</div><div className="mt-2 font-medium">{fournisseur.ville || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Téléphone</div><div className="mt-2 font-medium">{fournisseur.telephone || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Solde</div><div className="mt-2"><Badge variant={fournisseur.balance > 0 ? 'red' : 'green'}>{money(fournisseur.balance)}</Badge></div></CardContent></Card>
             </div>
 
-            <div className="mb-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+            <div className="mb-4 rounded-md border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-600">
                 Les relevés compte de ce fournisseur sont listés ci-dessous. Ouvrez un relevé uniquement pour gérer ses factures et ses paiements.
             </div>
 

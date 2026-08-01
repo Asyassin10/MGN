@@ -17,11 +17,11 @@ export default function DateRangePicker({ from, to, onChange, label = 'Période'
             <Popover.Portal>
                 <Popover.Content align="start" className="z-50 mt-2 w-[min(30rem,calc(100vw-2rem))] rounded-md border border-zinc-200 bg-white p-3">
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="grid gap-1 text-sm">
+                        <label className="grid gap-1 text-base">
                             <span className="font-medium text-zinc-700">Du</span>
                             <Input type="date" value={from || ''} onChange={(event) => onChange({ from: event.target.value, to })} />
                         </label>
-                        <label className="grid gap-1 text-sm">
+                        <label className="grid gap-1 text-base">
                             <span className="font-medium text-zinc-700">Au</span>
                             <Input type="date" value={to || ''} onChange={(event) => onChange({ from, to: event.target.value })} />
                         </label>

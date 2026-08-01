@@ -10,3 +10,175 @@
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+[data-section-theme='depot'] {
+    --section-50: #ecfdf5;
+    --section-100: #d1fae5;
+    --section-200: #a7f3d0;
+    --section-500: #10b981;
+    --section-600: #059669;
+    --section-700: #047857;
+    --section-800: #065f46;
+    --section-950: #022c22;
+}
+
+[data-section-theme='fournisseurs'] {
+    --section-50: #fffbeb;
+    --section-100: #fef3c7;
+    --section-200: #fde68a;
+    --section-500: #f59e0b;
+    --section-600: #d97706;
+    --section-700: #b45309;
+    --section-800: #92400e;
+    --section-950: #451a03;
+}
+
+[data-section-theme='clients'] {
+    --section-50: #eff6ff;
+    --section-100: #dbeafe;
+    --section-200: #bfdbfe;
+    --section-500: #3b82f6;
+    --section-600: #2563eb;
+    --section-700: #1d4ed8;
+    --section-800: #1e40af;
+    --section-950: #172554;
+}
+
+[data-section-theme='cheques'] {
+    --section-50: #fdf4ff;
+    --section-100: #fae8ff;
+    --section-200: #f5d0fe;
+    --section-500: #d946ef;
+    --section-600: #c026d3;
+    --section-700: #a21caf;
+    --section-800: #86198f;
+    --section-950: #4a044e;
+}
+
+/* Apply the active business-area color to shared content surfaces. */
+[data-section-theme] {
+    color: var(--section-800);
+}
+
+[data-section-theme] .text-zinc-950,
+[data-section-theme] .text-zinc-900,
+[data-section-theme] .text-zinc-800 {
+    color: var(--section-800);
+}
+
+[data-section-theme] .text-zinc-700,
+[data-section-theme] .text-zinc-600 {
+    color: var(--section-700);
+}
+
+[data-section-theme] .text-zinc-500 {
+    color: var(--section-600);
+}
+
+[data-section-theme] .border-zinc-300,
+[data-section-theme] .border-zinc-200 {
+    border-color: var(--section-200);
+}
+
+[data-section-theme] .border-zinc-100 {
+    border-color: var(--section-100);
+}
+
+[data-section-theme] .bg-zinc-900 {
+    background-color: var(--section-700);
+}
+
+[data-section-theme] .bg-zinc-900:hover {
+    background-color: var(--section-800);
+}
+
+[data-section-theme] button.border-zinc-300.bg-white,
+[data-section-theme] button.text-zinc-700 {
+    border-color: var(--section-200);
+    color: var(--section-700);
+}
+
+[data-section-theme] button.border-zinc-300.bg-white:hover,
+[data-section-theme] button.text-zinc-700:hover {
+    background-color: var(--section-50);
+    color: var(--section-800);
+}
+
+[data-section-theme] input:focus,
+[data-section-theme] textarea:focus {
+    border-color: var(--section-600);
+    box-shadow: 0 0 0 2px var(--section-100);
+}
+
+[data-section-theme] thead {
+    border-color: var(--section-200);
+    background-color: var(--section-50);
+}
+
+[data-section-theme] tbody {
+    border-color: var(--section-100);
+}
+
+[data-section-theme] tbody tr:not(.status-row):hover {
+    background-color: var(--section-50);
+}
+
+.status-row-en-cours {
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.status-row-en-cours:hover {
+    background-color: #fef3c7;
+}
+
+.status-row-en-caisse,
+.status-row-encaisse {
+    background-color: #ecfdf5;
+    color: #065f46;
+}
+
+.status-row-en-caisse:hover,
+.status-row-encaisse:hover {
+    background-color: #d1fae5;
+}
+
+.status-row-impaye {
+    background-color: #fef2f2;
+    color: #991b1b;
+}
+
+.status-row-impaye:hover {
+    background-color: #fee2e2;
+}
+
+.status-row :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500) {
+    color: inherit;
+}
+
+[data-tone='factures'][data-state='active'] {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+[data-tone='payments'][data-state='active'] {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+[data-tone='entries'][data-state='active'] {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+[data-tab-panel][data-tone='factures'][data-state='active'] {
+    border-color: #f59e0b;
+}
+
+[data-tab-panel][data-tone='payments'][data-state='active'] {
+    border-color: #10b981;
+}
+
+[data-tab-panel][data-tone='entries'][data-state='active'] {
+    border-color: #3b82f6;
+}

@@ -33,7 +33,7 @@ export default function CrudDialog({ title, trigger, action, method = 'post', fi
                 <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
                 <form onSubmit={submit} className="grid gap-3">
                     {fields.map((field) => (
-                        <label key={field.name} className="grid gap-1 text-sm">
+                        <label key={field.name} className="grid gap-1 text-base">
                             <span className="font-medium text-zinc-700">{field.label}</span>
                             {field.type === 'textarea' ? (
                                 <Textarea value={data[field.name] || ''} onChange={(event) => setData(field.name, event.target.value)} />
@@ -42,7 +42,7 @@ export default function CrudDialog({ title, trigger, action, method = 'post', fi
                             ) : (
                                 <Input type={field.type || 'text'} value={data[field.name] || ''} onChange={(event) => setData(field.name, event.target.value)} />
                             )}
-                            {errors[field.name] ? <span className="text-xs text-red-600">{errors[field.name]}</span> : null}
+                            {errors[field.name] ? <span className="text-sm text-red-600">{errors[field.name]}</span> : null}
                         </label>
                     ))}
                     <div className="mt-2 flex justify-end gap-2">

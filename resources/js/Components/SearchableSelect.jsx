@@ -26,12 +26,12 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
                     </div>
                     <div className="max-h-64 overflow-auto">
                         {allowEmpty ? (
-                            <button type="button" className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-zinc-50" onClick={() => { onChange(''); setOpen(false); }}>
+                            <button type="button" className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-base hover:bg-zinc-50" onClick={() => { onChange(''); setOpen(false); }}>
                                 Tous
                             </button>
                         ) : null}
                         {filtered.map((option) => (
-                            <button key={option.value} type="button" className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-sm hover:bg-zinc-50" onClick={() => { onChange(option.value); setOpen(false); }}>
+                            <button key={option.value} type="button" className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-base hover:bg-zinc-50" onClick={() => { onChange(option.value); setOpen(false); }}>
                                 <span className="truncate">{option.label}</span>
                                 {String(option.value) === String(value) ? <Check className="h-4 w-4" /> : null}
                             </button>

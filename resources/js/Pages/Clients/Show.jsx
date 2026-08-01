@@ -24,10 +24,10 @@ export default function Show({ client, entries, payments, filters }) {
     return (
         <AppLayout title={client.nom} actions={<><CrudDialog title={`Modifier ${client.nom}`} action={route('clients.update', client.id)} method="patch" fields={clientFields} defaults={client} trigger={<Button variant="outline">Modifier</Button>} /><DeleteButton action={route('clients.destroy', client.id)} title={`Supprimer ${client.nom} ?`} message="La suppression sera refusée tant que ce client possède des entrées, paiements ou chèques." /></>}>
             <div className="mb-4 grid gap-4 md:grid-cols-4">
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Nom</div><div className="mt-2 font-medium">{client.nom}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Ville</div><div className="mt-2 font-medium">{client.ville || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Téléphone</div><div className="mt-2 font-medium">{client.telephone || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-xs uppercase text-zinc-500">Solde</div><div className="mt-2"><Badge variant={client.balance > 0 ? 'green' : 'red'}>{money(client.balance)}</Badge></div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Nom</div><div className="mt-2 font-medium">{client.nom}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Ville</div><div className="mt-2 font-medium">{client.ville || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Téléphone</div><div className="mt-2 font-medium">{client.telephone || '-'}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Solde</div><div className="mt-2"><Badge variant={client.balance > 0 ? 'green' : 'red'}>{money(client.balance)}</Badge></div></CardContent></Card>
             </div>
             <Tabs defaultValue="entries">
                 <TabsList><TabsTrigger value="entries">Entrées</TabsTrigger><TabsTrigger value="payments">Paiements</TabsTrigger></TabsList>

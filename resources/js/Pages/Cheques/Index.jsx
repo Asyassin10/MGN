@@ -8,9 +8,12 @@ import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { money } from '@/lib/utils';
+import { getChequeRowClass } from '@/lib/chequeStatus';
+import InvoiceReceiptSelect from '@/Components/InvoiceReceiptSelect';
 
 const types = [{ value: 'client', label: 'Client' }, { value: 'fournisseur', label: 'Fournisseur' }];
 const statuses = [{ value: 'en_cours', label: 'En cours' }, { value: 'encaisse', label: 'Encaissé' }, { value: 'impaye', label: 'Impayé' }];
+const invoiceFilters = [{ value: '1', label: 'Facture : Oui' }, { value: '0', label: 'Facture : Non' }];
 
 export default function Index({ cheques, filters, banques }) {
     const update = (key, value) => router.get(route('cheques.index'), { ...filters, [key]: value }, { preserveState: true, replace: true });
@@ -19,10 +22,12 @@ export default function Index({ cheques, filters, banques }) {
         { key: 'type', label: 'Type' },
         { key: 'tier', label: 'Tier' },
         { key: 'banque', label: 'Banque' },
+        { key: 'tireur_signataire', label: 'Tireur / signataire', render: (r) => r.tireur_signataire || '-' },
         { key: 'montant', label: 'Montant', render: (r) => money(r.montant) },
         { key: 'date_emission', label: 'Émission' },
         { key: 'date_echeance', label: 'Échéance' },
         { key: 'statut', label: 'Statut', render: (r) => <div className="grid min-w-36 gap-1"><StatusBadge statut={r.statut} /><SearchableSelect value={r.statut} onChange={(value) => router.patch(route('cheques.status', r.id), { statut: value }, { preserveScroll: true })} options={statuses} allowEmpty={false} /></div> },
+        { key: 'facture_recue', label: 'Facture reçue', render: (r) => <InvoiceReceiptSelect value={r.facture_recue} onChange={(value) => router.patch(route('cheques.status', r.id), { facture_recue: value }, { preserveScroll: true })} /> },
         { key: 'actions', label: 'Actions', render: (r) => <div className="flex flex-wrap gap-2"><Link href={route('cheques.show', r.id)}><Button size="sm" variant="outline">Voir</Button></Link><Link href={route('cheques.edit', r.id)}><Button size="sm" variant="outline">Modifier</Button></Link><DeleteButton action={route('cheques.destroy', r.id)} title={`Supprimer le chèque ${r.numero_cheque} ?`} /></div> },
     ];
 
@@ -32,13 +37,14 @@ export default function Index({ cheques, filters, banques }) {
                 <SearchableSelect value={filters.type || ''} onChange={(value) => update('type', value)} options={types} placeholder="Type" />
                 <SearchableSelect value={filters.statut || ''} onChange={(value) => update('statut', value)} options={statuses} placeholder="Statut" />
                 <SearchableSelect value={filters.banque || ''} onChange={(value) => update('banque', value)} options={banques} placeholder="Banque" />
+                <SearchableSelect value={filters.facture_recue ?? ''} onChange={(value) => update('facture_recue', value)} options={invoiceFilters} placeholder="Facture reçue" />
                 <Input type="date" defaultValue={filters.date_from || ''} onChange={(e) => update('date_from', e.target.value)} />
                 <Input type="date" defaultValue={filters.date_to || ''} onChange={(e) => update('date_to', e.target.value)} />
                 <Input type="number" placeholder="Min" defaultValue={filters.montant_min || ''} onChange={(e) => update('montant_min', e.target.value)} />
                 <Input type="number" placeholder="Max" defaultValue={filters.montant_max || ''} onChange={(e) => update('montant_max', e.target.value)} />
                 <Input placeholder="Recherche" defaultValue={filters.search || ''} onChange={(e) => update('search', e.target.value)} />
             </div>
-            <DataTable columns={columns} rows={cheques.data} pagination={cheques} />
+            <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={getChequeRowClass} />
         </AppLayout>
     );
 }

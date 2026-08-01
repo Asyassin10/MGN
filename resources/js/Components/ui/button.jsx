@@ -8,9 +8,9 @@ export function Button({ className, variant = 'default', size = 'default', ...pr
         destructive: 'bg-red-600 text-white hover:bg-red-700',
     };
     const sizes = {
-        default: 'h-9 px-3 text-sm',
-        sm: 'h-8 px-2 text-xs',
-        icon: 'h-8 w-8 p-0',
+        default: 'h-10 px-4 text-base',
+        sm: 'h-9 px-3 text-sm',
+        icon: 'h-9 w-9 p-0',
     };
 
     return (

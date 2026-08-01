@@ -132,6 +132,10 @@ return [
         'update_date_on_publish' => true,
     ],
 
+    'backup' => [
+        'pg_dump_binary' => env('PG_DUMP_BINARY', 'pg_dump'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Redis Databases
