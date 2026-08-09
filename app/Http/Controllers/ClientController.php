@@ -6,10 +6,10 @@ use App\Http\Requests\StoreClientEntryRequest;
 use App\Http\Requests\StoreClientPaymentRequest;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
+use App\Models\Cheque;
 use App\Models\Client;
 use App\Models\ClientEntry;
 use App\Models\ClientPayment;
-use App\Models\Cheque;
 use App\Services\ClientService;
 use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
@@ -30,6 +30,7 @@ class ClientController extends Controller
 
         return Inertia::render('Clients/Index', [
             'clients' => $service->list($filters),
+            'summary' => $service->summary(),
             'filters' => $filters,
         ]);
     }
@@ -136,5 +137,4 @@ class ClientController extends Controller
     {
         return $service->pdfPayment($client, $payment);
     }
-
 }

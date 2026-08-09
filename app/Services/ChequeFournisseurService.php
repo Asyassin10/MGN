@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Bank;
 use App\Models\ChequeFournisseur;
 use App\Models\ChequePartyFournisseur;
+use App\Support\DownloadFilename;
 use App\Support\ExcelExport;
 use App\Support\FinancePdf;
-use App\Support\DownloadFilename;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,10 +43,21 @@ class ChequeFournisseurService
         ];
     }
 
+    public function dailySummary(): array
+    {
+        $query = ChequeFournisseur::query()->whereDate('date_emission', today());
+
+        return [
+            'date' => today()->format('Y-m-d'),
+            'total' => round((float) (clone $query)->sum('montant'), 2),
+        ];
+    }
+
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)->latest('date_echeance')->get();
-        return ExcelExport::download('cheque-fournisseurs-export', ['Numero', 'Fournisseur', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut'], $rows->map(fn (ChequeFournisseur $cheque) => [
+
+        return ExcelExport::download('cheque-fournisseurs-export', ['Numero', 'Fournisseur', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut', 'Facture recue', 'Facture donnee'], $rows->map(fn (ChequeFournisseur $cheque) => [
             $cheque->numero_cheque,
             $cheque->fournisseur?->nom,
             $cheque->type,
@@ -56,6 +67,8 @@ class ChequeFournisseurService
             $cheque->date_emission?->format('Y-m-d'),
             $cheque->date_echeance?->format('Y-m-d'),
             $cheque->statut,
+            $cheque->facture_recue ? 'Oui' : 'Non',
+            $cheque->facture_donnee ? 'Oui' : 'Non',
         ]));
     }
 
@@ -108,6 +121,7 @@ class ChequeFournisseurService
             'date_echeance' => $cheque->date_echeance?->format('Y-m-d'),
             'statut' => $cheque->statut,
             'facture_recue' => $cheque->facture_recue,
+            'facture_donnee' => $cheque->facture_donnee,
             'note' => $cheque->note,
         ];
     }
@@ -120,6 +134,7 @@ class ChequeFournisseurService
             ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
             ->when($filters['banque'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('banque', 'like', "%{$value}%")->orWhereHas('bank', fn ($bank) => $bank->where('name', 'like', "%{$value}%"))))
             ->when(in_array($filters['facture_recue'] ?? null, ['0', '1'], true), fn ($query) => $query->where('facture_recue', $filters['facture_recue'] === '1'))
+            ->when(in_array($filters['facture_donnee'] ?? null, ['0', '1'], true), fn ($query) => $query->where('facture_donnee', $filters['facture_donnee'] === '1'))
             ->when($filters['date_emission_from'] ?? null, fn ($query, $value) => $query->whereDate('date_emission', '>=', $value))
             ->when($filters['date_emission_to'] ?? null, fn ($query, $value) => $query->whereDate('date_emission', '<=', $value))
             ->when($filters['date_echeance_from'] ?? null, fn ($query, $value) => $query->whereDate('date_echeance', '>=', $value))

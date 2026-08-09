@@ -18,7 +18,7 @@ class ChequeFournisseurController extends Controller
 {
     public function index(Request $request, ChequeFournisseurService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'fournisseur_id', 'statut', 'banque', 'facture_recue', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
+        $filters = $request->only(['search', 'fournisseur_id', 'statut', 'banque', 'facture_recue', 'facture_donnee', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -26,6 +26,7 @@ class ChequeFournisseurController extends Controller
 
         return Inertia::render('ChequeFournisseurs/Index', [
             'cheques' => $service->list($filters),
+            'dailySummary' => $service->dailySummary(),
             'filters' => $filters,
             ...$service->options(),
         ]);
@@ -80,6 +81,7 @@ class ChequeFournisseurController extends Controller
         $data = $request->validate([
             'statut' => ['sometimes', 'required', Rule::in(ChequeFournisseur::STATUSES)],
             'facture_recue' => ['sometimes', 'nullable', 'boolean'],
+            'facture_donnee' => ['sometimes', 'nullable', 'boolean'],
         ]);
         $chequeFournisseur->update($data);
 

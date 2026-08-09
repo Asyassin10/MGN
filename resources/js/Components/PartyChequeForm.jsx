@@ -23,6 +23,7 @@ export default function PartyChequeForm({ title, action, method = 'post', cheque
         date_echeance: cheque.date_echeance || '',
         statut: cheque.statut || 'en_cours',
         facture_recue: cheque.facture_recue ?? null,
+        facture_donnee: cheque.facture_donnee ?? null,
         motif: cheque.motif || '',
         note: cheque.note || '',
     });
@@ -48,7 +49,8 @@ export default function PartyChequeForm({ title, action, method = 'post', cheque
                             <label className="grid gap-1 text-base"><span className="font-medium">Émission</span><Input type="date" value={data.date_emission || ''} onChange={(e) => setData('date_emission', e.target.value)} /></label>
                             <label className="grid gap-1 text-base"><span className="font-medium">Échéance</span><Input type="date" value={data.date_echeance || ''} onChange={(e) => setData('date_echeance', e.target.value)} /></label>
                             <SearchableSelect value={data.statut} onChange={(value) => setData('statut', value)} options={statuses} allowEmpty={false} placeholder="Statut" />
-                            <label className="grid gap-1 text-base"><span className="font-medium">Facture reçue</span><InvoiceReceiptSelect value={data.facture_recue} onChange={(value) => setData('facture_recue', value)} /></label>
+                            <label className="grid gap-1 text-base"><span className="font-medium">Facture reçue</span><InvoiceReceiptSelect value={data.facture_recue} onChange={(value) => setData('facture_recue', value)} label="Facture reçue" /></label>
+                            <label className="grid gap-1 text-base"><span className="font-medium">Facture donnée</span><InvoiceReceiptSelect value={data.facture_donnee} onChange={(value) => setData('facture_donnee', value)} label="Facture donnée" /></label>
                         </div>
                         <label className="grid gap-1 text-base"><span className="font-medium">Motif</span><Textarea value={data.motif || ''} onChange={(e) => setData('motif', e.target.value)} /></label>
                         <label className="grid gap-1 text-base"><span className="font-medium">Note</span><Textarea value={data.note || ''} onChange={(e) => setData('note', e.target.value)} /></label>

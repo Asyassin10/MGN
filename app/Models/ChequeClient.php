@@ -11,6 +11,7 @@ class ChequeClient extends Model
     use HasFactory;
 
     public const STATUSES = ['en_cours', 'en_caisse', 'impaye'];
+
     public const TYPES = ['cheque', 'effet'];
 
     protected $fillable = [
@@ -27,6 +28,7 @@ class ChequeClient extends Model
         'date_echeance',
         'statut',
         'facture_recue',
+        'facture_donnee',
     ];
 
     protected $casts = [
@@ -34,6 +36,7 @@ class ChequeClient extends Model
         'date_echeance' => 'date',
         'montant' => 'decimal:2',
         'facture_recue' => 'boolean',
+        'facture_donnee' => 'boolean',
     ];
 
     public function client(): BelongsTo

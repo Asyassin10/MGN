@@ -24,6 +24,7 @@ class StoreChequeClientRequest extends FormRequest
             'date_echeance' => ['nullable', 'date'],
             'statut' => ['required', Rule::in(ChequeClient::STATUSES)],
             'facture_recue' => ['nullable', 'boolean'],
+            'facture_donnee' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -18,7 +18,7 @@ class ChequeClientController extends Controller
 {
     public function index(Request $request, ChequeClientService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'client_id', 'statut', 'banque', 'facture_recue', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
+        $filters = $request->only(['search', 'client_id', 'statut', 'banque', 'facture_recue', 'facture_donnee', 'date_emission_from', 'date_emission_to', 'date_echeance_from', 'date_echeance_to']);
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -26,6 +26,7 @@ class ChequeClientController extends Controller
 
         return Inertia::render('ChequeClients/Index', [
             'cheques' => $service->list($filters),
+            'dailySummary' => $service->dailySummary(),
             'filters' => $filters,
             ...$service->options(),
         ]);
@@ -95,6 +96,7 @@ class ChequeClientController extends Controller
         $data = $request->validate([
             'statut' => ['sometimes', 'required', Rule::in(ChequeClient::STATUSES)],
             'facture_recue' => ['sometimes', 'nullable', 'boolean'],
+            'facture_donnee' => ['sometimes', 'nullable', 'boolean'],
         ]);
         $chequeClient->update($data);
 

@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Client;
 use App\Models\ClientEntry;
 use App\Models\ClientPayment;
+use App\Support\DownloadFilename;
 use App\Support\ExcelExport;
 use App\Support\FinancePdf;
-use App\Support\DownloadFilename;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +35,21 @@ class ClientService
             ->take(8)
             ->values()
             ->all();
+    }
+
+    public function summary(): array
+    {
+        $totalDu = (float) ClientEntry::query()->sum('montant');
+        $totalPaye = (float) ClientPayment::query()->sum('montant');
+        $today = today();
+
+        return [
+            'total_du' => round($totalDu, 2),
+            'total_paye' => round($totalPaye, 2),
+            'balance' => round($totalDu - $totalPaye, 2),
+            'today_du' => round((float) ClientEntry::query()->whereDate('date_entree', $today)->sum('montant'), 2),
+            'today_paye' => round((float) ClientPayment::query()->whereDate('date_paiement', $today)->sum('montant'), 2),
+        ];
     }
 
     public function show(Client $client, array $filters): array

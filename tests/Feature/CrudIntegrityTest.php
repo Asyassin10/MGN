@@ -14,12 +14,11 @@ use App\Models\Depot;
 use App\Models\Employee;
 use App\Models\Fournisseur;
 use App\Models\FournisseurCheque;
-use App\Models\FournisseurReleveCompte;
 use App\Models\Operation;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
-use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -434,6 +433,69 @@ class CrudIntegrityTest extends TestCase
         $response->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->assertStringStartsWith('inline;', (string) $response->headers->get('content-disposition'));
         $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
+    public function test_cheque_invoice_states_and_daily_financial_summaries_are_available(): void
+    {
+        Carbon::setTestNow('2026-08-09 10:00:00');
+
+        $bank = Bank::create(['name' => 'Banque jour']);
+        $clientParty = ChequePartyClient::create(['nom' => 'Client chèque jour']);
+        $fournisseurParty = ChequePartyFournisseur::create(['nom' => 'Fournisseur chèque jour']);
+        $clientCheque = ChequeClient::create([
+            'client_id' => $clientParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CLIENT-JOUR',
+            'banque' => $bank->name,
+            'montant' => 250,
+            'date_emission' => today(),
+        ]);
+        ChequeClient::create([
+            'client_id' => $clientParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'CLIENT-ANCIEN',
+            'banque' => $bank->name,
+            'montant' => 50,
+            'date_emission' => today()->subDay(),
+        ]);
+        ChequeFournisseur::create([
+            'fournisseur_id' => $fournisseurParty->id,
+            'bank_id' => $bank->id,
+            'numero_cheque' => 'FOURNISSEUR-JOUR',
+            'banque' => $bank->name,
+            'montant' => 125,
+            'date_emission' => today(),
+        ]);
+
+        $this->patch(route('cheque-clients.status', $clientCheque), [
+            'facture_recue' => true,
+            'facture_donnee' => true,
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('cheque_clients', [
+            'id' => $clientCheque->id,
+            'facture_recue' => true,
+            'facture_donnee' => true,
+        ]);
+
+        $this->get(route('cheque-clients.index'))->assertInertia(fn (Assert $page) => $page
+            ->component('ChequeClients/Index')
+            ->where('dailySummary.total', 250));
+        $this->get(route('cheque-fournisseurs.index'))->assertInertia(fn (Assert $page) => $page
+            ->component('ChequeFournisseurs/Index')
+            ->where('dailySummary.total', 125));
+
+        $client = Client::create(['nom' => 'Client journalier']);
+        $client->entries()->create(['date_entree' => today(), 'montant' => 400, 'description' => 'Vente du jour']);
+        $client->payments()->create(['date_paiement' => today(), 'montant' => 150, 'mode' => 'espece']);
+
+        $this->get(route('clients.index'))->assertInertia(fn (Assert $page) => $page
+            ->component('Clients/Index')
+            ->where('summary.today_du', 400)
+            ->where('summary.today_paye', 150)
+            ->where('summary.balance', 250));
+
+        Carbon::setTestNow();
     }
 
     private function stockFixture(int $quantity): array
