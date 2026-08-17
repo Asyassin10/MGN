@@ -44,6 +44,17 @@
     --section-950: #172554;
 }
 
+[data-section-theme='employees'] {
+    --section-50: #f5f3ff;
+    --section-100: #ede9fe;
+    --section-200: #ddd6fe;
+    --section-500: #8b5cf6;
+    --section-600: #7c3aed;
+    --section-700: #6d28d9;
+    --section-800: #5b21b6;
+    --section-950: #2e1065;
+}
+
 [data-section-theme='cheques'] {
     --section-50: #fdf4ff;
     --section-100: #fae8ff;

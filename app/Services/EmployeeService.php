@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Employee;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Support\ExcelExport;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EmployeeService
@@ -21,6 +21,9 @@ class EmployeeService
                 'prenom' => $employee->prenom,
                 'poste' => $employee->poste,
                 'telephone' => $employee->telephone,
+                'salary' => (float) $employee->salary,
+                'salary_payment_day' => $employee->salary_payment_day,
+                'status' => $employee->status,
             ]);
     }
 
@@ -34,9 +37,11 @@ class EmployeeService
                 $employee->prenom,
                 $employee->poste,
                 $employee->telephone,
+                $employee->salary,
+                $employee->salary_payment_day,
             ]);
 
-        return ExcelExport::download('employes-export', ['Nom', 'Prenom', 'Poste', 'Telephone'], $rows);
+        return ExcelExport::download('employes-export', ['Nom', 'Prenom', 'Poste', 'Telephone', 'Salaire DH', 'Jour paiement'], $rows);
     }
 
     private function baseQuery(array $filters)

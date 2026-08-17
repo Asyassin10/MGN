@@ -21,7 +21,17 @@ class AuthController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        $user = $request->user();
+        $destination = $user->isAdmin() ? route('dashboard') : match (true) {
+            $user->canAccess('depots') => route('depots.index'),
+            $user->canAccess('fournisseurs') => route('fournisseurs.index'),
+            $user->canAccess('clients') => route('clients.index'),
+            $user->canAccess('employees') => route('employees.index'),
+            $user->canAccess('dashboard') => route('dashboard'),
+            default => route('dashboard'),
+        };
+
+        return redirect()->to($destination);
     }
 
     public function destroy(Request $request): RedirectResponse

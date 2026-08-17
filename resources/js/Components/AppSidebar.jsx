@@ -1,27 +1,26 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, UserRound, Users } from 'lucide-react';
+import { Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, UserRound, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
 import { getSectionThemeByKey } from '@/lib/sectionTheme';
 
 const sections = [
-    { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard },
+    { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, permission: 'dashboard' },
     {
         label: 'Dépôt',
         icon: Building2,
-        theme: 'depot',
+        theme: 'depot', permission: 'depots',
         children: [
             { label: 'Stock', route: 'depots.index', icon: PackageSearch },
             { label: 'Articles', route: 'articles.index', icon: Boxes },
             { label: 'Opérations', route: 'operations.index', icon: ListChecks },
-            { label: 'Employés', route: 'employees.index', icon: UserRound },
         ],
     },
     {
         label: 'Fournisseurs',
         icon: Handshake,
-        theme: 'fournisseurs',
+        theme: 'fournisseurs', permission: 'fournisseurs',
         children: [
             { label: 'Liste des fournisseurs', route: 'fournisseurs.index', active: ['fournisseurs.index', 'fournisseurs.create', 'fournisseurs.show'], icon: ReceiptText },
             { label: 'Relevés compte', route: 'fournisseurs.releves.index', active: ['fournisseurs.releves.*'], icon: ListChecks },
@@ -30,11 +29,14 @@ const sections = [
     {
         label: 'Clients',
         icon: Users,
-        theme: 'clients',
+        theme: 'clients', permission: 'clients',
         children: [
             { label: 'Liste des clients', route: 'clients.index', icon: Users },
         ],
     },
+    { label: 'RH / Employés', route: 'employees.index', icon: UserRound, permission: 'employees' },
+    { label: 'Utilisateurs', route: 'users.index', icon: ShieldCheck, permission: 'admin' },
+    { label: 'Historique', route: 'activity-history.index', icon: ListChecks, permission: 'admin' },
 ];
 
 function isRouteActive(item) {
@@ -61,7 +63,7 @@ export default function AppSidebar({ className, onNavigate }) {
                 </div>
             </div>
             <nav className="flex-1 space-y-1 p-2">
-                {sections.map((section) => {
+                {sections.filter((section) => auth.user?.role === 'admin' || auth.user?.permissions?.modules?.includes(section.permission)).map((section) => {
                     const Icon = section.icon;
                     const active = isRouteActive(section);
                     const theme = getSectionThemeByKey(section.theme);
@@ -100,10 +102,10 @@ export default function AppSidebar({ className, onNavigate }) {
                 })}
             </nav>
             <div className="border-t border-zinc-200 p-2">
-                <Link href={route('settings.index')} onClick={onNavigate} className={`mb-1 flex h-10 items-center gap-2 rounded-md px-3 text-base ${route().current('settings.*') ? 'bg-zinc-100 font-medium text-zinc-950' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
+                {auth.user?.role === 'admin' ? <Link href={route('settings.index')} onClick={onNavigate} className={`mb-1 flex h-10 items-center gap-2 rounded-md px-3 text-base ${route().current('settings.*') ? 'bg-zinc-100 font-medium text-zinc-950' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
                     <Settings className="h-4 w-4" />
                     Paramètres
-                </Link>
+                </Link> : null}
                 <Button variant="ghost" className="w-full justify-start" onClick={() => { onNavigate?.(); router.post(route('logout')); }}>
                     <LogOut className="h-4 w-4" />
                     Déconnexion

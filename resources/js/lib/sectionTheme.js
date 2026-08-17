@@ -26,6 +26,15 @@ const SECTION_THEMES = {
         sidebarChild: 'bg-blue-100 text-blue-950 hover:bg-blue-100 hover:text-blue-950',
         sidebarDivider: 'border-blue-200',
     },
+    employees: {
+        key: 'employees',
+        title: 'text-violet-800',
+        header: 'border-violet-300',
+        content: 'border-violet-500',
+        sidebarGroup: 'bg-violet-50 text-violet-800 hover:bg-violet-100 hover:text-violet-900',
+        sidebarChild: 'bg-violet-100 text-violet-950 hover:bg-violet-100 hover:text-violet-950',
+        sidebarDivider: 'border-violet-200',
+    },
     cheques: {
         key: 'cheques',
         title: 'text-fuchsia-800',
@@ -38,7 +47,8 @@ const SECTION_THEMES = {
 };
 
 const ROUTE_PREFIXES = {
-    depot: ['depots.', 'articles.', 'operations.', 'employees.'],
+    depot: ['depots.', 'articles.', 'operations.'],
+    employees: ['employees.'],
     fournisseurs: ['fournisseurs.'],
     clients: ['clients.'],
 };

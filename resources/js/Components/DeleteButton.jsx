@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
@@ -6,6 +6,10 @@ import { Button } from '@/Components/ui/button';
 
 export default function DeleteButton({ action, title = 'Supprimer cet élément ?', message = 'Cette action est définitive.', showLabel = true }) {
     const [open, setOpen] = useState(false);
+    const { auth } = usePage().props;
+    const module = action.includes('/fournisseurs') ? 'fournisseurs' : action.includes('/clients') ? 'clients' : action.includes('/employees') ? 'employees' : action.includes('/depots') || action.includes('/articles') || action.includes('/operations') ? 'depots' : null;
+
+    if (module && auth.user?.role !== 'admin' && !auth.user?.permissions?.delete?.includes(module)) return null;
 
     const destroy = () => {
         // Release the modal overlay before Inertia navigates to a different screen.

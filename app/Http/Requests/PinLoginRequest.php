@@ -19,9 +19,9 @@ class PinLoginRequest extends FormRequest
     {
         $this->validateResolved();
 
-        $user = User::query()->whereNotNull('pin')->first();
+        $user = User::query()->whereNotNull('pin')->get()->first(fn (User $user) => Hash::check($this->string('pin')->toString(), $user->pin));
 
-        if (! $user || ! Hash::check($this->string('pin')->toString(), $user->pin)) {
+        if (! $user) {
             throw ValidationException::withMessages(['pin' => 'PIN incorrect.']);
         }
 

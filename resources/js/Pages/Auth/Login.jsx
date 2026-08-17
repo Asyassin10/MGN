@@ -25,7 +25,7 @@ export default function Login() {
                     <CardContent>
                         <form onSubmit={submit} className="grid gap-3">
                             <label className="grid gap-1 text-base">
-                                <span className="font-medium text-zinc-700">PIN administrateur</span>
+                                <span className="font-medium text-zinc-700">PIN utilisateur</span>
                                 <Input value={data.pin} onChange={(event) => setData('pin', event.target.value)} maxLength={6} inputMode="numeric" type="password" autoFocus />
                                 {errors.pin ? <span className="text-sm text-red-600">{errors.pin}</span> : null}
                             </label>
