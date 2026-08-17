@@ -143,6 +143,12 @@
     background-color: #d1fae5;
 }
 
+.status-row-complete,
+.status-row-complete:hover {
+    background-color: #00ff00;
+    color: #003300;
+}
+
 .status-row-impaye {
     background-color: #fef2f2;
     color: #991b1b;
@@ -180,6 +186,7 @@
 }
 
 .status-row :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
+.status-row-complete :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .invoice-row-received :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .invoice-row-given :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .invoice-row-complete :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500) {

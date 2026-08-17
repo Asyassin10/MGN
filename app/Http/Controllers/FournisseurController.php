@@ -4,21 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFournisseurChequeRequest;
 use App\Http\Requests\StoreFournisseurFactureRequest;
-use App\Http\Requests\StoreFournisseurPaymentRequest;
 use App\Http\Requests\StoreFournisseurReleveCompteRequest;
 use App\Http\Requests\StoreFournisseurRequest;
 use App\Http\Requests\UpdateFournisseurRequest;
 use App\Models\Fournisseur;
 use App\Models\FournisseurCheque;
 use App\Models\FournisseurFacture;
-use App\Models\FournisseurPayment;
 use App\Models\FournisseurReleveCompte;
-use App\Models\Cheque;
 use App\Services\FournisseurService;
 use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -94,9 +90,7 @@ class FournisseurController extends Controller
         $message = DeleteBlockers::message('ce fournisseur', [
             'relevés compte' => $fournisseur->releveComptes()->count(),
             'factures' => $fournisseur->factures()->count(),
-            'paiements' => $fournisseur->payments()->count(),
             'chèques fournisseur' => $fournisseur->cheques()->count(),
-            'chèques' => Cheque::query()->whereMorphedTo('tier', $fournisseur)->count(),
         ]);
 
         if ($message) {
@@ -150,7 +144,7 @@ class FournisseurController extends Controller
 
         $message = DeleteBlockers::message('ce relevé', [
             'factures' => $releve->factures()->count(),
-            'paiements' => $releve->payments()->count(),
+            'chèques' => $releve->cheques()->count(),
         ]);
 
         if ($message) {
@@ -171,9 +165,9 @@ class FournisseurController extends Controller
         return $service->pdfReleve($fournisseur, $releve);
     }
 
-    public function pdfPayment(Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurPayment $payment, FournisseurService $service): \Symfony\Component\HttpFoundation\Response
+    public function pdfPayment(Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurCheque $payment, FournisseurService $service): \Symfony\Component\HttpFoundation\Response
     {
-        return $service->pdfPayment($fournisseur, $releve, $payment);
+        return $service->pdfCheque($fournisseur, $releve, $payment);
     }
 
     public function storeReleveFacture(StoreFournisseurFactureRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
@@ -204,40 +198,27 @@ class FournisseurController extends Controller
         return back()->with('success', 'Facture supprimée.');
     }
 
-    public function storePayment(StoreFournisseurPaymentRequest $request, Fournisseur $fournisseur): RedirectResponse
-    {
-        return back()->with('error', 'Sélectionnez un relevé compte avant d’ajouter un paiement.');
-    }
-
-    public function storeRelevePayment(StoreFournisseurPaymentRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
+    public function storeRelevePayment(StoreFournisseurChequeRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
 
-        $releve->payments()->create([
+        $releve->cheques()->create([
             ...$request->validated(),
             'fournisseur_id' => $fournisseur->id,
-            'fournisseur_cheque_id' => null,
-            'mode' => 'cheque',
-            'reference' => $request->validated('numero_cheque'),
         ]);
 
         return back()->with('success', 'Paiement ajouté.');
     }
 
-    public function updatePayment(StoreFournisseurPaymentRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurPayment $payment): RedirectResponse
+    public function updatePayment(StoreFournisseurChequeRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurCheque $payment): RedirectResponse
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id || $payment->fournisseur_releve_compte_id !== $releve->id, 404);
-        $payment->update([
-            ...$request->validated(),
-            'fournisseur_cheque_id' => null,
-            'mode' => 'cheque',
-            'reference' => $request->validated('numero_cheque'),
-        ]);
+        $payment->update($request->validated());
 
         return back()->with('success', 'Paiement mis à jour.');
     }
 
-    public function destroyPayment(Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurPayment $payment): RedirectResponse
+    public function destroyPayment(Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurCheque $payment): RedirectResponse
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id || $payment->fournisseur_releve_compte_id !== $releve->id, 404);
         $payment->delete();
@@ -245,43 +226,12 @@ class FournisseurController extends Controller
         return back()->with('success', 'Paiement supprimé.');
     }
 
-    public function storeCheque(StoreFournisseurChequeRequest $request, Fournisseur $fournisseur, FournisseurService $service): RedirectResponse
+    public function updateChequeStatus(Request $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurCheque $cheque): RedirectResponse
     {
-        DB::transaction(function () use ($request, $fournisseur, $service): void {
-            $cheque = $fournisseur->cheques()->create($request->validated());
-            $service->syncChequePayment($cheque);
-        });
-
-        return back()->with('success', 'Chèque ajouté.');
-    }
-
-    public function updateCheque(StoreFournisseurChequeRequest $request, Fournisseur $fournisseur, FournisseurCheque $cheque, FournisseurService $service): RedirectResponse
-    {
-        abort_if($cheque->fournisseur_id !== $fournisseur->id, 404);
-
-        DB::transaction(function () use ($request, $cheque, $service): void {
-            $cheque->update($request->validated());
-            $service->setChequeStatus($cheque, $request->string('statut')->toString());
-        });
-
-        return back()->with('success', 'Chèque mis à jour.');
-    }
-
-    public function updateChequeStatus(Request $request, FournisseurCheque $cheque, FournisseurService $service): RedirectResponse
-    {
-        $data = $request->validate(['statut' => ['required', Rule::in(FournisseurCheque::STATUSES)]]);
-        $service->setChequeStatus($cheque, $data['statut']);
+        abort_if($releve->fournisseur_id !== $fournisseur->id || $cheque->fournisseur_releve_compte_id !== $releve->id, 404);
+        $data = $request->validate(['statut' => ['sometimes', 'required', Rule::in(FournisseurCheque::STATUSES)], 'facture_recue' => ['sometimes', 'nullable', 'boolean'], 'facture_donnee' => ['sometimes', 'nullable', 'boolean']]);
+        $cheque->update($data);
 
         return back()->with('success', 'Statut mis à jour.');
     }
-
-    public function destroyCheque(Fournisseur $fournisseur, FournisseurCheque $cheque): RedirectResponse
-    {
-        abort_if($cheque->fournisseur_id !== $fournisseur->id, 404);
-        $cheque->payment()->delete();
-        $cheque->delete();
-
-        return back()->with('success', 'Chèque supprimé.');
-    }
-
 }

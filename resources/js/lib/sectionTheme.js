@@ -41,7 +41,6 @@ const ROUTE_PREFIXES = {
     depot: ['depots.', 'articles.', 'operations.', 'employees.'],
     fournisseurs: ['fournisseurs.'],
     clients: ['clients.'],
-    cheques: ['banks.', 'cheque-party-clients.', 'cheque-party-fournisseurs.', 'cheque-clients.', 'cheque-fournisseurs.', 'cheques.'],
 };
 
 export function getSectionThemeByKey(key) {

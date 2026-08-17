@@ -27,8 +27,8 @@ class FournisseurReleveCompte extends Model
         return $this->hasMany(FournisseurFacture::class);
     }
 
-    public function payments(): HasMany
+    public function cheques(): HasMany
     {
-        return $this->hasMany(FournisseurPayment::class);
+        return $this->hasMany(FournisseurCheque::class, 'fournisseur_releve_compte_id');
     }
 }

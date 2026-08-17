@@ -6,16 +6,8 @@ const rowClasses = {
 };
 
 export function getChequeRowClass(row) {
-    if (row.facture_recue && row.facture_donnee) {
-        return 'invoice-row-complete';
-    }
-
-    if (row.facture_recue) {
-        return 'invoice-row-received';
-    }
-
-    if (row.facture_donnee) {
-        return 'invoice-row-given';
+    if (row.statut === 'en_caisse' && row.facture_recue && row.facture_donnee) {
+        return 'status-row-complete';
     }
 
     return rowClasses[row.statut] || '';

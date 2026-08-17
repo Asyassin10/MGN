@@ -19,6 +19,6 @@ class Bank extends Model
 
     public function chequeFournisseurs(): HasMany
     {
-        return $this->hasMany(ChequeFournisseur::class);
+        return $this->hasMany(FournisseurCheque::class, 'banque', 'name');
     }
 }

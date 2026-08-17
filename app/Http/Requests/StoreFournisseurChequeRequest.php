@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\FournisseurCheque;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Models\FournisseurCheque;
 
 class StoreFournisseurChequeRequest extends FormRequest
 {
@@ -12,7 +12,7 @@ class StoreFournisseurChequeRequest extends FormRequest
     {
         return [
             'fournisseur_id' => ['nullable', 'exists:fournisseurs,id'],
-            'type' => ['nullable', Rule::in(FournisseurCheque::TYPES)],
+            'type' => ['required', Rule::in(FournisseurCheque::TYPES)],
             'numero_cheque' => ['required', 'string', 'max:255'],
             'banque' => ['required', 'string', 'max:255'],
             'montant' => ['required', 'numeric', 'min:0'],
@@ -22,6 +22,8 @@ class StoreFournisseurChequeRequest extends FormRequest
             'date_emission' => ['nullable', 'date'],
             'date_echeance' => ['nullable', 'date'],
             'statut' => ['required', Rule::in(FournisseurCheque::STATUSES)],
+            'facture_recue' => ['nullable', 'boolean'],
+            'facture_donnee' => ['nullable', 'boolean'],
             'note' => ['nullable', 'string'],
         ];
     }

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
-export default function SearchableSelect({ value, onChange, options = [], placeholder = 'Sélectionner', allowEmpty = true }) {
+export default function SearchableSelect({ value, onChange, options = [], placeholder = 'Sélectionner', allowEmpty = true, emptyLabel = 'Tous' }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const selected = options.find((option) => String(option.value) === String(value));
@@ -27,7 +27,7 @@ export default function SearchableSelect({ value, onChange, options = [], placeh
                     <div className="max-h-64 overflow-auto">
                         {allowEmpty ? (
                             <button type="button" className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-base hover:bg-zinc-50" onClick={() => { onChange(''); setOpen(false); }}>
-                                Tous
+                                {emptyLabel}
                             </button>
                         ) : null}
                         {filtered.map((option) => (

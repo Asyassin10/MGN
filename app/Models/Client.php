@@ -26,10 +26,15 @@ class Client extends Model
         return $this->hasMany(ClientPayment::class);
     }
 
+    public function cheques(): HasMany
+    {
+        return $this->hasMany(ChequeClient::class);
+    }
+
     public function getBalanceAttribute(): float
     {
         $entries = (float) ($this->entries_sum_montant ?? $this->entries()->sum('montant'));
-        $payments = (float) ($this->payments_sum_montant ?? $this->payments()->sum('montant'));
+        $payments = (float) ($this->payments_sum_montant ?? $this->payments()->sum('montant')) + (float) ($this->cheques_sum_montant ?? $this->cheques()->sum('montant'));
 
         return round($entries - $payments, 2);
     }

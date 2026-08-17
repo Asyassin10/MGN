@@ -41,7 +41,7 @@ class ChequeClient extends Model
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(ChequePartyClient::class, 'client_id');
+        return $this->belongsTo(Client::class);
     }
 
     public function bank(): BelongsTo

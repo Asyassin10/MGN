@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { BarChart3, Boxes, Building2, ChevronDown, Handshake, Landmark, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, UserRound, Users, WalletCards } from 'lucide-react';
+import { Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, UserRound, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,19 +33,6 @@ const sections = [
         theme: 'clients',
         children: [
             { label: 'Liste des clients', route: 'clients.index', icon: Users },
-        ],
-    },
-    {
-        label: 'Chèques',
-        icon: WalletCards,
-        theme: 'cheques',
-        children: [
-            { label: 'Banques', route: 'banks.index', icon: Landmark },
-            { label: 'Clients chèques', route: 'cheque-party-clients.index', icon: Users },
-            { label: 'Fournisseurs chèques', route: 'cheque-party-fournisseurs.index', icon: Handshake },
-            { label: 'Chèques clients', route: 'cheque-clients.index', icon: WalletCards },
-            { label: 'Chèques fournisseurs', route: 'cheque-fournisseurs.index', icon: ReceiptText },
-            { label: 'Registre standalone', route: 'cheques.index', icon: BarChart3 },
         ],
     },
 ];

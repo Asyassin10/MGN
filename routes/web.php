@@ -1,13 +1,7 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ArticleController;
-use App\Http\Controllers\BankController;
-use App\Http\Controllers\ChequeClientController;
-use App\Http\Controllers\ChequeController;
-use App\Http\Controllers\ChequeFournisseurController;
-use App\Http\Controllers\ChequePartyClientController;
-use App\Http\Controllers\ChequePartyFournisseurController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
@@ -39,6 +33,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::get('/settings/database-backup', [DatabaseBackupController::class, 'download'])->name('settings.database-backup.download');
     Route::patch('/settings/pin', [SettingsController::class, 'updatePin'])->name('settings.pin.update');
+    Route::post('/settings/banks', [SettingsController::class, 'storeBank'])->name('settings.banks.store');
+    Route::patch('/settings/banks/{bank}', [SettingsController::class, 'updateBank'])->name('settings.banks.update');
+    Route::delete('/settings/banks/{bank}', [SettingsController::class, 'destroyBank'])->name('settings.banks.destroy');
 
     Route::get('/fournisseurs/releves', [FournisseurController::class, 'relevesIndex'])->name('fournisseurs.releves.index');
     Route::resource('fournisseurs', FournisseurController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
@@ -55,11 +52,7 @@ Route::middleware('auth')->group(function (): void {
     Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'updatePayment'])->name('fournisseurs.releves.payments.update');
     Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'destroyPayment'])->name('fournisseurs.releves.payments.destroy');
     Route::post('/fournisseurs/{fournisseur}/factures', [FournisseurController::class, 'storeFacture'])->name('fournisseurs.factures.store');
-    Route::post('/fournisseurs/{fournisseur}/payments', [FournisseurController::class, 'storePayment'])->name('fournisseurs.payments.store');
-    Route::post('/fournisseurs/{fournisseur}/cheques', [FournisseurController::class, 'storeCheque'])->name('fournisseurs.cheques.store');
-    Route::patch('/fournisseurs/{fournisseur}/cheques/{cheque}', [FournisseurController::class, 'updateCheque'])->name('fournisseurs.cheques.update');
-    Route::patch('/fournisseur-cheques/{cheque}/status', [FournisseurController::class, 'updateChequeStatus'])->name('fournisseur-cheques.status');
-    Route::delete('/fournisseurs/{fournisseur}/cheques/{cheque}', [FournisseurController::class, 'destroyCheque'])->name('fournisseurs.cheques.destroy');
+    Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/cheques/{cheque}/status', [FournisseurController::class, 'updateChequeStatus'])->name('fournisseurs.releves.cheques.status');
 
     Route::resource('clients', ClientController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
     Route::post('/clients/{client}/entries', [ClientController::class, 'storeEntry'])->name('clients.entries.store');
@@ -69,18 +62,9 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/clients/{client}/payments/{payment}/pdf', [ClientController::class, 'pdfPayment'])->name('clients.payments.pdf');
     Route::patch('/clients/{client}/payments/{payment}', [ClientController::class, 'updatePayment'])->name('clients.payments.update');
     Route::delete('/clients/{client}/payments/{payment}', [ClientController::class, 'destroyPayment'])->name('clients.payments.destroy');
+    Route::post('/clients/{client}/cheques', [ClientController::class, 'storeCheque'])->name('clients.cheques.store');
+    Route::patch('/clients/{client}/cheques/{cheque}', [ClientController::class, 'updateCheque'])->name('clients.cheques.update');
+    Route::patch('/clients/{client}/cheques/{cheque}/status', [ClientController::class, 'updateChequeStatus'])->name('clients.cheques.status');
+    Route::delete('/clients/{client}/cheques/{cheque}', [ClientController::class, 'destroyCheque'])->name('clients.cheques.destroy');
 
-    Route::resource('banks', BankController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('cheque-party-clients', ChequePartyClientController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['cheque-party-clients' => 'chequePartyClient']);
-    Route::resource('cheque-party-fournisseurs', ChequePartyFournisseurController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['cheque-party-fournisseurs' => 'chequePartyFournisseur']);
-    Route::resource('cheque-clients', ChequeClientController::class)->parameters(['cheque-clients' => 'chequeClient']);
-    Route::get('/cheque-clients/{chequeClient}/pdf', [ChequeClientController::class, 'pdf'])->name('cheque-clients.pdf');
-    Route::patch('/cheque-clients/{chequeClient}/status', [ChequeClientController::class, 'updateStatus'])->name('cheque-clients.status');
-    Route::resource('cheque-fournisseurs', ChequeFournisseurController::class)->parameters(['cheque-fournisseurs' => 'chequeFournisseur']);
-    Route::get('/cheque-fournisseurs/{chequeFournisseur}/pdf', [ChequeFournisseurController::class, 'pdf'])->name('cheque-fournisseurs.pdf');
-    Route::patch('/cheque-fournisseurs/{chequeFournisseur}/status', [ChequeFournisseurController::class, 'updateStatus'])->name('cheque-fournisseurs.status');
-
-    Route::resource('cheques', ChequeController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::get('/cheques/{cheque}/pdf', [ChequeController::class, 'pdf'])->name('cheques.pdf');
-    Route::patch('/cheques/{cheque}/status', [ChequeController::class, 'updateStatus'])->name('cheques.status');
 });

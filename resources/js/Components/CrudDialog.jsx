@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
+import { Checkbox } from '@/Components/ui/checkbox';
 import SearchableSelect from '@/Components/SearchableSelect';
 
 export default function CrudDialog({ title, trigger, action, method = 'post', fields, defaults = {}, submitLabel = 'Enregistrer' }) {
@@ -39,6 +40,8 @@ export default function CrudDialog({ title, trigger, action, method = 'post', fi
                                 <Textarea value={data[field.name] || ''} onChange={(event) => setData(field.name, event.target.value)} />
                             ) : field.type === 'select' ? (
                                 <SearchableSelect value={data[field.name] || ''} onChange={(value) => setData(field.name, value)} options={field.options || []} allowEmpty={field.allowEmpty ?? false} placeholder={field.placeholder || field.label} />
+                            ) : field.type === 'checkbox' ? (
+                                <Checkbox checked={Boolean(data[field.name])} onCheckedChange={(checked) => setData(field.name, checked)} />
                             ) : (
                                 <Input type={field.type || 'text'} value={data[field.name] || ''} onChange={(event) => setData(field.name, event.target.value)} />
                             )}

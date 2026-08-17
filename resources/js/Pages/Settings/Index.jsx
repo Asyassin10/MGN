@@ -1,11 +1,14 @@
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Download } from 'lucide-react';
+import CrudDialog from '@/Components/CrudDialog';
+import DataTable from '@/Components/DataTable';
+import DeleteButton from '@/Components/DeleteButton';
 
-export default function Index() {
+export default function Index({ banks, filters = {} }) {
     const { data, setData, patch, processing, errors, reset } = useForm({
         current_pin: '',
         pin: '',
@@ -21,7 +24,7 @@ export default function Index() {
 
     return (
         <AppLayout title="Paramètres">
-            <div className="grid max-w-xl gap-4">
+            <div className="grid max-w-5xl gap-4">
             <Card>
                 <CardHeader>
                     <CardTitle>Mettre à jour le PIN</CardTitle>
@@ -55,6 +58,13 @@ export default function Index() {
                 <CardContent>
                     <p className="mb-4 text-base text-zinc-600">Téléchargez une sauvegarde complète de la base de données actuelle.</p>
                     <a href={route('settings.database-backup.download')}><Button variant="outline"><Download className="h-4 w-4" />Télécharger la sauvegarde</Button></a>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle>Banques</CardTitle></CardHeader>
+                <CardContent>
+                    <div className="mb-4 flex flex-wrap gap-2"><Input className="max-w-sm" placeholder="Rechercher une banque" defaultValue={filters.bank_search || ''} onChange={(event) => router.get(route('settings.index'), { ...filters, bank_search: event.target.value }, { preserveState: true, replace: true })} /><CrudDialog title="Ajouter banque" action={route('settings.banks.store')} fields={[{ name: 'name', label: 'Nom de banque' }]} defaults={{ name: '' }} trigger={<Button>Nouvelle banque</Button>} /></div>
+                    <DataTable columns={[{ key: 'name', label: 'Banque' }, { key: 'cheque_clients_count', label: 'Chèques clients' }, { key: 'cheque_fournisseurs_count', label: 'Chèques fournisseurs' }, { key: 'actions', label: 'Actions', render: (bank) => <div className="flex gap-2"><CrudDialog title="Modifier banque" action={route('settings.banks.update', bank.id)} method="patch" fields={[{ name: 'name', label: 'Nom de banque' }]} defaults={bank} trigger={<Button size="sm" variant="outline">Modifier</Button>} /><DeleteButton action={route('settings.banks.destroy', bank.id)} title="Supprimer cette banque ?" message="La suppression sera refusée si des chèques utilisent cette banque." /></div> }]} rows={banks.data} pagination={banks} />
                 </CardContent>
             </Card>
             </div>

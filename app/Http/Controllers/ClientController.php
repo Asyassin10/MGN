@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreChequeClientRequest;
 use App\Http\Requests\StoreClientEntryRequest;
 use App\Http\Requests\StoreClientPaymentRequest;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
-use App\Models\Cheque;
+use App\Models\Bank;
+use App\Models\ChequeClient;
 use App\Models\Client;
 use App\Models\ClientEntry;
 use App\Models\ClientPayment;
@@ -14,6 +16,7 @@ use App\Services\ClientService;
 use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -75,7 +78,7 @@ class ClientController extends Controller
         $message = DeleteBlockers::message('ce client', [
             'entrées' => $client->entries()->count(),
             'paiements' => $client->payments()->count(),
-            'chèques' => Cheque::query()->whereMorphedTo('tier', $client)->count(),
+            'chèques' => $client->cheques()->count(),
         ]);
 
         if ($message) {
@@ -136,5 +139,47 @@ class ClientController extends Controller
     public function pdfPayment(Client $client, ClientPayment $payment, ClientService $service): \Symfony\Component\HttpFoundation\Response
     {
         return $service->pdfPayment($client, $payment);
+    }
+
+    public function storeCheque(StoreChequeClientRequest $request, Client $client): RedirectResponse
+    {
+        $client->cheques()->create($this->chequeData($request));
+
+        return back()->with('success', 'Chèque client ajouté.');
+    }
+
+    public function updateCheque(StoreChequeClientRequest $request, Client $client, ChequeClient $cheque): RedirectResponse
+    {
+        abort_if($cheque->client_id !== $client->id, 404);
+        $cheque->update($this->chequeData($request));
+
+        return back()->with('success', 'Chèque client mis à jour.');
+    }
+
+    public function updateChequeStatus(Request $request, Client $client, ChequeClient $cheque): RedirectResponse
+    {
+        abort_if($cheque->client_id !== $client->id, 404);
+        $cheque->update($request->validate(['statut' => ['sometimes', 'required', Rule::in(ChequeClient::STATUSES)], 'facture_recue' => ['sometimes', 'nullable', 'boolean'], 'facture_donnee' => ['sometimes', 'nullable', 'boolean']]));
+
+        return back()->with('success', 'Chèque client mis à jour.');
+    }
+
+    public function destroyCheque(Client $client, ChequeClient $cheque): RedirectResponse
+    {
+        abort_if($cheque->client_id !== $client->id, 404);
+        $cheque->delete();
+
+        return back()->with('success', 'Chèque client supprimé.');
+    }
+
+    private function chequeData(StoreChequeClientRequest $request): array
+    {
+        $request->merge(['client_id' => $request->route('client')->id]);
+        $data = $request->validated();
+        if (($data['bank_id'] ?? null) && empty($data['banque'])) {
+            $data['banque'] = Bank::find($data['bank_id'])?->name;
+        }
+
+        return $data;
     }
 }

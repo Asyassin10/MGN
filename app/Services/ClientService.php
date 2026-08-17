@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ChequeClient;
 use App\Models\Client;
 use App\Models\ClientEntry;
 use App\Models\ClientPayment;
@@ -29,6 +30,7 @@ class ClientService
         return Client::query()
             ->withSum('entries', 'montant')
             ->withSum('payments', 'montant')
+            ->withSum('cheques', 'montant')
             ->get()
             ->map(fn (Client $client) => $this->serialize($client))
             ->sortByDesc('balance')
@@ -40,7 +42,7 @@ class ClientService
     public function summary(): array
     {
         $totalDu = (float) ClientEntry::query()->sum('montant');
-        $totalPaye = (float) ClientPayment::query()->sum('montant');
+        $totalPaye = (float) ClientPayment::query()->sum('montant') + (float) ChequeClient::query()->sum('montant');
         $today = today();
 
         return [
@@ -54,7 +56,7 @@ class ClientService
 
     public function show(Client $client, array $filters): array
     {
-        $client->loadSum('entries', 'montant')->loadSum('payments', 'montant');
+        $client->loadSum('entries', 'montant')->loadSum('payments', 'montant')->loadSum('cheques', 'montant');
         $entriesQuery = $this->entriesQuery($client, $filters);
         $paymentsQuery = $this->paymentsQuery($client, $filters);
 
@@ -65,11 +67,7 @@ class ClientService
                 ->paginate(100, ['*'], 'entries_page')
                 ->withQueryString()
                 ->through(fn (ClientEntry $entry) => $this->serializeEntry($entry)),
-            'payments' => $paymentsQuery
-                ->latest('date_paiement')
-                ->paginate(100, ['*'], 'payments_page')
-                ->withQueryString()
-                ->through(fn (ClientPayment $payment) => $this->serializePayment($payment)),
+            'payments' => ['data' => $paymentsQuery->latest('date_paiement')->latest('id')->get()->map(fn (ClientPayment $payment) => $this->serializePayment($payment))->merge($this->chequesQuery($client, $filters)->latest('date_echeance')->latest('id')->get()->map(fn (ChequeClient $cheque) => $this->serializeCheque($cheque)))->sortByDesc('sort_key')->values()->all(), 'links' => []],
         ];
     }
 
@@ -115,9 +113,9 @@ class ClientService
                 $payment->mode,
                 $payment->reference,
                 $payment->note,
-            ]);
+            ])->merge($this->chequesQuery($client, $filters)->get()->map(fn (ChequeClient $cheque) => [$cheque->date_emission?->format('Y-m-d'), $cheque->montant, $cheque->type, $cheque->numero_cheque, $cheque->banque, $cheque->statut]));
 
-        return ExcelExport::download('client-'.$client->id.'-paiements-export', ['Date', 'Montant', 'Mode', 'Reference', 'Note'], $rows);
+        return ExcelExport::download('client-'.$client->id.'-paiements-export', ['Date', 'Montant', 'Mode', 'Reference / Numero', 'Banque', 'Statut'], $rows);
     }
 
     public function pdfPayment(Client $client, ClientPayment $payment): Response
@@ -151,6 +149,7 @@ class ClientService
         return Client::query()
             ->withSum('entries', 'montant')
             ->withSum('payments', 'montant')
+            ->withSum('cheques', 'montant')
             ->when($filters['search'] ?? null, function ($query, $value): void {
                 $query->where(fn ($inner) => $inner
                     ->where('nom', 'like', "%{$value}%")
@@ -165,7 +164,7 @@ class ClientService
     public function serialize(Client $client): array
     {
         $totalDu = (float) ($client->entries_sum_montant ?? 0);
-        $totalPaye = (float) ($client->payments_sum_montant ?? 0);
+        $totalPaye = (float) ($client->payments_sum_montant ?? 0) + (float) ($client->cheques_sum_montant ?? 0);
 
         return [
             'id' => $client->id,
@@ -181,7 +180,7 @@ class ClientService
 
     private function balanceSql(): string
     {
-        return '(select coalesce(sum(montant), 0) from client_entries where client_entries.client_id = clients.id) - (select coalesce(sum(montant), 0) from client_payments where client_payments.client_id = clients.id)';
+        return '(select coalesce(sum(montant), 0) from client_entries where client_entries.client_id = clients.id) - (select coalesce(sum(montant), 0) from client_payments where client_payments.client_id = clients.id) - (select coalesce(sum(montant), 0) from cheque_clients where cheque_clients.client_id = clients.id)';
     }
 
     private function entriesQuery(Client $client, array $filters)
@@ -222,6 +221,22 @@ class ClientService
             'mode' => $payment->mode,
             'reference' => $payment->reference,
             'note' => $payment->note,
+            'record_type' => 'payment',
+            'sort_date' => $payment->date_paiement?->format('Y-m-d'),
+            'sort_key' => sprintf('%s-%010d', $payment->date_paiement?->format('Y-m-d') ?: '', $payment->id),
         ];
+    }
+
+    private function chequesQuery(Client $client, array $filters)
+    {
+        return $client->cheques()
+            ->when($filters['payment_mode'] ?? null, fn ($query, $value) => in_array($value, ChequeClient::TYPES, true) ? $query->where('type', $value) : $query->whereRaw('1 = 0'))
+            ->when($filters['payment_min'] ?? null, fn ($query, $value) => $query->where('montant', '>=', $value))
+            ->when($filters['payment_max'] ?? null, fn ($query, $value) => $query->where('montant', '<=', $value));
+    }
+
+    private function serializeCheque(ChequeClient $cheque): array
+    {
+        return ['id' => 'cheque-'.$cheque->id, 'resource_id' => $cheque->id, 'record_type' => 'cheque', 'sort_date' => $cheque->date_emission?->format('Y-m-d') ?: $cheque->date_echeance?->format('Y-m-d'), 'sort_key' => sprintf('%s-%010d', $cheque->date_emission?->format('Y-m-d') ?: $cheque->date_echeance?->format('Y-m-d') ?: '', $cheque->id), 'date_paiement' => $cheque->date_emission?->format('Y-m-d'), 'montant' => (float) $cheque->montant, 'mode' => $cheque->type, 'reference' => $cheque->numero_cheque, 'numero_cheque' => $cheque->numero_cheque, 'banque' => $cheque->banque, 'tireur_signataire' => $cheque->tireur_signataire, 'date_emission' => $cheque->date_emission?->format('Y-m-d'), 'date_echeance' => $cheque->date_echeance?->format('Y-m-d'), 'statut' => $cheque->statut, 'facture_recue' => $cheque->facture_recue, 'facture_donnee' => $cheque->facture_donnee, 'note' => $cheque->motif];
     }
 }

@@ -26,11 +26,6 @@ class Fournisseur extends Model
         return $this->hasMany(FournisseurReleveCompte::class);
     }
 
-    public function payments(): HasMany
-    {
-        return $this->hasMany(FournisseurPayment::class);
-    }
-
     public function cheques(): HasMany
     {
         return $this->hasMany(FournisseurCheque::class);
@@ -39,7 +34,7 @@ class Fournisseur extends Model
     public function getBalanceAttribute(): float
     {
         $factures = (float) ($this->factures_sum_montant ?? $this->factures()->sum('montant'));
-        $payments = (float) ($this->payments_sum_montant ?? $this->payments()->sum('montant'));
+        $payments = (float) ($this->cheques_sum_montant ?? $this->cheques()->sum('montant'));
 
         return round($factures - $payments, 2);
     }

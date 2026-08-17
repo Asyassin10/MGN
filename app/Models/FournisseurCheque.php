@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FournisseurCheque extends Model
 {
     use HasFactory;
 
     public const STATUSES = ['en_cours', 'en_caisse', 'impaye'];
+
     public const TYPES = ['cheque', 'effet'];
 
     protected $fillable = [
         'fournisseur_id',
+        'fournisseur_releve_compte_id',
         'type',
         'numero_cheque',
         'banque',
@@ -26,6 +27,8 @@ class FournisseurCheque extends Model
         'date_emission',
         'date_echeance',
         'statut',
+        'facture_recue',
+        'facture_donnee',
         'note',
     ];
 
@@ -33,6 +36,8 @@ class FournisseurCheque extends Model
         'date_emission' => 'date',
         'date_echeance' => 'date',
         'montant' => 'decimal:2',
+        'facture_recue' => 'boolean',
+        'facture_donnee' => 'boolean',
     ];
 
     public function fournisseur(): BelongsTo
@@ -40,8 +45,8 @@ class FournisseurCheque extends Model
         return $this->belongsTo(Fournisseur::class);
     }
 
-    public function payment(): HasOne
+    public function releveCompte(): BelongsTo
     {
-        return $this->hasOne(FournisseurPayment::class);
+        return $this->belongsTo(FournisseurReleveCompte::class, 'fournisseur_releve_compte_id');
     }
 }

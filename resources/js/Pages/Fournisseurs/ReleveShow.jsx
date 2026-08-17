@@ -11,6 +11,9 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { money } from '@/lib/utils';
+import InvoiceReceiptSelect from '@/Components/InvoiceReceiptSelect';
+import SearchableSelect from '@/Components/SearchableSelect';
+import { getChequeRowClass } from '@/lib/chequeStatus';
 
 function DateRangeFilter({ from, to, onChange, label = 'Période' }) {
     const value = from || to ? `${from || 'Début'} - ${to || 'Fin'}` : label;
@@ -63,11 +66,17 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
         { name: 'montant', label: 'Montant DH', type: 'number' },
     ];
     const paymentFields = [
-        { name: 'date_paiement', label: 'Date paiement', type: 'date' },
+        { name: 'type', label: 'Type', type: 'select', options: [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }] },
         { name: 'numero_cheque', label: 'N chèque' },
         { name: 'banque', label: 'Banque' },
+        { name: 'tireur_signataire', label: 'Tireur / signataire' },
+        { name: 'date_emission', label: 'Émission', type: 'date' },
         { name: 'date_echeance', label: 'Échéance', type: 'date' },
+        { name: 'statut', label: 'Statut', type: 'select', options: [{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }] },
+        { name: 'facture_recue', label: 'Facture reçue', type: 'checkbox' },
+        { name: 'facture_donnee', label: 'Facture donnée', type: 'checkbox' },
         { name: 'montant', label: 'Montant DH', type: 'number' },
+        { name: 'note', label: 'Note', type: 'textarea' },
     ];
 
     return (
@@ -117,9 +126,10 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                 </TabsContent>
 
                 <TabsContent value="payments">
-                    <div className="mb-3 grid gap-2 xl:grid-cols-[1fr_1fr_280px_170px_190px]">
+                    <div className="mb-3 grid gap-2 xl:grid-cols-[1fr_1fr_180px_280px_170px_190px]">
                         <Input placeholder="N chèque" defaultValue={filters.payment_cheque || ''} onChange={(event) => update({ payment_cheque: event.target.value })} />
                         <Input placeholder="Banque" defaultValue={filters.payment_banque || ''} onChange={(event) => update({ payment_banque: event.target.value })} />
+                        <SearchableSelect value={filters.payment_statut || ''} onChange={(value) => update({ payment_statut: value })} options={[{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }]} placeholder="Tous statuts" />
                         <DateRangeFilter
                             label="Période paiement"
                             from={filters.payment_date_from || ''}
@@ -127,19 +137,26 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                             onChange={({ from, to }) => update({ payment_date_from: from, payment_date_to: to })}
                         />
                         <a href={route('fournisseurs.releves.show', { fournisseur: fournisseur.id, releve: releve.id, ...filters, export: 'payments' })}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a>
-                        <CrudDialog title="Ajouter paiement" action={route('fournisseurs.releves.payments.store', [fournisseur.id, releve.id])} fields={paymentFields} defaults={{ date_paiement: '', numero_cheque: '', banque: '', date_echeance: '', montant: '' }} trigger={<Button><Plus className="h-4 w-4" />Ajouter paiement</Button>} />
+                        <CrudDialog title="Ajouter chèque / effet" action={route('fournisseurs.releves.payments.store', [fournisseur.id, releve.id])} fields={paymentFields} defaults={{ type: 'cheque', numero_cheque: '', banque: '', tireur_signataire: '', date_emission: '', date_echeance: '', statut: 'en_cours', facture_recue: false, facture_donnee: false, montant: '', note: '' }} trigger={<Button><Plus className="h-4 w-4" />Ajouter chèque</Button>} />
                     </div>
                     <DataTable
                         columns={[
-                            { key: 'date_paiement', label: 'Date paiement' },
                             { key: 'numero_cheque', label: 'N chèque' },
+                            { key: 'type', label: 'Type' },
+                            { key: 'fournisseur', label: 'Fournisseur', render: () => fournisseur.nom },
                             { key: 'banque', label: 'Banque' },
-                            { key: 'date_echeance', label: 'Échéance' },
+                            { key: 'tireur_signataire', label: 'Tireur / signataire' },
                             { key: 'montant', label: 'Montant DH', render: (row) => money(row.montant) },
+                            { key: 'date_emission', label: 'Émission' },
+                            { key: 'date_echeance', label: 'Échéance' },
+                            { key: 'statut', label: 'Statut', render: (row) => <SearchableSelect value={row.statut} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { statut: value }, { preserveScroll: true })} options={[{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }]} allowEmpty={false} /> },
+                            { key: 'facture_recue', label: 'Facture reçue', render: (row) => <InvoiceReceiptSelect value={row.facture_recue} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { facture_recue: value }, { preserveScroll: true })} /> },
+                            { key: 'facture_donnee', label: 'Facture donnée', render: (row) => <InvoiceReceiptSelect value={row.facture_donnee} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { facture_donnee: value }, { preserveScroll: true })} /> },
                             { key: 'actions', label: 'Actions', render: (row) => <div className="flex flex-wrap gap-2"><a href={route('fournisseurs.releves.payments.pdf', [fournisseur.id, releve.id, row.id])} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a><CrudDialog title="Modifier paiement" action={route('fournisseurs.releves.payments.update', [fournisseur.id, releve.id, row.id])} method="patch" fields={paymentFields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} /><DeleteButton action={route('fournisseurs.releves.payments.destroy', [fournisseur.id, releve.id, row.id])} title="Supprimer ce paiement ?" /></div> },
                         ]}
                         rows={payments.data}
                         pagination={payments}
+                        rowClassName={getChequeRowClass}
                     />
                 </TabsContent>
             </Tabs>

@@ -7,12 +7,10 @@ import {
     Boxes,
     Building2,
     CheckCircle2,
-    Clock,
     Layers3,
     PackageCheck,
     PackageMinus,
     Percent,
-    PieChart as PieChartIcon,
     ReceiptText,
     TrendingUp,
     Users,
@@ -27,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { money, number } from '@/lib/utils';
 
 const dashboards = [
-    { value: 'cheques', label: 'Chèques' },
+    { value: 'global', label: 'Global' },
     { value: 'depot', label: 'Dépôt' },
     { value: 'fournisseurs', label: 'Fournisseurs' },
     { value: 'clients', label: 'Clients' },
@@ -47,7 +45,7 @@ const cardColors = {
 const chartColors = ['#2563eb', '#059669', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2', '#71717a', '#ea580c'];
 const initialChartSize = { width: 320, height: 288 };
 
-function Kpi({ label, value, color, icon: Icon, currency = true, suffix = '' }) {
+function Kpi({ label, value, color, icon: Icon, currency = true, suffix = '', valueClassName = 'text-zinc-950', detail }) {
     const displayValue = typeof value === 'number' ? (currency ? money(value) : number(value)) : value;
 
     return (
@@ -55,7 +53,8 @@ function Kpi({ label, value, color, icon: Icon, currency = true, suffix = '' }) 
             <CardContent className="flex min-h-24 items-center justify-between gap-3">
                 <div className="min-w-0">
                     <div className="text-sm font-medium uppercase text-zinc-500">{label}</div>
-                    <div className="mt-2 break-words text-2xl font-semibold text-zinc-950">{displayValue}{suffix}</div>
+                    <div className={`mt-2 break-words text-2xl font-semibold ${valueClassName}`}>{displayValue}{suffix}</div>
+                    {detail ? <div className="mt-1 text-sm font-medium text-zinc-600">{detail}</div> : null}
                 </div>
                 <Icon className={`h-5 w-5 shrink-0 ${cardColors[color].split(' ').at(-1)}`} />
             </CardContent>
@@ -140,15 +139,47 @@ function BarPanel({ title, data, dataKey = 'total', nameKey = 'name', fill = '#2
 }
 
 export default function Index({ dashboard }) {
-    const [selected, setSelected] = useState('depot');
+    const [selected, setSelected] = useState('global');
 
     return (
-        <AppLayout title="Dashboard" actions={<div className="w-full sm:w-72"><SearchableSelect value={selected} onChange={setSelected} options={dashboards} allowEmpty={false} placeholder="Chèques | Dépôt | Fournisseurs | Clients" /></div>}>
+        <AppLayout title="Global" actions={<div className="w-full sm:w-72"><SearchableSelect value={selected} onChange={setSelected} options={dashboards} allowEmpty={false} placeholder="Global | Dépôt | Fournisseurs | Clients" /></div>}>
+            {selected === 'global' ? <GlobalDashboard data={dashboard.global} /> : null}
             {selected === 'depot' ? <DepotDashboard data={dashboard.depot} /> : null}
-            {selected === 'cheques' ? <ChequeDashboard data={dashboard.cheques} /> : null}
             {selected === 'fournisseurs' ? <FournisseurDashboard data={dashboard.fournisseurs} /> : null}
             {selected === 'clients' ? <ClientDashboard data={dashboard.clients} /> : null}
         </AppLayout>
+    );
+}
+
+function GlobalDashboard({ data }) {
+    return (
+        <div className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <Kpi label="Total fournisseurs" value={data.kpis.fournisseurs_count} color="blue" icon={Users} currency={false} />
+                <Kpi label="Stock total des dépôts" value={data.kpis.stock_total} color="emerald" icon={PackageCheck} currency={false} />
+                <Kpi label="Reste à payer fournisseurs" value={data.kpis.fournisseurs_reste} color="red" icon={WalletCards} valueClassName="text-red-600" />
+                <Kpi label="Clients owe you" value={data.kpis.clients_reste} color="emerald" icon={Banknote} valueClassName="text-emerald-600" />
+                <Kpi label="Chèques fournisseurs non encaissés" value={data.kpis.cheques_fournisseurs_en_attente_count} color="amber" icon={WalletCards} currency={false} detail={`Total: ${money(data.kpis.cheques_fournisseurs_en_attente_total)}`} />
+                <Kpi label="Clients en retard +30 jours" value={data.kpis.clients_overdue_count} color="red" icon={AlertTriangle} currency={false} />
+            </div>
+            <div className="max-w-xl">
+                <PiePanel title="À payer vs à recevoir" data={data.comparison.filter((item) => item.value > 0)} />
+            </div>
+            <DataTable
+                columns={[
+                    { key: 'nom', label: 'Client' },
+                    { key: 'telephone', label: 'Téléphone' },
+                    { key: 'ville', label: 'Ville' },
+                    { key: 'oldest_entry_date', label: 'Plus ancienne entrée' },
+                    { key: 'days_overdue', label: 'Jours en retard', render: (row) => `${row.days_overdue} jours` },
+                    { key: 'balance', label: 'À recevoir', render: (row) => money(row.balance) },
+                ]}
+                rows={data.overdue_clients}
+                pagination={{ links: [] }}
+                empty="Aucun client en retard de plus de 30 jours."
+                rowClassName={() => 'status-row-impaye'}
+            />
+        </div>
     );
 }
 
@@ -182,32 +213,6 @@ function DepotDashboard({ data }) {
                 <DataTable columns={[{ key: 'reference', label: 'Référence' }, { key: 'name', label: 'Article' }, { key: 'depot', label: 'Dépôt' }, { key: 'quantity', label: 'Qté' }]} rows={data.lowStock} pagination={{ links: [] }} empty="Aucune alerte stock faible." />
                 <DataTable columns={[{ key: 'reference', label: 'Référence' }, { key: 'type', label: 'Type' }, { key: 'depot', label: 'Dépôt' }, { key: 'employee', label: 'Employé' }, { key: 'lines_count', label: 'Lignes' }, { key: 'created_at', label: 'Date' }]} rows={data.recentOperations} pagination={{ links: [] }} empty="Aucune opération récente." />
             </div>
-        </div>
-    );
-}
-
-function ChequeDashboard({ data }) {
-    return (
-        <div className="grid gap-4">
-            <div className="grid gap-4 md:grid-cols-4">
-                <Kpi label="Nombre chèques" value={data.kpis.count} color="blue" icon={WalletCards} currency={false} />
-                <Kpi label="Montant total" value={data.kpis.total_amount} color="cyan" icon={Banknote} />
-                <Kpi label="En cours" value={data.kpis.en_cours} color="amber" icon={Clock} />
-                <Kpi label="En caisse" value={data.kpis.en_caisse} color="emerald" icon={CheckCircle2} />
-                <Kpi label="Impayé" value={data.kpis.impaye} color="red" icon={XCircle} />
-                <Kpi label="Chèques clients" value={data.kpis.client_count} color="violet" icon={Users} currency={false} />
-                <Kpi label="Chèques fournisseurs" value={data.kpis.fournisseur_count} color="orange" icon={ReceiptText} currency={false} />
-                <Kpi label="Moyenne chèque" value={data.kpis.average_amount} color="zinc" icon={PieChartIcon} />
-            </div>
-
-            <div className="grid gap-4 xl:grid-cols-2">
-                <PiePanel title="Répartition par statut" data={data.statusPie} />
-                <PiePanel title="Répartition client / fournisseur" data={data.typePie} />
-                <BarPanel title="Chèques par mois" data={data.monthly} dataKey="total" nameKey="month" fill="#2563eb" />
-                <BarPanel title="Top banques" data={data.topBanks} dataKey="total" fill="#0891b2" />
-            </div>
-
-            <DataTable columns={[{ key: 'numero_cheque', label: 'Numéro' }, { key: 'source', label: 'Source' }, { key: 'tier', label: 'Type' }, { key: 'banque', label: 'Banque' }, { key: 'date_echeance', label: 'Échéance' }, { key: 'montant', label: 'Montant', render: (row) => money(row.montant) }]} rows={data.upcoming} pagination={{ links: [] }} empty="Aucun chèque à afficher." />
         </div>
     );
 }

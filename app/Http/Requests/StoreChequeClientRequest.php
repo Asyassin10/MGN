@@ -13,7 +13,7 @@ class StoreChequeClientRequest extends FormRequest
         return [
             'type' => ['required', Rule::in(ChequeClient::TYPES)],
             'numero_cheque' => ['required', 'string', 'max:255'],
-            'client_id' => ['required', 'exists:cheque_party_clients,id'],
+            'client_id' => ['nullable', 'exists:clients,id'],
             'bank_id' => ['nullable', 'exists:banks,id'],
             'montant' => ['required', 'numeric', 'min:0'],
             'banque' => ['nullable', 'string', 'max:255'],

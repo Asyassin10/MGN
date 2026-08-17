@@ -14,13 +14,43 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
+    public function __construct(private ClientOverdueService $clientOverdueService) {}
+
     public function data(): array
     {
         return [
-            'cheques' => $this->chequeData(),
+            'global' => $this->globalData(),
             'depot' => $this->depotData(),
             'fournisseurs' => $this->supplierData(),
             'clients' => $this->clientData(),
+        ];
+    }
+
+    private function globalData(): array
+    {
+        $overdueClients = $this->clientOverdueService->overdueClients();
+        $supplierDue = (float) DB::table('fournisseur_factures')->sum('montant');
+        $supplierPaid = (float) DB::table('fournisseur_cheques')->sum('montant');
+        $clientDue = (float) DB::table('client_entries')->sum('montant');
+        $clientPaid = (float) DB::table('client_payments')->sum('montant')
+            + (float) DB::table('cheque_clients')->sum('montant');
+        $supplierChequesPending = DB::table('fournisseur_cheques')->where('statut', '!=', 'en_caisse');
+
+        return [
+            'kpis' => [
+                'fournisseurs_count' => Fournisseur::query()->count(),
+                'stock_total' => (int) DB::table('depot_article')->sum('quantity'),
+                'fournisseurs_reste' => round($supplierDue - $supplierPaid, 2),
+                'clients_reste' => round($clientDue - $clientPaid, 2),
+                'cheques_fournisseurs_en_attente_count' => $supplierChequesPending->count(),
+                'cheques_fournisseurs_en_attente_total' => (float) $supplierChequesPending->sum('montant'),
+                'clients_overdue_count' => $overdueClients->count(),
+            ],
+            'comparison' => [
+                ['name' => 'À payer fournisseurs', 'value' => max(round($supplierDue - $supplierPaid, 2), 0)],
+                ['name' => 'Clients owe you', 'value' => max(round($clientDue - $clientPaid, 2), 0)],
+            ],
+            'overdue_clients' => $overdueClients,
         ];
     }
 
@@ -99,58 +129,16 @@ class DashboardService
         ];
     }
 
-    private function chequeData(): array
-    {
-        $records = $this->chequeRecords();
-        $statusTotals = $records->groupBy('statut')->map(fn ($items) => round((float) $items->sum('montant'), 2));
-        $typeTotals = $records->groupBy('tier')->map(fn ($items) => round((float) $items->sum('montant'), 2));
-
-        return [
-            'kpis' => [
-                'count' => $records->count(),
-                'total_amount' => round((float) $records->sum('montant'), 2),
-                'en_cours' => (float) ($statusTotals['en_cours'] ?? 0),
-                'en_caisse' => (float) ($statusTotals['en_caisse'] ?? 0),
-                'impaye' => (float) ($statusTotals['impaye'] ?? 0),
-                'client_count' => $records->where('tier', 'client')->count(),
-                'fournisseur_count' => $records->where('tier', 'fournisseur')->count(),
-                'average_amount' => $records->count() > 0 ? round((float) $records->avg('montant'), 2) : 0,
-            ],
-            'statusPie' => $this->pieFromMap($statusTotals, [
-                'en_cours' => 'En cours',
-                'en_caisse' => 'En caisse',
-                'impaye' => 'Impayé',
-            ]),
-            'typePie' => $this->pieFromMap($typeTotals, [
-                'client' => 'Clients',
-                'fournisseur' => 'Fournisseurs',
-            ]),
-            'monthly' => $this->monthlyAmounts($records, 'date_echeance'),
-            'topBanks' => $records
-                ->filter(fn ($row) => filled($row['banque']))
-                ->groupBy('banque')
-                ->map(fn ($items, $bank) => ['name' => $bank, 'total' => round((float) $items->sum('montant'), 2), 'count' => $items->count()])
-                ->sortByDesc('total')
-                ->take(5)
-                ->values(),
-            'upcoming' => $records
-                ->filter(fn ($row) => filled($row['date_echeance']))
-                ->sortBy('date_echeance')
-                ->take(8)
-                ->values(),
-        ];
-    }
-
     private function supplierData(): array
     {
         $due = (float) DB::table('fournisseur_factures')->sum('montant');
-        $paid = (float) DB::table('fournisseur_payments')->sum('montant');
+        $paid = (float) DB::table('fournisseur_cheques')->sum('montant');
 
         $factureTotals = DB::table('fournisseur_factures')
             ->select('fournisseur_id', DB::raw('SUM(montant) as total_du'))
             ->groupBy('fournisseur_id');
 
-        $paymentTotals = DB::table('fournisseur_payments')
+        $paymentTotals = DB::table('fournisseur_cheques')
             ->select('fournisseur_id', DB::raw('SUM(montant) as total_paye'))
             ->groupBy('fournisseur_id');
 
@@ -174,7 +162,7 @@ class DashboardService
                 'count' => Fournisseur::query()->count(),
                 'releves_count' => DB::table('fournisseur_releve_comptes')->count(),
                 'factures_count' => DB::table('fournisseur_factures')->count(),
-                'payments_count' => DB::table('fournisseur_payments')->count(),
+                'payments_count' => DB::table('fournisseur_cheques')->count(),
                 'total_du' => $due,
                 'total_paye' => $paid,
                 'balance' => round($due - $paid, 2),
@@ -204,7 +192,8 @@ class DashboardService
     private function clientData(): array
     {
         $due = (float) DB::table('client_entries')->sum('montant');
-        $paid = (float) DB::table('client_payments')->sum('montant');
+        $paid = (float) DB::table('client_payments')->sum('montant')
+            + (float) DB::table('cheque_clients')->sum('montant');
 
         $entryTotals = DB::table('client_entries')
             ->select('client_id', DB::raw('SUM(montant) as total_du'))
@@ -214,11 +203,16 @@ class DashboardService
             ->select('client_id', DB::raw('SUM(montant) as total_paye'))
             ->groupBy('client_id');
 
+        $chequeTotals = DB::table('cheque_clients')
+            ->select('client_id', DB::raw('SUM(montant) as total_cheques'))
+            ->groupBy('client_id');
+
         $balances = DB::table('clients')
             ->leftJoinSub($entryTotals, 'entry_totals', 'clients.id', '=', 'entry_totals.client_id')
             ->leftJoinSub($paymentTotals, 'payment_totals', 'clients.id', '=', 'payment_totals.client_id')
+            ->leftJoinSub($chequeTotals, 'cheque_totals', 'clients.id', '=', 'cheque_totals.client_id')
             ->whereNull('clients.deleted_at')
-            ->select('clients.id', 'clients.nom', DB::raw('COALESCE(entry_totals.total_du, 0) as total_du'), DB::raw('COALESCE(payment_totals.total_paye, 0) as total_paye'))
+            ->select('clients.id', 'clients.nom', DB::raw('COALESCE(entry_totals.total_du, 0) as total_du'), DB::raw('COALESCE(payment_totals.total_paye, 0) + COALESCE(cheque_totals.total_cheques, 0) as total_paye'))
             ->get()
             ->map(fn ($row) => [
                 'nom' => $row->nom,
@@ -260,51 +254,6 @@ class DashboardService
         ];
     }
 
-    private function chequeRecords(): Collection
-    {
-        $standalone = DB::table('cheques')
-            ->whereNull('deleted_at')
-            ->get(['numero_cheque', 'type', 'statut', 'banque', 'montant', 'date_echeance', 'created_at'])
-            ->map(fn ($row) => [
-                'numero_cheque' => $row->numero_cheque,
-                'tier' => $row->type,
-                'statut' => $row->statut === 'encaisse' ? 'en_caisse' : $row->statut,
-                'banque' => $row->banque,
-                'montant' => (float) $row->montant,
-                'date_echeance' => $row->date_echeance,
-                'created_at' => $row->created_at,
-                'source' => 'Standalone',
-            ]);
-
-        $clients = DB::table('cheque_clients')
-            ->get(['numero_cheque', 'statut', 'banque', 'montant', 'date_echeance', 'created_at'])
-            ->map(fn ($row) => [
-                'numero_cheque' => $row->numero_cheque,
-                'tier' => 'client',
-                'statut' => $row->statut,
-                'banque' => $row->banque,
-                'montant' => (float) $row->montant,
-                'date_echeance' => $row->date_echeance,
-                'created_at' => $row->created_at,
-                'source' => 'Clients',
-            ]);
-
-        $fournisseurs = DB::table('cheque_fournisseurs')
-            ->get(['numero_cheque', 'statut', 'banque', 'montant', 'date_echeance', 'created_at'])
-            ->map(fn ($row) => [
-                'numero_cheque' => $row->numero_cheque,
-                'tier' => 'fournisseur',
-                'statut' => $row->statut,
-                'banque' => $row->banque,
-                'montant' => (float) $row->montant,
-                'date_echeance' => $row->date_echeance,
-                'created_at' => $row->created_at,
-                'source' => 'Fournisseurs',
-            ]);
-
-        return $standalone->merge($clients)->merge($fournisseurs)->values();
-    }
-
     private function monthlyAmounts(Collection $rows, string $dateKey): Collection
     {
         return $rows
@@ -327,14 +276,6 @@ class DashboardService
                 'sorties' => $items->where('type', 'sortie')->count(),
             ])
             ->sortBy('month')
-            ->values();
-    }
-
-    private function pieFromMap(Collection $map, array $labels): Collection
-    {
-        return collect($labels)
-            ->map(fn ($label, $key) => ['name' => $label, 'value' => (float) ($map[$key] ?? 0)])
-            ->filter(fn ($row) => $row['value'] > 0)
             ->values();
     }
 }
