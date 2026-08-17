@@ -9,8 +9,10 @@ use App\Models\Fournisseur;
 use App\Models\FournisseurFacture;
 use App\Models\Operation;
 use App\Support\ArticleNameLookup;
+use App\Support\ExcelExport;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DashboardService
 {
@@ -24,6 +26,20 @@ class DashboardService
             'fournisseurs' => $this->supplierData(),
             'clients' => $this->clientData(),
         ];
+    }
+
+    public function exportOverdueClients(): StreamedResponse
+    {
+        $rows = $this->clientOverdueService->overdueClients()->map(fn (array $client) => [
+            $client['nom'],
+            $client['telephone'],
+            $client['ville'],
+            $client['oldest_entry_date'],
+            $client['days_overdue'],
+            $client['balance'],
+        ]);
+
+        return ExcelExport::download('clients-en-retard-export', ['Client', 'Téléphone', 'Ville', 'Plus ancienne entrée', 'Jours en retard', 'À recevoir DH'], $rows);
     }
 
     private function globalData(): array

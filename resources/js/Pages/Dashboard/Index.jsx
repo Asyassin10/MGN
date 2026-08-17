@@ -7,6 +7,7 @@ import {
     Boxes,
     Building2,
     CheckCircle2,
+    Download,
     Layers3,
     PackageCheck,
     PackageMinus,
@@ -22,6 +23,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import DataTable from '@/Components/DataTable';
 import SearchableSelect from '@/Components/SearchableSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
 import { money, number } from '@/lib/utils';
 
 const dashboards = [
@@ -164,6 +166,15 @@ function GlobalDashboard({ data }) {
             </div>
             <div className="max-w-xl">
                 <PiePanel title="À payer vs à recevoir" data={data.comparison.filter((item) => item.value > 0)} />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <div className="font-semibold text-zinc-950">Notifications clients en retard</div>
+                    <div className="text-sm text-zinc-500">Plus de 30 jours avec un solde restant.</div>
+                </div>
+                <a href={route('dashboard', { export: 'overdue_clients' })}>
+                    <Button variant="outline"><Download className="h-4 w-4" />Download Excel</Button>
+                </a>
             </div>
             <DataTable
                 columns={[
