@@ -59,6 +59,7 @@ class IndependentChequeModuleTest extends TestCase
             'type' => 'cheque',
             'numero_cheque' => 'IMP-1',
             'fournisseur_nom' => 'Fournisseur libre',
+            'client_nom' => 'Client responsable',
             'tireur_signataire' => 'Signataire',
             'date_remise' => '2026-08-19',
             'montant' => 900,
@@ -68,6 +69,7 @@ class IndependentChequeModuleTest extends TestCase
         $impaye = ChequeImpaye::firstOrFail();
         $this->assertSame('impaye', $impaye->statut);
         $this->assertNull($impaye->date_paiement);
+        $this->assertSame('Client responsable', $impaye->client_nom);
 
         $this->patch(route('cheques.impayes.pay', $impaye), [])->assertSessionHasErrors(['date_paiement', 'mode_paiement']);
         $this->patch(route('cheques.impayes.pay', $impaye), ['date_paiement' => '2026-08-20', 'mode_paiement' => 'virement'])->assertSessionHas('success');

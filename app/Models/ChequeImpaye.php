@@ -16,6 +16,7 @@ class ChequeImpaye extends Model
         'type',
         'numero_cheque',
         'fournisseur_nom',
+        'client_nom',
         'tireur_signataire',
         'date_remise',
         'statut',

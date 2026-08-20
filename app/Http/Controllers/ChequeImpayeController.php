@@ -20,6 +20,7 @@ class ChequeImpayeController extends Controller
                 ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                     ->where('numero_cheque', 'like', "%{$value}%")
                     ->orWhere('fournisseur_nom', 'like', "%{$value}%")
+                    ->orWhere('client_nom', 'like', "%{$value}%")
                     ->orWhere('tireur_signataire', 'like', "%{$value}%")))
                 ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
                 ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
@@ -69,6 +70,7 @@ class ChequeImpayeController extends Controller
             'type' => ['required', Rule::in(ChequeImpaye::TYPES)],
             'numero_cheque' => ['required', 'string', 'max:255'],
             'fournisseur_nom' => ['required', 'string', 'max:255'],
+            'client_nom' => ['required', 'string', 'max:255'],
             'tireur_signataire' => ['nullable', 'string', 'max:255'],
             'date_remise' => ['required', 'date'],
             'montant' => ['required', 'numeric', 'gt:0'],
@@ -83,6 +85,7 @@ class ChequeImpayeController extends Controller
             'type' => $cheque->type,
             'numero_cheque' => $cheque->numero_cheque,
             'fournisseur_nom' => $cheque->fournisseur_nom,
+            'client_nom' => $cheque->client_nom,
             'tireur_signataire' => $cheque->tireur_signataire,
             'date_remise' => $cheque->date_remise?->format('Y-m-d'),
             'statut' => $cheque->statut,
