@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Article;
 use App\Models\ChequeClient;
+use App\Models\Cheque;
+use App\Models\ChequeImpaye;
 use App\Models\Client;
 use App\Models\ClientEntry;
 use App\Models\ClientPayment;
@@ -37,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        foreach ([Article::class, ChequeClient::class, Client::class, ClientEntry::class, ClientPayment::class, Depot::class, Employee::class, EmployeeAbsence::class, EmployeeSalaryPayment::class, EmployeeWorkDay::class, Fournisseur::class, FournisseurCheque::class, FournisseurFacture::class, FournisseurReleveCompte::class, Operation::class, OperationLine::class, User::class] as $model) {
+        foreach ([Article::class, Cheque::class, ChequeImpaye::class, ChequeClient::class, Client::class, ClientEntry::class, ClientPayment::class, Depot::class, Employee::class, EmployeeAbsence::class, EmployeeSalaryPayment::class, EmployeeWorkDay::class, Fournisseur::class, FournisseurCheque::class, FournisseurFacture::class, FournisseurReleveCompte::class, Operation::class, OperationLine::class, User::class] as $model) {
             $model::observe(ActivityLogObserver::class);
         }
     }

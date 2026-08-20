@@ -51,6 +51,7 @@ const ROUTE_PREFIXES = {
     employees: ['employees.'],
     fournisseurs: ['fournisseurs.'],
     clients: ['clients.'],
+    cheques: ['cheques.'],
 };
 
 export function getSectionThemeByKey(key) {

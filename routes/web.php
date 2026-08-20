@@ -3,6 +3,8 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChequeController;
+use App\Http\Controllers\ChequeImpayeController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
@@ -40,6 +42,18 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/employees/{employee}/work-days', [EmployeeController::class, 'storeWorkDay'])->name('employees.work-days.store');
         Route::post('/employees/{employee}/absences', [EmployeeController::class, 'storeAbsence'])->name('employees.absences.store');
         Route::post('/employees/{employee}/salary-payments', [EmployeeController::class, 'storeSalaryPayment'])->name('employees.salary-payments.store');
+    });
+    Route::middleware('permission:cheques')->group(function (): void {
+        Route::get('/cheques/impayes', [ChequeImpayeController::class, 'index'])->name('cheques.impayes.index');
+        Route::post('/cheques/impayes', [ChequeImpayeController::class, 'store'])->name('cheques.impayes.store');
+        Route::patch('/cheques/impayes/{chequeImpaye}/payer', [ChequeImpayeController::class, 'pay'])->name('cheques.impayes.pay');
+        Route::patch('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'update'])->name('cheques.impayes.update');
+        Route::delete('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'destroy'])->name('cheques.impayes.destroy');
+        Route::get('/cheques', [ChequeController::class, 'index'])->name('cheques.index');
+        Route::post('/cheques', [ChequeController::class, 'store'])->name('cheques.store');
+        Route::patch('/cheques/{cheque}/inline', [ChequeController::class, 'updateInline'])->name('cheques.inline');
+        Route::patch('/cheques/{cheque}', [ChequeController::class, 'update'])->name('cheques.update');
+        Route::delete('/cheques/{cheque}', [ChequeController::class, 'destroy'])->name('cheques.destroy');
     });
     Route::middleware('permission:admin')->group(function (): void {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

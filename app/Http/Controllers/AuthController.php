@@ -27,6 +27,7 @@ class AuthController extends Controller
             $user->canAccess('fournisseurs') => route('fournisseurs.index'),
             $user->canAccess('clients') => route('clients.index'),
             $user->canAccess('employees') => route('employees.index'),
+            $user->canAccess('cheques') => route('cheques.index'),
             $user->canAccess('dashboard') => route('dashboard'),
             default => route('dashboard'),
         };

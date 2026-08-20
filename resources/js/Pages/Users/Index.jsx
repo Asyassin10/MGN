@@ -4,8 +4,8 @@ import DataTable from '@/Components/DataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 
-const modules = ['dashboard', 'depots', 'fournisseurs', 'clients', 'employees'];
-const moduleLabels = { dashboard: 'Dashboard', depots: 'Dépôt', fournisseurs: 'Fournisseurs', clients: 'Clients', employees: 'RH / Employés' };
+const modules = ['dashboard', 'depots', 'fournisseurs', 'clients', 'employees', 'cheques'];
+const moduleLabels = { dashboard: 'Dashboard', depots: 'Dépôt', fournisseurs: 'Fournisseurs', clients: 'Clients', employees: 'RH / Employés', cheques: 'Chèques' };
 const fields = [{ name: 'name', label: 'Nom complet' }, { name: 'pin', label: 'PIN (6 chiffres)', type: 'password' }, { name: 'role', label: 'Profil', type: 'select', options: [{ value: 'admin', label: 'Administrateur' }, { value: 'restricted', label: 'Accès limité' }] }, ...modules.map((module) => ({ name: `module_${module}`, label: `Accès ${moduleLabels[module]}`, type: 'checkbox' })), ...modules.filter((module) => module !== 'dashboard').map((module) => ({ name: `delete_${module}`, label: `Autoriser suppression ${moduleLabels[module]}`, type: 'checkbox' }))];
 export default function Index({ users }) {
     const toDefaults = (user = {}) => ({

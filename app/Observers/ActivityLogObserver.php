@@ -42,7 +42,7 @@ class ActivityLogObserver
     private function module(Model $model): string
     {
         return match (class_basename($model)) {
-            'Fournisseur', 'FournisseurFacture', 'FournisseurCheque', 'FournisseurReleveCompte' => 'Fournisseurs', 'Client', 'ClientEntry', 'ClientPayment', 'ChequeClient' => 'Clients', 'Depot', 'Article', 'Operation', 'OperationLine' => 'Dépôt', 'Employee', 'EmployeeWorkDay', 'EmployeeAbsence', 'EmployeeSalaryPayment' => 'RH', 'User' => 'Utilisateurs', default => 'Paramètres'
+            'Cheque', 'ChequeImpaye' => 'Chèques', 'Fournisseur', 'FournisseurFacture', 'FournisseurCheque', 'FournisseurReleveCompte' => 'Fournisseurs', 'Client', 'ClientEntry', 'ClientPayment', 'ChequeClient' => 'Clients', 'Depot', 'Article', 'Operation', 'OperationLine' => 'Dépôt', 'Employee', 'EmployeeWorkDay', 'EmployeeAbsence', 'EmployeeSalaryPayment' => 'RH', 'User' => 'Utilisateurs', default => 'Paramètres'
         };
     }
 

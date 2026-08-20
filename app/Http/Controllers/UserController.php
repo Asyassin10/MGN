@@ -44,13 +44,13 @@ class UserController extends Controller
 
     private function validated(Request $request, bool $creating = true): array
     {
-        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'employees'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
-        $deleteModules = collect(['depots', 'fournisseurs', 'clients', 'employees'])->filter(fn (string $module) => $request->boolean('delete_'.$module))->values()->all();
+        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'employees', 'cheques'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
+        $deleteModules = collect(['depots', 'fournisseurs', 'clients', 'employees', 'cheques'])->filter(fn (string $module) => $request->boolean('delete_'.$module))->values()->all();
         $request->merge(['modules' => $modules, 'delete_modules' => $deleteModules]);
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'role' => ['required', 'in:admin,restricted'], 'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,employees'],
-            'delete_modules' => ['nullable', 'array'], 'delete_modules.*' => ['in:depots,fournisseurs,clients,employees'],
+            'role' => ['required', 'in:admin,restricted'], 'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,employees,cheques'],
+            'delete_modules' => ['nullable', 'array'], 'delete_modules.*' => ['in:depots,fournisseurs,clients,employees,cheques'],
             'pin' => [$creating ? 'required' : 'nullable', 'digits:6'],
         ];
         $data = $request->validate($rules);

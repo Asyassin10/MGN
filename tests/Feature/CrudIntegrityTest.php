@@ -56,7 +56,6 @@ class CrudIntegrityTest extends TestCase
         ChequeClient::create(['client_id' => $client->id, 'bank_id' => $bank->id, 'type' => 'cheque', 'numero_cheque' => 'C-3', 'banque' => $bank->name, 'montant' => 50, 'statut' => 'en_cours']);
 
         $this->delete(route('settings.banks.destroy', $bank))->assertSessionHas('error');
-        $this->get('/cheques')->assertNotFound();
         $this->get('/cheque-fournisseurs')->assertNotFound();
     }
 }
