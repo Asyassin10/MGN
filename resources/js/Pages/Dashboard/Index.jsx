@@ -114,7 +114,7 @@ function PiePanel({ title, data, moneyValues = true }) {
                 <PieChart>
                     <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={88} paddingAngle={2}>
                         {data.map((entry, index) => (
-                            <Cell key={entry.name} fill={chartColors[index % chartColors.length]} />
+                            <Cell key={entry.name} fill={entry.color || chartColors[index % chartColors.length]} />
                         ))}
                     </Pie>
                     <Tooltip formatter={(value) => (moneyValues ? money(value) : number(value))} />
@@ -161,11 +161,20 @@ function GlobalDashboard({ data }) {
                 <Kpi label="Stock total des dépôts" value={data.kpis.stock_total} color="emerald" icon={PackageCheck} currency={false} />
                 <Kpi label="Reste à payer fournisseurs" value={data.kpis.fournisseurs_reste} color="red" icon={WalletCards} valueClassName="text-red-600" />
                 <Kpi label="Clients owe you" value={data.kpis.clients_reste} color="emerald" icon={Banknote} valueClassName="text-emerald-600" />
+                <Kpi label="Montant disponible des chèques" value={data.kpis.cheques_disponibles_total} color="violet" icon={WalletCards} valueClassName="text-violet-700" detail={`${number(data.kpis.cheques_disponibles_count)} chèque(s) non sorti(s)`} />
                 <Kpi label="Chèques fournisseurs non encaissés" value={data.kpis.cheques_fournisseurs_en_attente_count} color="amber" icon={WalletCards} currency={false} detail={`Total: ${money(data.kpis.cheques_fournisseurs_en_attente_total)}`} />
                 <Kpi label="Clients en retard +30 jours" value={data.kpis.clients_overdue_count} color="red" icon={AlertTriangle} currency={false} />
             </div>
             <div className="max-w-xl">
-                <PiePanel title="À payer vs à recevoir" data={data.comparison.filter((item) => item.value > 0)} />
+                <PiePanel title="Situation financière globale" data={data.comparison.filter((item) => item.value > 0)} emptyText="Aucun montant à payer, à recevoir ou en chèques disponibles." />
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    {data.comparison.map((item) => (
+                        <div key={item.name} className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm">
+                            <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                            <div className="min-w-0"><div className="font-medium text-zinc-900">{item.name}</div><div className="text-zinc-600">{money(item.value)}</div></div>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>

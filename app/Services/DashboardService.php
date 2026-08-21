@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Client;
 use App\Models\ClientEntry;
+use App\Models\Cheque;
 use App\Models\Depot;
 use App\Models\Fournisseur;
 use App\Models\FournisseurFacture;
@@ -51,20 +52,28 @@ class DashboardService
         $clientPaid = (float) DB::table('client_payments')->sum('montant')
             + (float) DB::table('cheque_clients')->sum('montant');
         $supplierChequesPending = DB::table('fournisseur_cheques')->where('statut', '!=', 'en_caisse');
+        $availableCheques = Cheque::query()->where('est_sorti', false);
+        $supplierBalance = max(round($supplierDue - $supplierPaid, 2), 0);
+        $clientBalance = max(round($clientDue - $clientPaid, 2), 0);
+        $availableChequeCount = $availableCheques->count();
+        $availableChequeTotal = (float) $availableCheques->sum('montant');
 
         return [
             'kpis' => [
                 'fournisseurs_count' => Fournisseur::query()->count(),
                 'stock_total' => (int) DB::table('depot_article')->sum('quantity'),
-                'fournisseurs_reste' => round($supplierDue - $supplierPaid, 2),
-                'clients_reste' => round($clientDue - $clientPaid, 2),
+                'fournisseurs_reste' => $supplierBalance,
+                'clients_reste' => $clientBalance,
                 'cheques_fournisseurs_en_attente_count' => $supplierChequesPending->count(),
                 'cheques_fournisseurs_en_attente_total' => (float) $supplierChequesPending->sum('montant'),
+                'cheques_disponibles_count' => $availableChequeCount,
+                'cheques_disponibles_total' => $availableChequeTotal,
                 'clients_overdue_count' => $overdueClients->count(),
             ],
             'comparison' => [
-                ['name' => 'À payer fournisseurs', 'value' => max(round($supplierDue - $supplierPaid, 2), 0)],
-                ['name' => 'Clients owe you', 'value' => max(round($clientDue - $clientPaid, 2), 0)],
+                ['name' => 'Reste à payer fournisseurs', 'value' => $supplierBalance, 'color' => '#dc2626'],
+                ['name' => 'Reste à recevoir des clients', 'value' => $clientBalance, 'color' => '#059669'],
+                ['name' => 'Chèques non sortis disponibles', 'value' => $availableChequeTotal, 'color' => '#7c3aed'],
             ],
             'overdue_clients' => $overdueClients,
         ];
