@@ -2,6 +2,7 @@
 
 use App\Services\ChequeMaturityService;
 use App\Services\ClientOverdueService;
+use App\Models\ActivityLog;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -29,5 +30,14 @@ Artisan::command('clients:check-overdue', function (ClientOverdueService $servic
     $this->info("{$clients->count()} client(s) en retard de plus de 30 jours.");
 })->purpose('Check clients with an outstanding balance for more than 30 days.')
     ->dailyAt('00:10')
+    ->timezone('Africa/Casablanca')
+    ->withoutOverlapping();
+
+Artisan::command('activity-logs:prune', function () {
+    $deleted = ActivityLog::query()->where('created_at', '<', now()->subDays(30))->delete();
+
+    $this->info("{$deleted} historique(s) supprimé(s).");
+})->purpose('Delete activity logs older than 30 days.')
+    ->dailyAt('00:15')
     ->timezone('Africa/Casablanca')
     ->withoutOverlapping();
