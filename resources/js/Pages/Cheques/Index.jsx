@@ -54,6 +54,6 @@ export default function Index({ cheques, filters, montantDisponible }) {
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
             <SearchableSelect value={filters.sortie || ''} onChange={(sortie) => updateFilters({ sortie })} options={[{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }]} placeholder="Tous les chèques" />
         </div>
-        <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.est_sorti ? 'status-row status-row-impaye' : getChequeRowClass(row)} empty="Aucun chèque." />
+        <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.est_sorti ? 'status-row status-row-sorti' : getChequeRowClass(row)} empty="Aucun chèque." />
     </AppLayout>;
 }

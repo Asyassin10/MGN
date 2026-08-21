@@ -169,6 +169,12 @@
     background-color: #fee2e2;
 }
 
+.status-row-sorti,
+.status-row-sorti:hover {
+    background-color: #dc2626;
+    color: #fff;
+}
+
 .invoice-row-received {
     background-color: #eff6ff;
     color: #1e40af;
@@ -197,6 +203,7 @@
 }
 
 .status-row :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
+.status-row-sorti :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .status-row-complete :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .invoice-row-received :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
 .invoice-row-given :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),
