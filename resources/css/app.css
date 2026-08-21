@@ -130,28 +130,15 @@
     border-color: var(--section-100);
 }
 
-[data-section-theme] tbody tr:not(.status-row):hover {
-    background-color: var(--section-50);
-}
-
 .status-row-en-cours {
     background-color: #fffbeb;
     color: #92400e;
-}
-
-.status-row-en-cours:hover {
-    background-color: #fef3c7;
 }
 
 .status-row-en-caisse,
 .status-row-encaisse {
     background-color: #ecfdf5;
     color: #065f46;
-}
-
-.status-row-en-caisse:hover,
-.status-row-encaisse:hover {
-    background-color: #d1fae5;
 }
 
 .status-row-complete,
@@ -165,10 +152,6 @@
     color: #991b1b;
 }
 
-.status-row-impaye:hover {
-    background-color: #fee2e2;
-}
-
 .status-row-sorti,
 .status-row-sorti:hover {
     background-color: #dc2626;
@@ -180,26 +163,14 @@
     color: #1e40af;
 }
 
-.invoice-row-received:hover {
-    background-color: #dbeafe;
-}
-
 .invoice-row-given {
     background-color: #faf5ff;
     color: #6b21a8;
 }
 
-.invoice-row-given:hover {
-    background-color: #f3e8ff;
-}
-
 .invoice-row-complete {
     background-color: #ecfdf5;
     color: #065f46;
-}
-
-.invoice-row-complete:hover {
-    background-color: #d1fae5;
 }
 
 .status-row :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),

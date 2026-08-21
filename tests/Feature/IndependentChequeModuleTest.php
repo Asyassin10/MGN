@@ -93,6 +93,23 @@ class IndependentChequeModuleTest extends TestCase
         $this->assertSame('paye', $impaye->statut);
         $this->assertSame('2026-08-20', $impaye->date_paiement?->format('Y-m-d'));
         $this->assertSame('virement', $impaye->mode_paiement);
+
+        $this->patch(route('cheques.impayes.update', $impaye), [
+            'type' => 'cheque', 'numero_cheque' => 'IMP-1', 'fournisseur_nom' => 'Fournisseur libre', 'client_nom' => 'Client responsable', 'tireur_signataire' => 'Signataire', 'date_remise' => '2026-08-19', 'montant' => 900, 'note' => 'Mis à jour',
+            'statut' => 'paye', 'date_paiement' => '2026-08-21', 'mode_paiement' => 'cheque',
+        ])->assertSessionHas('success');
+        $impaye->refresh();
+        $this->assertSame('cheque', $impaye->mode_paiement);
+        $this->assertSame('2026-08-21', $impaye->date_paiement?->format('Y-m-d'));
+
+        $this->patch(route('cheques.impayes.update', $impaye), [
+            'type' => 'cheque', 'numero_cheque' => 'IMP-1', 'fournisseur_nom' => 'Fournisseur libre', 'client_nom' => 'Client responsable', 'tireur_signataire' => 'Signataire', 'date_remise' => '2026-08-19', 'montant' => 900, 'note' => 'Revenu impayé',
+            'statut' => 'impaye', 'date_paiement' => '', 'mode_paiement' => '',
+        ])->assertSessionHas('success');
+        $impaye->refresh();
+        $this->assertSame('impaye', $impaye->statut);
+        $this->assertNull($impaye->date_paiement);
+        $this->assertNull($impaye->mode_paiement);
     }
 
     public function test_restricted_user_needs_cheque_and_delete_permissions(): void

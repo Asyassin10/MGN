@@ -29,6 +29,7 @@ class ChequeImpayeController extends Controller
                 ->withQueryString()
                 ->through(fn (ChequeImpaye $cheque) => $this->serialize($cheque)),
             'filters' => $filters,
+            'impayesCount' => ChequeImpaye::query()->where('statut', 'impaye')->count(),
         ]);
     }
 
@@ -41,7 +42,14 @@ class ChequeImpayeController extends Controller
 
     public function update(Request $request, ChequeImpaye $chequeImpaye): RedirectResponse
     {
-        $chequeImpaye->update($this->validated($request));
+        $data = $this->validated($request, true);
+        $isPaid = $data['statut'] === 'paye';
+
+        $chequeImpaye->update([
+            ...$data,
+            'date_paiement' => $isPaid ? $data['date_paiement'] : null,
+            'mode_paiement' => $isPaid ? $data['mode_paiement'] : null,
+        ]);
 
         return back()->with('success', 'Chèque impayé mis à jour.');
     }
@@ -50,7 +58,7 @@ class ChequeImpayeController extends Controller
     {
         $data = $request->validate([
             'date_paiement' => ['required', 'date'],
-            'mode_paiement' => ['required', Rule::in(['espece', 'virement'])],
+            'mode_paiement' => ['required', Rule::in(['espece', 'virement', 'cheque'])],
         ]);
         $chequeImpaye->update([...$data, 'statut' => 'paye']);
 
@@ -64,9 +72,9 @@ class ChequeImpayeController extends Controller
         return back()->with('success', 'Chèque impayé supprimé.');
     }
 
-    private function validated(Request $request): array
+    private function validated(Request $request, bool $withPayment = false): array
     {
-        return $request->validate([
+        $rules = [
             'type' => ['required', Rule::in(ChequeImpaye::TYPES)],
             'numero_cheque' => ['required', 'string', 'max:255'],
             'fournisseur_nom' => ['required', 'string', 'max:255'],
@@ -75,7 +83,17 @@ class ChequeImpayeController extends Controller
             'date_remise' => ['required', 'date'],
             'montant' => ['required', 'numeric', 'gt:0'],
             'note' => ['nullable', 'string'],
-        ]);
+        ];
+
+        if ($withPayment) {
+            $rules += [
+                'statut' => ['required', Rule::in(ChequeImpaye::STATUSES)],
+                'date_paiement' => [Rule::requiredIf($request->input('statut') === 'paye'), 'nullable', 'date'],
+                'mode_paiement' => [Rule::requiredIf($request->input('statut') === 'paye'), 'nullable', Rule::in(['espece', 'virement', 'cheque'])],
+            ];
+        }
+
+        return $request->validate($rules);
     }
 
     private function serialize(ChequeImpaye $cheque): array
