@@ -47,18 +47,16 @@ class UserController extends Controller
 
     private function validated(Request $request, bool $creating = true): array
     {
-        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'employees', 'cheques'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
-        $deleteModules = collect(['depots', 'fournisseurs', 'clients', 'employees', 'cheques'])->filter(fn (string $module) => $request->boolean('delete_'.$module))->values()->all();
-        $request->merge(['modules' => $modules, 'delete_modules' => $deleteModules]);
+        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
+        $request->merge(['modules' => $modules]);
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,employees,cheques'],
-            'delete_modules' => ['nullable', 'array'], 'delete_modules.*' => ['in:depots,fournisseurs,clients,employees,cheques'],
+            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,cheques'],
             'pin' => [$creating ? 'required' : 'nullable', 'digits:6'],
         ];
         $data = $request->validate($rules);
-        $data['permissions'] = ['modules' => $data['modules'] ?? [], 'delete' => $data['delete_modules'] ?? []];
-        unset($data['modules'], $data['delete_modules']);
+        $data['permissions'] = ['modules' => $data['modules'] ?? [], 'delete' => []];
+        unset($data['modules']);
         if ($creating) {
             $data['role'] = 'restricted';
             $data['email'] = Str::slug($data['name']).'-'.Str::lower(Str::random(8)).'@local';
@@ -70,6 +68,6 @@ class UserController extends Controller
 
     private function serialize(User $user): array
     {
-        return ['id' => $user->id, 'name' => $user->name, 'role' => $user->role, 'modules' => $user->permissions['modules'] ?? [], 'delete_modules' => $user->permissions['delete'] ?? []];
+        return ['id' => $user->id, 'name' => $user->name, 'role' => $user->role, 'modules' => $user->permissions['modules'] ?? []];
     }
 }

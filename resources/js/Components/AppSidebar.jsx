@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { BadgeAlert, Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, UserRound, Users, WalletCards } from 'lucide-react';
+import { BadgeAlert, Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, Users, WalletCards } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,6 @@ const sections = [
             { label: 'Impayés', route: 'cheques.impayes.index', icon: BadgeAlert },
         ],
     },
-    { label: 'RH / Employés', route: 'employees.index', icon: UserRound, permission: 'employees' },
     { label: 'Utilisateurs', route: 'users.index', icon: ShieldCheck, permission: 'admin' },
     { label: 'Historique', route: 'activity-history.index', icon: ListChecks, permission: 'admin' },
 ];

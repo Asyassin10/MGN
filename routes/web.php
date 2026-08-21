@@ -9,7 +9,6 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DepotController;
-use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\SettingsController;
@@ -34,14 +33,6 @@ Route::middleware('auth')->group(function (): void {
         Route::resource('operations', OperationController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
         Route::get('/operations/{operation}/pdf', [OperationController::class, 'pdf'])->name('operations.pdf');
-    });
-    Route::middleware('permission:employees')->group(function (): void {
-        Route::resource('employees', EmployeeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-        Route::get('/employees/{employee}/payments', [EmployeeController::class, 'paymentHistory'])->name('employees.payments.index');
-        Route::get('/employees/{employee}/absences', [EmployeeController::class, 'absenceHistory'])->name('employees.absences.index');
-        Route::post('/employees/{employee}/work-days', [EmployeeController::class, 'storeWorkDay'])->name('employees.work-days.store');
-        Route::post('/employees/{employee}/absences', [EmployeeController::class, 'storeAbsence'])->name('employees.absences.store');
-        Route::post('/employees/{employee}/salary-payments', [EmployeeController::class, 'storeSalaryPayment'])->name('employees.salary-payments.store');
     });
     Route::middleware('permission:cheques')->group(function (): void {
         Route::get('/cheques/impayes', [ChequeImpayeController::class, 'index'])->name('cheques.impayes.index');

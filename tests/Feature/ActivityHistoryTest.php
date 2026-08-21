@@ -40,6 +40,20 @@ class ActivityHistoryTest extends TestCase
             'name' => 'Changed restricted',
             'pin' => '123456',
         ])->assertRedirect();
+
+        $this->actingAs($admin)->post(route('users.store'), [
+            'name' => 'New restricted',
+            'pin' => '654321',
+            'module_depots' => true,
+            'delete_depots' => true,
+            'module_employees' => true,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('users', ['name' => 'New restricted', 'role' => 'restricted']);
+        $newUser = User::query()->where('name', 'New restricted')->firstOrFail();
+        $this->assertSame(['depots'], $newUser->permissions['modules']);
+        $this->assertSame([], $newUser->permissions['delete']);
+        $this->actingAs($admin)->get('/employees')->assertNotFound();
     }
 
     public function test_history_shows_only_restricted_user_activity_in_readable_french(): void
