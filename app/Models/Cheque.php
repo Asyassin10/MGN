@@ -18,8 +18,8 @@ class Cheque extends Model
         'date_emission',
         'date_echeance',
         'statut',
-        'facture_recue',
-        'facture_donnee',
+        'est_sorti',
+        'fournisseur_sortie_nom',
         'montant',
         'note',
     ];
@@ -29,8 +29,7 @@ class Cheque extends Model
         return [
             'date_emission' => 'date',
             'date_echeance' => 'date',
-            'facture_recue' => 'boolean',
-            'facture_donnee' => 'boolean',
+            'est_sorti' => 'boolean',
             'montant' => 'decimal:2',
         ];
     }

@@ -13,7 +13,7 @@ class IndependentChequeModuleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_manage_an_independent_client_cheque_and_inline_fields(): void
+    public function test_admin_can_manage_an_independent_client_cheque_and_its_sortie(): void
     {
         $this->actingAs(User::factory()->create());
 
@@ -24,22 +24,26 @@ class IndependentChequeModuleTest extends TestCase
             'numero_cheque' => 'CH-100',
             'client_nom' => 'Client libre',
             'statut' => 'en_cours',
-            'facture_recue' => 0,
+            'est_sorti' => 0,
         ]);
 
         $this->patch(route('cheques.inline', $cheque), [
             'statut' => 'impaye',
-            'facture_recue' => true,
-            'facture_donnee' => true,
         ])->assertSessionHas('success');
+
+        $this->patch(route('cheques.sortie', $cheque), ['est_sorti' => true])->assertSessionHasErrors('fournisseur_sortie_nom');
+        $this->patch(route('cheques.sortie', $cheque), ['est_sorti' => true, 'fournisseur_sortie_nom' => 'Fournisseur libre'])->assertSessionHas('success');
 
         $this->assertDatabaseHas('cheques', [
             'id' => $cheque->id,
             'statut' => 'impaye',
-            'facture_recue' => 1,
-            'facture_donnee' => 1,
+            'est_sorti' => 1,
+            'fournisseur_sortie_nom' => 'Fournisseur libre',
         ]);
         $this->assertDatabaseHas('activity_logs', ['module' => 'Chèques', 'subject_type' => 'Cheque']);
+
+        $this->patch(route('cheques.sortie', $cheque), ['est_sorti' => false, 'fournisseur_sortie_nom' => 'Ignored'])->assertSessionHas('success');
+        $this->assertDatabaseHas('cheques', ['id' => $cheque->id, 'est_sorti' => 0, 'fournisseur_sortie_nom' => null]);
     }
 
     public function test_due_independent_cheques_are_automatically_marked_in_caisse(): void
@@ -49,6 +53,17 @@ class IndependentChequeModuleTest extends TestCase
         app(ChequeMaturityService::class)->markDueChequesInCaisse(now()->setDate(2026, 8, 20));
 
         $this->assertSame('en_caisse', $cheque->fresh()->statut);
+    }
+
+    public function test_available_total_excludes_cheques_marked_as_sortis(): void
+    {
+        $this->actingAs(User::factory()->create());
+        Cheque::create($this->chequeData(['numero_cheque' => 'CH-1', 'montant' => 10]));
+        Cheque::create($this->chequeData(['numero_cheque' => 'CH-2', 'montant' => 10]));
+        Cheque::create($this->chequeData(['numero_cheque' => 'CH-3', 'montant' => 10]));
+        Cheque::create($this->chequeData(['numero_cheque' => 'CH-4', 'montant' => 10, 'est_sorti' => true, 'fournisseur_sortie_nom' => 'Fournisseur']));
+
+        $this->assertSame(30.0, (float) Cheque::query()->where('est_sorti', false)->sum('montant'));
     }
 
     public function test_impaye_starts_unpaid_and_pay_action_keeps_it_with_payment_date(): void
@@ -104,8 +119,6 @@ class IndependentChequeModuleTest extends TestCase
             'date_emission' => '2026-08-01',
             'date_echeance' => '2026-08-30',
             'statut' => 'en_cours',
-            'facture_recue' => false,
-            'facture_donnee' => false,
             'montant' => 1200,
             'note' => 'Note',
         ], ...$overrides];

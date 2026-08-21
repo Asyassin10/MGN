@@ -13,21 +13,24 @@ class ChequeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'type', 'statut']);
+        $filters = $request->only(['search', 'type', 'statut', 'sortie']);
 
         return Inertia::render('Cheques/Index', [
             'cheques' => Cheque::query()
                 ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                     ->where('numero_cheque', 'like', "%{$value}%")
                     ->orWhere('client_nom', 'like', "%{$value}%")
+                    ->orWhere('fournisseur_sortie_nom', 'like', "%{$value}%")
                     ->orWhere('tireur_signataire', 'like', "%{$value}%")))
                 ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
                 ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
+                ->when(isset($filters['sortie']) && $filters['sortie'] !== '', fn ($query) => $query->where('est_sorti', $filters['sortie'] === '1'))
                 ->latest('id')
                 ->paginate(100)
                 ->withQueryString()
                 ->through(fn (Cheque $cheque) => $this->serialize($cheque)),
             'filters' => $filters,
+            'montantDisponible' => (float) Cheque::query()->where('est_sorti', false)->sum('montant'),
         ]);
     }
 
@@ -49,11 +52,24 @@ class ChequeController extends Controller
     {
         $cheque->update($request->validate([
             'statut' => ['sometimes', 'required', Rule::in(Cheque::STATUSES)],
-            'facture_recue' => ['sometimes', 'required', 'boolean'],
-            'facture_donnee' => ['sometimes', 'required', 'boolean'],
         ]));
 
         return back()->with('success', 'Chèque mis à jour.');
+    }
+
+    public function updateSortie(Request $request, Cheque $cheque): RedirectResponse
+    {
+        $data = $request->validate([
+            'est_sorti' => ['required', 'boolean'],
+            'fournisseur_sortie_nom' => [Rule::requiredIf($request->boolean('est_sorti')), 'nullable', 'string', 'max:255'],
+        ]);
+
+        $cheque->update([
+            'est_sorti' => $data['est_sorti'],
+            'fournisseur_sortie_nom' => $data['est_sorti'] ? $data['fournisseur_sortie_nom'] : null,
+        ]);
+
+        return back()->with('success', 'Sortie du chèque mise à jour.');
     }
 
     public function destroy(Cheque $cheque): RedirectResponse
@@ -73,8 +89,6 @@ class ChequeController extends Controller
             'date_emission' => ['required', 'date'],
             'date_echeance' => ['required', 'date', 'after_or_equal:date_emission'],
             'statut' => ['required', Rule::in(Cheque::STATUSES)],
-            'facture_recue' => ['required', 'boolean'],
-            'facture_donnee' => ['required', 'boolean'],
             'montant' => ['required', 'numeric', 'gt:0'],
             'note' => ['nullable', 'string'],
         ]);
@@ -91,8 +105,8 @@ class ChequeController extends Controller
             'date_emission' => $cheque->date_emission?->format('Y-m-d'),
             'date_echeance' => $cheque->date_echeance?->format('Y-m-d'),
             'statut' => $cheque->statut,
-            'facture_recue' => $cheque->facture_recue,
-            'facture_donnee' => $cheque->facture_donnee,
+            'est_sorti' => $cheque->est_sorti,
+            'fournisseur_sortie_nom' => $cheque->fournisseur_sortie_nom,
             'montant' => (float) $cheque->montant,
             'note' => $cheque->note,
         ];
