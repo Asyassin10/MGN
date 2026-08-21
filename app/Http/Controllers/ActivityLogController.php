@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -48,9 +49,45 @@ class ActivityLogController extends Controller
             'action' => ['created' => 'Création', 'updated' => 'Modification', 'deleted' => 'Suppression'][$log->action] ?? $log->action,
             'module' => $log->module,
             'subject_label' => $log->subject_label,
+            'url' => $this->documentUrl($log),
             'before' => $this->details($log->before),
             'after' => $this->details($log->after),
         ];
+    }
+
+    private function documentUrl(ActivityLog $log): ?string
+    {
+        if ($log->action === 'deleted') {
+            return null;
+        }
+
+        $attributes = array_merge($log->before ?? [], $log->after ?? []);
+        $model = $this->subjectModel($log);
+        $attribute = fn (string $key) => $model?->getAttribute($key) ?? $attributes[$key] ?? null;
+        $clientId = $attribute('client_id');
+        $fournisseurId = $attribute('fournisseur_id');
+        $releveId = $attribute('fournisseur_releve_compte_id') ?? ($log->subject_type === 'FournisseurReleveCompte' ? $log->subject_id : null);
+        $operationId = $attribute('operation_id') ?? ($log->subject_type === 'Operation' ? $log->subject_id : null);
+
+        return match ($log->subject_type) {
+            'Cheque' => route('cheques.index', ['search' => $log->subject_label]),
+            'ChequeImpaye' => route('cheques.impayes.index', ['search' => $log->subject_label]),
+            'Client' => route('clients.show', $log->subject_id),
+            'ClientEntry', 'ClientPayment', 'ChequeClient' => $clientId ? route('clients.show', $clientId) : route('clients.index'),
+            'Fournisseur' => route('fournisseurs.show', $log->subject_id),
+            'FournisseurReleveCompte', 'FournisseurFacture', 'FournisseurCheque' => $fournisseurId && $releveId ? route('fournisseurs.releves.show', [$fournisseurId, $releveId]) : ($fournisseurId ? route('fournisseurs.show', $fournisseurId) : route('fournisseurs.index')),
+            'Depot' => route('depots.show', $log->subject_id),
+            'Article' => route('depots.index'),
+            'Operation', 'OperationLine' => $operationId ? route('operations.show', $operationId) : route('operations.index'),
+            default => null,
+        };
+    }
+
+    private function subjectModel(ActivityLog $log): ?Model
+    {
+        $class = 'App\\Models\\'.$log->subject_type;
+
+        return class_exists($class) && is_a($class, Model::class, true) ? $class::find($log->subject_id) : null;
     }
 
     private function details(?array $attributes): array
