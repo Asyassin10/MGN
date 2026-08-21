@@ -21,6 +21,27 @@ class ActivityHistoryTest extends TestCase
         $this->actingAs($user)->get(route('settings.database-backup.download'))->assertForbidden();
     }
 
+    public function test_user_management_only_lists_and_manages_restricted_accounts(): void
+    {
+        $admin = User::factory()->create(['name' => 'Admin account', 'role' => 'admin']);
+        $restricted = User::factory()->create(['name' => 'Restricted account', 'role' => 'restricted']);
+
+        $response = $this->actingAs($admin)->get(route('users.index'))->assertOk();
+        preg_match('/<script data-page="app" type="application\/json">(.*?)<\/script>/s', $response->getContent(), $matches);
+        $page = json_decode($matches[1] ?? '', true);
+        $this->assertSame(['Restricted account'], collect($page['props']['users'] ?? [])->pluck('name')->all());
+
+        $this->actingAs($admin)->patch(route('users.update', $admin), [
+            'name' => 'Changed admin',
+            'pin' => '123456',
+        ])->assertNotFound();
+
+        $this->actingAs($admin)->patch(route('users.update', $restricted), [
+            'name' => 'Changed restricted',
+            'pin' => '123456',
+        ])->assertRedirect();
+    }
+
     public function test_history_shows_only_restricted_user_activity_in_readable_french(): void
     {
         $admin = User::factory()->create(['name' => 'Administrateur', 'role' => 'admin']);

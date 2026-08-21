@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Users/Index', ['users' => User::query()->latest()->get()->map(fn (User $user) => $this->serialize($user))]);
+        return Inertia::render('Users/Index', ['users' => User::query()->where('role', 'restricted')->latest()->get()->map(fn (User $user) => $this->serialize($user))]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -25,6 +25,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        abort_unless($user->role === 'restricted', 404);
+
         $data = $this->validated($request, false);
         if (blank($data['pin'] ?? null)) {
             unset($data['pin']);
@@ -36,6 +38,7 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
+        abort_unless($user->role === 'restricted', 404);
         abort_if($user->is(auth()->user()), 422, 'Vous ne pouvez pas supprimer votre propre compte.');
         $user->delete();
 
@@ -49,7 +52,7 @@ class UserController extends Controller
         $request->merge(['modules' => $modules, 'delete_modules' => $deleteModules]);
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'role' => ['required', 'in:admin,restricted'], 'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,employees,cheques'],
+            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,employees,cheques'],
             'delete_modules' => ['nullable', 'array'], 'delete_modules.*' => ['in:depots,fournisseurs,clients,employees,cheques'],
             'pin' => [$creating ? 'required' : 'nullable', 'digits:6'],
         ];
@@ -57,6 +60,7 @@ class UserController extends Controller
         $data['permissions'] = ['modules' => $data['modules'] ?? [], 'delete' => $data['delete_modules'] ?? []];
         unset($data['modules'], $data['delete_modules']);
         if ($creating) {
+            $data['role'] = 'restricted';
             $data['email'] = Str::slug($data['name']).'-'.Str::lower(Str::random(8)).'@local';
             $data['password'] = Str::random(32);
         }
