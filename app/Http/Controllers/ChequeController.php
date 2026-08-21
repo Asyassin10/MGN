@@ -31,6 +31,7 @@ class ChequeController extends Controller
                 ->through(fn (Cheque $cheque) => $this->serialize($cheque)),
             'filters' => $filters,
             'montantDisponible' => (float) Cheque::query()->where('est_sorti', false)->sum('montant'),
+            'chequesDisponiblesCount' => Cheque::query()->where('est_sorti', false)->count(),
         ]);
     }
 

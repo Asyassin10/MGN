@@ -64,6 +64,7 @@ class IndependentChequeModuleTest extends TestCase
         Cheque::create($this->chequeData(['numero_cheque' => 'CH-4', 'montant' => 10, 'est_sorti' => true, 'fournisseur_sortie_nom' => 'Fournisseur']));
 
         $this->assertSame(30.0, (float) Cheque::query()->where('est_sorti', false)->sum('montant'));
+        $this->assertSame(3, Cheque::query()->where('est_sorti', false)->count());
     }
 
     public function test_impaye_starts_unpaid_and_pay_action_keeps_it_with_payment_date(): void

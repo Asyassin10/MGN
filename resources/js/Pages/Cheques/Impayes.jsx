@@ -24,7 +24,7 @@ const fields = [
     { name: 'note', label: 'Note', type: 'textarea' },
 ];
 
-export default function Impayes({ cheques, filters, impayesCount }) {
+export default function Impayes({ cheques, filters, impayesCount, impayesMontantTotal }) {
     const updateFilters = (changes) => router.get(route('cheques.impayes.index'), { ...filters, ...changes }, { preserveState: true, replace: true });
     const defaults = { type: 'cheque', numero_cheque: '', fournisseur_nom: '', client_nom: '', tireur_signataire: '', date_remise: '', montant: '', note: '' };
     const editFields = [...fields, { name: 'statut', label: 'Statut', type: 'select', options: statuses }, { name: 'date_paiement', label: 'Date réelle du paiement', type: 'date' }, { name: 'mode_paiement', label: 'Mode de paiement', type: 'select', options: paymentModes }];
@@ -45,7 +45,7 @@ export default function Impayes({ cheques, filters, impayesCount }) {
     ];
 
     return <AppLayout title="Impayés" actions={<CrudDialog title="Ajouter un chèque impayé" action={route('cheques.impayes.store')} fields={fields} defaults={defaults} trigger={<Button><Plus className="h-4 w-4" />Ajouter un impayé</Button>} />}>
-        <div className="mb-4"><Card className="max-w-sm"><CardContent><div className="text-sm text-zinc-500">Nombre de chèques impayés</div><div className="mt-1 text-2xl font-semibold text-red-700">{impayesCount}</div></CardContent></Card></div>
+        <div className="mb-4 grid gap-3 md:grid-cols-2"><Card><CardContent><div className="text-sm text-zinc-500">Nombre de chèques impayés</div><div className="mt-1 text-2xl font-semibold text-red-700">{impayesCount}</div></CardContent></Card><Card><CardContent><div className="text-sm text-zinc-500">Montant total impayé</div><div className="mt-1 text-2xl font-semibold text-red-700">{money(impayesMontantTotal)}</div></CardContent></Card></div>
         <div className="mb-4 grid gap-2 md:grid-cols-3">
             <Input placeholder="N° chèque, fournisseur, client ou signataire" defaultValue={filters.search || ''} onChange={(event) => updateFilters({ search: event.target.value })} />
             <SearchableSelect value={filters.type || ''} onChange={(type) => updateFilters({ type })} options={types} placeholder="Tous les types" />

@@ -25,7 +25,7 @@ const fields = [
     { name: 'note', label: 'Note', type: 'textarea' },
 ];
 
-export default function Index({ cheques, filters, montantDisponible }) {
+export default function Index({ cheques, filters, montantDisponible, chequesDisponiblesCount }) {
     const updateFilters = (changes) => router.get(route('cheques.index'), { ...filters, ...changes }, { preserveState: true, replace: true });
     const inlineUpdate = (row, changes) => router.patch(route('cheques.inline', row.id), changes, { preserveScroll: true, preserveState: true });
     const defaults = { type: 'cheque', numero_cheque: '', client_nom: '', tireur_signataire: '', date_emission: '', date_echeance: '', statut: 'en_cours', montant: '', note: '' };
@@ -47,7 +47,7 @@ export default function Index({ cheques, filters, montantDisponible }) {
     ];
 
     return <AppLayout title="Chèques" actions={<CrudDialog title="Ajouter un chèque" action={route('cheques.store')} fields={fields} defaults={defaults} trigger={<Button><Plus className="h-4 w-4" />Ajouter un chèque</Button>} />}>
-        <div className="mb-4"><Card className="max-w-sm"><CardContent><div className="text-sm text-zinc-500">Montant total disponible</div><div className="mt-1 text-2xl font-semibold text-emerald-700">{money(montantDisponible)}</div></CardContent></Card></div>
+        <div className="mb-4 grid gap-3 md:grid-cols-2"><Card><CardContent><div className="text-sm text-zinc-500">Montant total disponible</div><div className="mt-1 text-2xl font-semibold text-emerald-700">{money(montantDisponible)}</div></CardContent></Card><Card><CardContent><div className="text-sm text-zinc-500">Chèques non sortis</div><div className="mt-1 text-2xl font-semibold text-emerald-700">{chequesDisponiblesCount}</div></CardContent></Card></div>
         <div className="mb-4 grid gap-2 md:grid-cols-4">
             <Input placeholder="N° chèque, client ou signataire" defaultValue={filters.search || ''} onChange={(event) => updateFilters({ search: event.target.value })} />
             <SearchableSelect value={filters.type || ''} onChange={(type) => updateFilters({ type })} options={types} placeholder="Tous les types" />

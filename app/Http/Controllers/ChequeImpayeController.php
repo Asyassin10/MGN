@@ -30,6 +30,7 @@ class ChequeImpayeController extends Controller
                 ->through(fn (ChequeImpaye $cheque) => $this->serialize($cheque)),
             'filters' => $filters,
             'impayesCount' => ChequeImpaye::query()->where('statut', 'impaye')->count(),
+            'impayesMontantTotal' => (float) ChequeImpaye::query()->where('statut', 'impaye')->sum('montant'),
         ]);
     }
 
