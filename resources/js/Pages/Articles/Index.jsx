@@ -24,7 +24,7 @@ export default function Index({ articles, filters }) {
             render: (row) => (
                 <div className="flex flex-wrap gap-2">
                     <CrudDialog title="Modifier article" action={route('articles.update', row.id)} method="patch" fields={fields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} />
-                    <DeleteButton action={route('articles.destroy', row.id)} title="Supprimer cet article ?" message="La suppression sera refusée si cet article a du stock ou figure dans une opération." />
+                    <DeleteButton action={route('articles.destroy', row.id)} title="Supprimer cet article ?" message="L’article sera retiré de tous les dépôts. Ses lignes d’opérations associées seront également supprimées." />
                 </div>
             ),
         },

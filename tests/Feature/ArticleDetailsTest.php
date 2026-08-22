@@ -64,4 +64,21 @@ class ArticleDetailsTest extends TestCase
         $this->actingAs($admin)->delete(route('articles.destroy', $article))->assertRedirect();
         $this->assertModelMissing($article);
     }
+
+    public function test_article_deletion_removes_its_depot_stock_and_operation_lines(): void
+    {
+        $depot = Depot::create(['name' => 'Dépôt suppression']);
+        $article = Article::create(['reference' => 'ART-CLEAN', 'name' => 'Article à nettoyer']);
+        $article->depots()->attach($depot, ['quantity' => 3]);
+        $operation = Operation::create(['reference' => 'OP-CLEAN', 'type' => 'sortie', 'depot_id' => $depot->id]);
+        $line = OperationLine::create(['operation_id' => $operation->id, 'article_id' => $article->id, 'reference' => 'ART-CLEAN', 'quantity' => 3]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->delete(route('articles.destroy', $article))->assertRedirect();
+
+        $this->assertModelMissing($article);
+        $this->assertDatabaseMissing('depot_article', ['article_id' => $article->id]);
+        $this->assertDatabaseMissing('operation_lines', ['id' => $line->id]);
+        $this->assertDatabaseHas('operations', ['id' => $operation->id]);
+    }
 }
