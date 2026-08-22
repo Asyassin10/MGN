@@ -39,5 +39,11 @@ class ArticleDetailsTest extends TestCase
         $this->assertCount(1, $page['props']['operations']['data']);
         $this->assertSame('OP-001', $page['props']['operations']['data'][0]['reference']);
         $this->assertSame('entree', $page['props']['operations']['data'][0]['type']);
+
+        $indexResponse = $this->actingAs($admin)->get(route('articles.index'))->assertOk();
+        preg_match('/<script data-page="app" type="application\/json">(.*?)<\/script>/s', $indexResponse->getContent(), $matches);
+        $indexPage = json_decode($matches[1] ?? '', true);
+        $row = collect($indexPage['props']['articles']['data'])->firstWhere('id', $article->id);
+        $this->assertSame(12, $row['total_quantity']);
     }
 }

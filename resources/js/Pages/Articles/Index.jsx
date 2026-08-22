@@ -17,7 +17,7 @@ export default function Index({ articles, filters }) {
     const columns = [
         { key: 'reference', label: 'Code', render: (row) => <Link className="font-medium text-zinc-950 hover:underline" href={route('articles.show', row.id)}>{row.reference}</Link> },
         { key: 'name', label: 'Article', render: (row) => <Link className="font-medium text-zinc-950 hover:underline" href={route('articles.show', row.id)}>{row.name}</Link> },
-        { key: 'depots_count', label: 'Dépôts assignés' },
+        { key: 'total_quantity', label: 'Quantité totale' },
         {
             key: 'actions',
             label: 'Actions',

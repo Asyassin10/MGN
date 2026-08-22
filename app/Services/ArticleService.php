@@ -13,7 +13,7 @@ class ArticleService
     public function list(array $filters): LengthAwarePaginator
     {
         return $this->baseQuery($filters)
-            ->withCount('depots')
+            ->withSum('depots as total_quantity', 'depot_article.quantity')
             ->latest()
             ->paginate(100)
             ->withQueryString()
@@ -21,7 +21,7 @@ class ArticleService
                 'id' => $article->id,
                 'reference' => $article->reference,
                 'name' => $article->display_name,
-                'depots_count' => $article->depots_count,
+                'total_quantity' => (int) ($article->total_quantity ?? 0),
             ]);
     }
 
