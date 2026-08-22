@@ -38,7 +38,7 @@ class ArticleController extends Controller
     public function store(StoreArticleRequest $request): RedirectResponse
     {
         $article = Article::create($request->validated());
-        $sync = Depot::query()->pluck('id')->mapWithKeys(fn ($id) => [$id => ['quantity' => 1]])->all();
+        $sync = Depot::query()->pluck('id')->mapWithKeys(fn ($id) => [$id => ['quantity' => 0]])->all();
         $article->depots()->sync($sync);
 
         return back()->with('success', 'Article créé et assigné aux dépôts.');

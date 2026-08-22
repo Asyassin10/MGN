@@ -46,4 +46,23 @@ class ArticleDetailsTest extends TestCase
         $row = collect($indexPage['props']['articles']['data'])->firstWhere('id', $article->id);
         $this->assertSame(12, $row['total_quantity']);
     }
+
+    public function test_new_article_is_assigned_to_every_depot_with_zero_quantity_and_can_be_deleted(): void
+    {
+        $depotA = Depot::create(['name' => 'Dépôt A']);
+        $depotB = Depot::create(['name' => 'Dépôt B']);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('articles.store'), [
+            'reference' => 'ART-DELETE',
+            'name' => 'Article supprimable',
+        ])->assertRedirect();
+
+        $article = Article::query()->where('reference', 'ART-DELETE')->firstOrFail();
+        $this->assertSame([$depotA->id, $depotB->id], $article->depots()->orderBy('depots.id')->pluck('depots.id')->all());
+        $this->assertSame([0, 0], $article->depots()->orderBy('depots.id')->pluck('depot_article.quantity')->map(fn ($quantity) => (int) $quantity)->all());
+
+        $this->actingAs($admin)->delete(route('articles.destroy', $article))->assertRedirect();
+        $this->assertModelMissing($article);
+    }
 }
