@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Download, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
@@ -15,8 +15,8 @@ const fields = [
 export default function Index({ articles, filters }) {
     const update = (key, value) => router.get(route('articles.index'), { ...filters, [key]: value }, { preserveState: true, replace: true });
     const columns = [
-        { key: 'reference', label: 'Code' },
-        { key: 'name', label: 'Article' },
+        { key: 'reference', label: 'Code', render: (row) => <Link className="font-medium text-zinc-950 hover:underline" href={route('articles.show', row.id)}>{row.reference}</Link> },
+        { key: 'name', label: 'Article', render: (row) => <Link className="font-medium text-zinc-950 hover:underline" href={route('articles.show', row.id)}>{row.name}</Link> },
         { key: 'depots_count', label: 'Dépôts assignés' },
         {
             key: 'actions',
@@ -35,7 +35,7 @@ export default function Index({ articles, filters }) {
             <div className="mb-4 max-w-md">
                 <Input placeholder="Recherche code ou article" defaultValue={filters.search || ''} onChange={(event) => update('search', event.target.value)} />
             </div>
-            <DataTable columns={columns} rows={articles.data} pagination={articles} />
+            <DataTable columns={columns} rows={articles.data} pagination={articles} onRowClick={(row) => router.visit(route('articles.show', row.id))} />
         </AppLayout>
     );
 }

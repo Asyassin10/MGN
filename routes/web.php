@@ -9,6 +9,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseBackupController;
 use App\Http\Controllers\DepotController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\SettingsController;
@@ -28,7 +29,7 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('permission:depots')->group(function (): void {
         Route::resource('depots', DepotController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
-        Route::resource('articles', ArticleController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('articles', ArticleController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::post('/depots/{depot}/adjust-stock', [DepotController::class, 'adjustStock'])->name('depots.adjust-stock');
         Route::resource('operations', OperationController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
@@ -48,6 +49,12 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/cheques/{cheque}', [ChequeController::class, 'destroy'])->name('cheques.destroy');
     });
     Route::middleware('permission:admin')->group(function (): void {
+        Route::resource('employees', EmployeeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::get('/employees/{employee}/payments', [EmployeeController::class, 'paymentHistory'])->name('employees.payments.index');
+        Route::get('/employees/{employee}/absences', [EmployeeController::class, 'absenceHistory'])->name('employees.absences.index');
+        Route::post('/employees/{employee}/work-days', [EmployeeController::class, 'storeWorkDay'])->name('employees.work-days.store');
+        Route::post('/employees/{employee}/absences', [EmployeeController::class, 'storeAbsence'])->name('employees.absences.store');
+        Route::post('/employees/{employee}/salary-payments', [EmployeeController::class, 'storeSalaryPayment'])->name('employees.salary-payments.store');
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::get('/settings/database-backup', [DatabaseBackupController::class, 'download'])->name('settings.database-backup.download');
         Route::patch('/settings/pin', [SettingsController::class, 'updatePin'])->name('settings.pin.update');

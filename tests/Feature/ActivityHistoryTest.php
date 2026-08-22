@@ -53,7 +53,8 @@ class ActivityHistoryTest extends TestCase
         $newUser = User::query()->where('name', 'New restricted')->firstOrFail();
         $this->assertSame(['depots'], $newUser->permissions['modules']);
         $this->assertSame([], $newUser->permissions['delete']);
-        $this->actingAs($admin)->get('/employees')->assertNotFound();
+        $this->actingAs($restricted)->get('/employees')->assertForbidden();
+        $this->actingAs($admin)->get('/employees')->assertOk();
     }
 
     public function test_history_shows_only_restricted_user_activity_in_readable_french(): void

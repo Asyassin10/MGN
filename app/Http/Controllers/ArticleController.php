@@ -30,6 +30,11 @@ class ArticleController extends Controller
         ]);
     }
 
+    public function show(Article $article, ArticleService $service): Response
+    {
+        return Inertia::render('Articles/Show', $service->show($article));
+    }
+
     public function store(StoreArticleRequest $request): RedirectResponse
     {
         $article = Article::create($request->validated());
