@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreArticleRequest;
 use App\Http\Requests\UpdateArticleRequest;
 use App\Models\Article;
-use App\Models\Depot;
 use App\Services\ArticleService;
 use App\Support\DeleteBlockers;
 use Illuminate\Http\RedirectResponse;
@@ -37,11 +36,9 @@ class ArticleController extends Controller
 
     public function store(StoreArticleRequest $request): RedirectResponse
     {
-        $article = Article::create($request->validated());
-        $sync = Depot::query()->pluck('id')->mapWithKeys(fn ($id) => [$id => ['quantity' => 0]])->all();
-        $article->depots()->sync($sync);
+        Article::create($request->validated());
 
-        return back()->with('success', 'Article créé et assigné aux dépôts.');
+        return back()->with('success', 'Article créé. Ajoutez-le à un dépôt lors du premier ajustement de stock ou de la première opération.');
     }
 
     public function update(UpdateArticleRequest $request, Article $article): RedirectResponse
