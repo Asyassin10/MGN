@@ -67,7 +67,7 @@ class ClientService
                 ->paginate(100, ['*'], 'entries_page')
                 ->withQueryString()
                 ->through(fn (ClientEntry $entry) => $this->serializeEntry($entry)),
-            'payments' => ['data' => $paymentsQuery->latest('date_paiement')->latest('id')->get()->map(fn (ClientPayment $payment) => $this->serializePayment($payment))->merge($this->chequesQuery($client, $filters)->latest('date_echeance')->latest('id')->get()->map(fn (ChequeClient $cheque) => $this->serializeCheque($cheque)))->sortByDesc('sort_key')->values()->all(), 'links' => []],
+            'payments' => ['data' => $paymentsQuery->latest('date_paiement')->latest('id')->get()->map(fn (ClientPayment $payment) => $this->serializePayment($payment))->toBase()->merge($this->chequesQuery($client, $filters)->latest('date_echeance')->latest('id')->get()->map(fn (ChequeClient $cheque) => $this->serializeCheque($cheque))->toBase())->sortByDesc('sort_key')->values()->all(), 'links' => []],
         ];
     }
 
