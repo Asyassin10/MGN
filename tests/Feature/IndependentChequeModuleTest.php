@@ -67,6 +67,36 @@ class IndependentChequeModuleTest extends TestCase
         $this->assertSame(3, Cheque::query()->where('est_sorti', false)->count());
     }
 
+    public function test_cheques_can_be_filtered_by_supplier_and_exported_as_excel(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $selected = Cheque::create($this->chequeData([
+            'numero_cheque' => 'CH-SUPPLIER',
+            'est_sorti' => true,
+            'fournisseur_sortie_nom' => 'Fournisseur Atlas',
+        ]));
+        Cheque::create($this->chequeData([
+            'numero_cheque' => 'CH-OTHER',
+            'est_sorti' => true,
+            'fournisseur_sortie_nom' => 'Fournisseur Autre',
+        ]));
+
+        $this->get(route('cheques.index', ['fournisseur' => 'Atlas']))
+            ->assertInertia(fn ($page) => $page
+                ->component('Cheques/Index')
+                ->has('cheques.data', 1)
+                ->where('cheques.data.0.numero_cheque', 'CH-SUPPLIER'));
+
+        $response = $this->get(route('cheques.export', [
+            'fournisseur' => 'Atlas',
+            'selected_ids' => [$selected->id],
+        ]));
+
+        $response->assertDownload('cheques-export.xls');
+        $this->assertStringContainsString('CH-SUPPLIER', $response->streamedContent());
+        $this->assertStringNotContainsString('CH-OTHER', $response->streamedContent());
+    }
+
     public function test_impaye_starts_unpaid_and_pay_action_keeps_it_with_payment_date(): void
     {
         $this->actingAs(User::factory()->create());

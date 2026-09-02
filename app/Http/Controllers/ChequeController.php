@@ -3,28 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cheque;
+use App\Support\ExcelExport;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChequeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'type', 'statut', 'sortie']);
+        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie']);
 
         return Inertia::render('Cheques/Index', [
-            'cheques' => Cheque::query()
-                ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
-                    ->where('numero_cheque', 'like', "%{$value}%")
-                    ->orWhere('client_nom', 'like', "%{$value}%")
-                    ->orWhere('fournisseur_sortie_nom', 'like', "%{$value}%")
-                    ->orWhere('tireur_signataire', 'like', "%{$value}%")))
-                ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
-                ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
-                ->when(isset($filters['sortie']) && $filters['sortie'] !== '', fn ($query) => $query->where('est_sorti', $filters['sortie'] === '1'))
+            'cheques' => $this->filteredQuery($filters)
                 ->latest('id')
                 ->paginate(100)
                 ->withQueryString()
@@ -33,6 +28,36 @@ class ChequeController extends Controller
             'montantDisponible' => (float) Cheque::query()->where('est_sorti', false)->sum('montant'),
             'chequesDisponiblesCount' => Cheque::query()->where('est_sorti', false)->count(),
         ]);
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie']);
+        $selectedIds = $request->validate([
+            'selected_ids' => ['nullable', 'array'],
+            'selected_ids.*' => ['integer', 'distinct', 'exists:cheques,id'],
+        ])['selected_ids'] ?? [];
+
+        $rows = $this->filteredQuery($filters)
+            ->when($selectedIds !== [], fn (Builder $query) => $query->whereKey($selectedIds))
+            ->latest('id')
+            ->get();
+
+        return ExcelExport::download('cheques-export', [
+            'N° chèque', 'Type', 'Client', 'Tireur / signataire', 'Montant', 'Émission', 'Échéance', 'Statut', 'Sorti', 'Fournisseur', 'Note',
+        ], $rows->map(fn (Cheque $cheque) => [
+            $cheque->numero_cheque,
+            $cheque->type === 'cheque' ? 'Chèque' : 'Effet',
+            $cheque->client_nom,
+            $cheque->tireur_signataire,
+            $cheque->montant,
+            $cheque->date_emission?->format('Y-m-d'),
+            $cheque->date_echeance?->format('Y-m-d'),
+            $cheque->statut,
+            $cheque->est_sorti ? 'Oui' : 'Non',
+            $cheque->fournisseur_sortie_nom,
+            $cheque->note,
+        ]));
     }
 
     public function store(Request $request): RedirectResponse
@@ -93,6 +118,20 @@ class ChequeController extends Controller
             'montant' => ['required', 'numeric', 'gt:0'],
             'note' => ['nullable', 'string'],
         ]);
+    }
+
+    private function filteredQuery(array $filters): Builder
+    {
+        return Cheque::query()
+            ->when($filters['search'] ?? null, fn (Builder $query, string $value) => $query->where(fn (Builder $inner) => $inner
+                ->where('numero_cheque', 'like', "%{$value}%")
+                ->orWhere('client_nom', 'like', "%{$value}%")
+                ->orWhere('fournisseur_sortie_nom', 'like', "%{$value}%")
+                ->orWhere('tireur_signataire', 'like', "%{$value}%")))
+            ->when($filters['fournisseur'] ?? null, fn (Builder $query, string $value) => $query->where('fournisseur_sortie_nom', 'like', "%{$value}%"))
+            ->when($filters['type'] ?? null, fn (Builder $query, string $value) => $query->where('type', $value))
+            ->when($filters['statut'] ?? null, fn (Builder $query, string $value) => $query->where('statut', $value))
+            ->when(isset($filters['sortie']) && $filters['sortie'] !== '', fn (Builder $query) => $query->where('est_sorti', $filters['sortie'] === '1'));
     }
 
     private function serialize(Cheque $cheque): array

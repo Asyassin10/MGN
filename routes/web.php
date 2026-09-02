@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'update'])->name('cheques.impayes.update');
         Route::delete('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'destroy'])->name('cheques.impayes.destroy');
         Route::get('/cheques', [ChequeController::class, 'index'])->name('cheques.index');
+        Route::get('/cheques/export', [ChequeController::class, 'export'])->name('cheques.export');
         Route::post('/cheques', [ChequeController::class, 'store'])->name('cheques.store');
         Route::patch('/cheques/{cheque}/sortie', [ChequeController::class, 'updateSortie'])->name('cheques.sortie');
         Route::patch('/cheques/{cheque}/inline', [ChequeController::class, 'updateInline'])->name('cheques.inline');
