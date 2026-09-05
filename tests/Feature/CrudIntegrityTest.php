@@ -9,6 +9,7 @@ use App\Models\Fournisseur;
 use App\Models\User;
 use App\Services\FournisseurService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class CrudIntegrityTest extends TestCase
@@ -62,15 +63,16 @@ class CrudIntegrityTest extends TestCase
 
     public function test_supplier_and_statement_financial_summaries_include_counts_and_totals(): void
     {
+        Carbon::setTestNow('2026-09-01 10:00:00');
         $fournisseur = Fournisseur::create(['nom' => 'Fournisseur résumé']);
         $firstReleve = $fournisseur->releveComptes()->create(['code_client' => 'REL-1', 'date_releve' => '2026-09-01']);
         $secondReleve = $fournisseur->releveComptes()->create(['code_client' => 'REL-2', 'date_releve' => '2026-09-02']);
 
         $firstReleve->factures()->create(['fournisseur_id' => $fournisseur->id, 'numero_facture' => 'FAC-1', 'date_facture' => '2026-09-01', 'montant' => 300]);
         $firstReleve->factures()->create(['fournisseur_id' => $fournisseur->id, 'numero_facture' => 'FAC-2', 'date_facture' => '2026-09-01', 'montant' => 200]);
-        $firstReleve->cheques()->create(['fournisseur_id' => $fournisseur->id, 'type' => 'cheque', 'numero_cheque' => 'PAY-1', 'banque' => 'Banque', 'montant' => 150, 'statut' => 'en_cours']);
+        $firstReleve->cheques()->create(['fournisseur_id' => $fournisseur->id, 'type' => 'cheque', 'numero_cheque' => 'PAY-1', 'banque' => 'Banque', 'date_emission' => '2026-09-01', 'montant' => 150, 'statut' => 'en_cours']);
         $secondReleve->factures()->create(['fournisseur_id' => $fournisseur->id, 'numero_facture' => 'FAC-3', 'date_facture' => '2026-09-02', 'montant' => 100]);
-        $secondReleve->cheques()->create(['fournisseur_id' => $fournisseur->id, 'type' => 'cheque', 'numero_cheque' => 'PAY-2', 'banque' => 'Banque', 'montant' => 50, 'statut' => 'en_cours']);
+        $secondReleve->cheques()->create(['fournisseur_id' => $fournisseur->id, 'type' => 'cheque', 'numero_cheque' => 'PAY-2', 'banque' => 'Banque', 'date_emission' => '2026-09-02', 'montant' => 50, 'statut' => 'en_cours']);
 
         $service = app(FournisseurService::class);
         $supplierSummary = $service->show($fournisseur, [])['fournisseur'];
@@ -86,5 +88,13 @@ class CrudIntegrityTest extends TestCase
         $this->assertSame(500.0, $statementSummary['total_factures']);
         $this->assertSame(150.0, $statementSummary['total_paye']);
         $this->assertSame(350.0, $statementSummary['balance']);
+        $this->assertSame(2, $supplierSummary['today_factures_count']);
+        $this->assertSame(1, $supplierSummary['today_payments_count']);
+        $this->assertSame(500.0, $supplierSummary['today_total_factures']);
+        $this->assertSame(150.0, $supplierSummary['today_total_paye']);
+        $this->assertSame(2, $statementSummary['today_factures_count']);
+        $this->assertSame(1, $statementSummary['today_payments_count']);
+
+        Carbon::setTestNow();
     }
 }

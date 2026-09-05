@@ -39,8 +39,8 @@ export default function Show({ fournisseur, releves }) {
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Nom</div><div className="mt-2 font-medium">{fournisseur.nom}</div></CardContent></Card>
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Ville</div><div className="mt-2 font-medium">{fournisseur.ville || '-'}</div></CardContent></Card>
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Téléphone</div><div className="mt-2 font-medium">{fournisseur.telephone || '-'}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Factures reçues ({fournisseur.factures_count})</div><div className="mt-2 font-medium text-red-700">{money(fournisseur.total_factures)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Paiements donnés ({fournisseur.payments_count})</div><div className="mt-2 font-medium text-emerald-700">{money(fournisseur.total_paye)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Factures reçues aujourd’hui ({fournisseur.today_factures_count})</div><div className="mt-2 font-medium text-red-700">{money(fournisseur.today_total_factures)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Paiements donnés aujourd’hui ({fournisseur.today_payments_count})</div><div className="mt-2 font-medium text-emerald-700">{money(fournisseur.today_total_paye)}</div></CardContent></Card>
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Solde</div><div className="mt-2"><Badge variant={fournisseur.balance > 0 ? 'red' : 'green'}>{money(fournisseur.balance)}</Badge></div></CardContent></Card>
             </div>
 

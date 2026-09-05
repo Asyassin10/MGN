@@ -33,7 +33,14 @@ class FournisseurService
 
     public function show(Fournisseur $fournisseur, array $filters): array
     {
-        $fournisseur->loadSum('factures', 'montant')->loadSum('cheques', 'montant')->loadCount(['factures', 'cheques']);
+        $today = today();
+        $fournisseur->loadSum('factures', 'montant')->loadSum('cheques', 'montant')->loadCount(['factures', 'cheques'])
+            ->loadSum(['factures as today_factures_sum_montant' => fn (Builder $query) => $query->whereDate('date_facture', $today)], 'montant')
+            ->loadSum(['cheques as today_cheques_sum_montant' => fn (Builder $query) => $query->whereDate('date_emission', $today)], 'montant')
+            ->loadCount([
+                'factures as today_factures_count' => fn (Builder $query) => $query->whereDate('date_facture', $today),
+                'cheques as today_cheques_count' => fn (Builder $query) => $query->whereDate('date_emission', $today),
+            ]);
 
         return [
             'fournisseur' => $this->serialize($fournisseur),
@@ -44,8 +51,15 @@ class FournisseurService
     public function releve(Fournisseur $fournisseur, FournisseurReleveCompte $releve, array $filters): array
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
+        $today = today();
         $fournisseur->loadSum('factures', 'montant')->loadSum('cheques', 'montant')->loadCount(['factures', 'cheques']);
-        $releve->loadSum('factures', 'montant')->loadSum('cheques', 'montant')->loadCount(['factures', 'cheques']);
+        $releve->loadSum('factures', 'montant')->loadSum('cheques', 'montant')->loadCount(['factures', 'cheques'])
+            ->loadSum(['factures as today_factures_sum_montant' => fn (Builder $query) => $query->whereDate('date_facture', $today)], 'montant')
+            ->loadSum(['cheques as today_cheques_sum_montant' => fn (Builder $query) => $query->whereDate('date_emission', $today)], 'montant')
+            ->loadCount([
+                'factures as today_factures_count' => fn (Builder $query) => $query->whereDate('date_facture', $today),
+                'cheques as today_cheques_count' => fn (Builder $query) => $query->whereDate('date_emission', $today),
+            ]);
 
         return [
             'fournisseur' => $this->serialize($fournisseur),
@@ -110,7 +124,7 @@ class FournisseurService
         $due = (float) ($fournisseur->factures_sum_montant ?? 0);
         $paid = (float) ($fournisseur->cheques_sum_montant ?? 0);
 
-        return ['id' => $fournisseur->id, 'nom' => $fournisseur->nom, 'telephone' => $fournisseur->telephone, 'ville' => $fournisseur->ville, 'note' => $fournisseur->note, 'factures_count' => (int) ($fournisseur->factures_count ?? 0), 'payments_count' => (int) ($fournisseur->cheques_count ?? 0), 'total_factures' => round($due, 2), 'total_paye' => round($paid, 2), 'balance' => round($due - $paid, 2)];
+        return ['id' => $fournisseur->id, 'nom' => $fournisseur->nom, 'telephone' => $fournisseur->telephone, 'ville' => $fournisseur->ville, 'note' => $fournisseur->note, 'factures_count' => (int) ($fournisseur->factures_count ?? 0), 'payments_count' => (int) ($fournisseur->cheques_count ?? 0), 'today_factures_count' => (int) ($fournisseur->today_factures_count ?? 0), 'today_payments_count' => (int) ($fournisseur->today_cheques_count ?? 0), 'today_total_factures' => round((float) ($fournisseur->today_factures_sum_montant ?? 0), 2), 'today_total_paye' => round((float) ($fournisseur->today_cheques_sum_montant ?? 0), 2), 'total_factures' => round($due, 2), 'total_paye' => round($paid, 2), 'balance' => round($due - $paid, 2)];
     }
 
     public function serializeReleve(FournisseurReleveCompte $releve): array
@@ -118,7 +132,7 @@ class FournisseurService
         $due = (float) ($releve->factures_sum_montant ?? 0);
         $paid = (float) ($releve->cheques_sum_montant ?? 0);
 
-        return ['id' => $releve->id, 'code_client' => $releve->code_client, 'date_releve' => $releve->date_releve?->format('Y-m-d'), 'note' => $releve->note, 'factures_count' => (int) ($releve->factures_count ?? 0), 'payments_count' => (int) ($releve->cheques_count ?? 0), 'total_factures' => round($due, 2), 'total_paye' => round($paid, 2), 'balance' => round($due - $paid, 2)];
+        return ['id' => $releve->id, 'code_client' => $releve->code_client, 'date_releve' => $releve->date_releve?->format('Y-m-d'), 'note' => $releve->note, 'factures_count' => (int) ($releve->factures_count ?? 0), 'payments_count' => (int) ($releve->cheques_count ?? 0), 'today_factures_count' => (int) ($releve->today_factures_count ?? 0), 'today_payments_count' => (int) ($releve->today_cheques_count ?? 0), 'today_total_factures' => round((float) ($releve->today_factures_sum_montant ?? 0), 2), 'today_total_paye' => round((float) ($releve->today_cheques_sum_montant ?? 0), 2), 'total_factures' => round($due, 2), 'total_paye' => round($paid, 2), 'balance' => round($due - $paid, 2)];
     }
 
     private function serializeGlobalReleve(FournisseurReleveCompte $releve): array

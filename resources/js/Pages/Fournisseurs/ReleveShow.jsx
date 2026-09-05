@@ -90,8 +90,8 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
             <div className="mb-4 grid gap-4 md:grid-cols-5">
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Code client</div><div className="mt-2 font-medium">{releve.code_client}</div></CardContent></Card>
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Date relevé</div><div className="mt-2 font-medium">{releve.date_releve}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Factures reçues ({releve.factures_count})</div><div className="mt-2 font-medium text-red-700">{money(releve.total_factures)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Paiements donnés ({releve.payments_count})</div><div className="mt-2 font-medium text-emerald-700">{money(releve.total_paye)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Factures reçues aujourd’hui ({releve.today_factures_count})</div><div className="mt-2 font-medium text-red-700">{money(releve.today_total_factures)}</div></CardContent></Card>
+                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Paiements donnés aujourd’hui ({releve.today_payments_count})</div><div className="mt-2 font-medium text-emerald-700">{money(releve.today_total_paye)}</div></CardContent></Card>
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Reste</div><div className="mt-2 font-medium">{money(releve.balance)}</div></CardContent></Card>
             </div>
 
