@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import { Download, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import SearchableSelect from '@/Components/SearchableSelect';
 import { Button } from '@/Components/ui/button';
@@ -22,7 +22,7 @@ export default function Show({ depot, articles, filters, articleOptions }) {
                 <Card><CardContent><div className="text-sm uppercase text-zinc-500">Articles</div><div className="mt-2 font-medium">{depot.articles_count}</div></CardContent></Card>
             </div>
             <div className="mb-4 max-w-sm"><Input placeholder="Rechercher article" defaultValue={filters.search || ''} onChange={(e) => router.get(route('depots.show', depot.id), { search: e.target.value }, { preserveState: true, replace: true })} /></div>
-            <DataTable columns={[{ key: 'reference', label: 'Référence' }, { key: 'name', label: 'Article', render: (row) => row.name || '-' }, { key: 'quantity', label: 'Quantité' }]} rows={articles.data} pagination={articles} />
+            <ExportableDataTable columns={[{ key: 'reference', label: 'Référence' }, { key: 'name', label: 'Article', render: (row) => row.name || '-' }, { key: 'quantity', label: 'Quantité' }]} rows={articles.data} pagination={articles} exportUrl={route('depots.show', depot.id)} exportParams={{ ...filters, export: 1 }} />
         </AppLayout>
     );
 }

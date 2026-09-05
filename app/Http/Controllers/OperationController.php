@@ -10,9 +10,9 @@ use App\Models\Operation;
 use App\Services\OperationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -20,7 +20,7 @@ class OperationController extends Controller
 {
     public function index(Request $request, OperationService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'type', 'depot_id', 'employee_id', 'date_from', 'date_to']);
+        $filters = [...$request->only(['search', 'type', 'depot_id', 'employee_id', 'date_from', 'date_to']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
 
         if ($request->boolean('export')) {
             return $service->export($filters);

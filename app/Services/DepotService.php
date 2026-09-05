@@ -58,9 +58,9 @@ class DepotService
         ];
     }
 
-    public function exportDepots(): StreamedResponse
+    public function exportDepots(array $selectedIds = []): StreamedResponse
     {
-        $rows = collect($this->list())
+        $rows = collect($this->list())->when($selectedIds, fn ($depots) => $depots->whereIn('id', $selectedIds))
             ->map(fn (array $depot) => [
                 $depot['name'],
                 $depot['location'],
@@ -71,12 +71,13 @@ class DepotService
         return ExcelExport::download('depots-export', ['Depot', 'Emplacement', 'Stock total', 'Articles'], $rows);
     }
 
-    public function exportArticles(Depot $depot, ?string $search): StreamedResponse
+    public function exportArticles(Depot $depot, ?string $search, array $selectedIds = []): StreamedResponse
     {
         $rows = $depot->articles()
             ->when($search, fn ($query, $value) => $query->where(fn ($inner) => $inner
                 ->where('articles.name', 'like', "%{$value}%")
                 ->orWhere('articles.reference', 'like', "%{$value}%")))
+            ->when($selectedIds, fn ($query) => $query->whereIn('articles.id', $selectedIds))
             ->orderByDesc('depot_article.created_at')
             ->orderByDesc('articles.id')
             ->get()

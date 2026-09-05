@@ -19,7 +19,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request, EmployeeService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'poste']);
+        $filters = [...$request->only(['search', 'poste']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
 
         if ($request->boolean('export')) {
             return $service->export($filters);

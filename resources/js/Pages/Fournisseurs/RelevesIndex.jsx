@@ -3,7 +3,7 @@ import { Download, FileText } from 'lucide-react';
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DateRangePicker from '@/Components/DateRangePicker';
 import DeleteButton from '@/Components/DeleteButton';
 import SearchableSelect from '@/Components/SearchableSelect';
@@ -73,10 +73,12 @@ export default function RelevesIndex({ releves, fournisseurs, filters }) {
                 <SearchableSelect value={filters.fournisseur_id || ''} onChange={(value) => update({ fournisseur_id: value })} options={fournisseurs} placeholder="Tous les fournisseurs" />
                 <DateRangePicker from={filters.date_from || ''} to={filters.date_to || ''} onChange={({ from, to }) => update({ date_from: from, date_to: to })} label="Période relevé" />
             </div>
-            <DataTable
+            <ExportableDataTable
                 columns={columns}
                 rows={releves.data}
                 pagination={releves}
+                exportUrl={route('fournisseurs.releves.index')}
+                exportParams={{ ...filters, export: 1 }}
                 empty="Aucun relevé compte trouvé."
                 onRowClick={(row) => router.visit(route('fournisseurs.releves.show', [row.fournisseur_id, row.id]))}
             />

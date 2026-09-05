@@ -57,33 +57,33 @@ class FournisseurService
 
     public function export(array $filters): StreamedResponse
     {
-        $rows = $this->baseQuery($filters)->latest()->get()->map(fn (Fournisseur $fournisseur) => [$fournisseur->nom, $fournisseur->ville, $fournisseur->telephone, $fournisseur->factures_sum_montant ?? 0, $fournisseur->cheques_sum_montant ?? 0, $fournisseur->balance]);
+        $rows = $this->baseQuery($filters)->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest()->get()->map(fn (Fournisseur $fournisseur) => [$fournisseur->nom, $fournisseur->ville, $fournisseur->telephone, $fournisseur->factures_sum_montant ?? 0, $fournisseur->cheques_sum_montant ?? 0, $fournisseur->balance]);
 
         return ExcelExport::download('fournisseurs-export', ['Nom', 'Ville', 'Telephone', 'Total factures', 'Total cheques', 'Solde'], $rows);
     }
 
-    public function exportReleves(Fournisseur $fournisseur): StreamedResponse
+    public function exportReleves(Fournisseur $fournisseur, array $filters = []): StreamedResponse
     {
-        $rows = $fournisseur->releveComptes()->withSum('factures', 'montant')->withSum('cheques', 'montant')->latest('date_releve')->get()->map(fn (FournisseurReleveCompte $releve) => [$releve->code_client, $releve->date_releve?->format('Y-m-d'), $releve->factures_sum_montant ?? 0, $releve->cheques_sum_montant ?? 0, $this->serializeReleve($releve)['balance']]);
+        $rows = $fournisseur->releveComptes()->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->withSum('factures', 'montant')->withSum('cheques', 'montant')->latest('date_releve')->get()->map(fn (FournisseurReleveCompte $releve) => [$releve->code_client, $releve->date_releve?->format('Y-m-d'), $releve->factures_sum_montant ?? 0, $releve->cheques_sum_montant ?? 0, $this->serializeReleve($releve)['balance']]);
 
         return ExcelExport::download('fournisseur-'.$fournisseur->id.'-releves-export', ['Code client', 'Date releve', 'Total factures', 'Total cheques', 'Solde'], $rows);
     }
 
     public function exportAllReleves(array $filters): StreamedResponse
     {
-        $rows = $this->relevesQuery($filters)->latest('date_releve')->get()->map(fn (FournisseurReleveCompte $releve) => [$releve->fournisseur->nom, $releve->code_client, $releve->date_releve?->format('Y-m-d'), $releve->factures_sum_montant ?? 0, $releve->cheques_sum_montant ?? 0, $this->serializeReleve($releve)['balance']]);
+        $rows = $this->relevesQuery($filters)->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest('date_releve')->get()->map(fn (FournisseurReleveCompte $releve) => [$releve->fournisseur->nom, $releve->code_client, $releve->date_releve?->format('Y-m-d'), $releve->factures_sum_montant ?? 0, $releve->cheques_sum_montant ?? 0, $this->serializeReleve($releve)['balance']]);
 
         return ExcelExport::download('releves-compte-fournisseurs-export', ['Fournisseur', 'Code client', 'Date releve', 'Total factures', 'Total cheques', 'Solde'], $rows);
     }
 
     public function exportReleveFactures(FournisseurReleveCompte $releve, array $filters): StreamedResponse
     {
-        return ExcelExport::download('releve-'.$releve->id.'-factures-export', ['Date facture', 'N facture', 'Montant', 'Note'], $this->facturesQuery($releve, $filters)->latest('date_facture')->get()->map(fn ($facture) => [$facture->date_facture?->format('Y-m-d'), $facture->numero_facture, $facture->montant, $facture->note]));
+        return ExcelExport::download('releve-'.$releve->id.'-factures-export', ['Date facture', 'N facture', 'Montant', 'Note'], $this->facturesQuery($releve, $filters)->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest('date_facture')->get()->map(fn ($facture) => [$facture->date_facture?->format('Y-m-d'), $facture->numero_facture, $facture->montant, $facture->note]));
     }
 
     public function exportRelevePayments(FournisseurReleveCompte $releve, array $filters): StreamedResponse
     {
-        return ExcelExport::download('releve-'.$releve->id.'-cheques-export', ['Numero', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut', 'Facture recue', 'Facture donnee'], $this->chequesQuery($releve, $filters)->latest('date_echeance')->latest('id')->get()->map(fn (FournisseurCheque $cheque) => [$cheque->numero_cheque, $cheque->type, $cheque->banque, $cheque->tireur_signataire, $cheque->montant, $cheque->date_emission?->format('Y-m-d'), $cheque->date_echeance?->format('Y-m-d'), $cheque->statut, $cheque->facture_recue ? 'Oui' : 'Non', $cheque->facture_donnee ? 'Oui' : 'Non']));
+        return ExcelExport::download('releve-'.$releve->id.'-cheques-export', ['Numero', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut', 'Facture recue', 'Facture donnee'], $this->chequesQuery($releve, $filters)->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest('date_echeance')->latest('id')->get()->map(fn (FournisseurCheque $cheque) => [$cheque->numero_cheque, $cheque->type, $cheque->banque, $cheque->tireur_signataire, $cheque->montant, $cheque->date_emission?->format('Y-m-d'), $cheque->date_echeance?->format('Y-m-d'), $cheque->statut, $cheque->facture_recue ? 'Oui' : 'Non', $cheque->facture_donnee ? 'Oui' : 'Non']));
     }
 
     public function pdfReleve(Fournisseur $fournisseur, FournisseurReleveCompte $releve): Response

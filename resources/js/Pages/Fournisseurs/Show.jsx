@@ -2,7 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Download, FileText, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -46,10 +46,12 @@ export default function Show({ fournisseur, releves }) {
                 Les relevés compte de ce fournisseur sont listés ci-dessous. Ouvrez un relevé uniquement pour gérer ses factures et ses paiements.
             </div>
 
-            <DataTable
+            <ExportableDataTable
                 columns={columns}
                 rows={releves.data}
                 pagination={releves}
+                exportUrl={route('fournisseurs.show', fournisseur.id)}
+                exportParams={{ export: 1 }}
                 empty="Aucun relevé compte pour ce fournisseur."
                 onRowClick={(row) => router.visit(route('fournisseurs.releves.show', [fournisseur.id, row.id]))}
             />

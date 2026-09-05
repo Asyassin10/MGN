@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarDays, Download, FileText, Plus } from 'lucide-react'
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -113,7 +113,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         <a href={route('fournisseurs.releves.show', { fournisseur: fournisseur.id, releve: releve.id, ...filters, export: 'factures' })}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a>
                         <CrudDialog title="Ajouter facture" action={route('fournisseurs.releves.factures.store', [fournisseur.id, releve.id])} fields={factureFields} defaults={{ date_facture: '', numero_facture: '', montant: '' }} trigger={<Button><Plus className="h-4 w-4" />Ajouter facture</Button>} />
                     </div>
-                    <DataTable
+                    <ExportableDataTable
                         columns={[
                             { key: 'date_facture', label: 'Date facture' },
                             { key: 'numero_facture', label: 'N facture' },
@@ -122,6 +122,8 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         ]}
                         rows={factures.data}
                         pagination={factures}
+                        exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
+                        exportParams={{ ...filters, export: 'factures' }}
                     />
                 </TabsContent>
 
@@ -139,7 +141,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         <a href={route('fournisseurs.releves.show', { fournisseur: fournisseur.id, releve: releve.id, ...filters, export: 'payments' })}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a>
                         <CrudDialog title="Ajouter chèque / effet" action={route('fournisseurs.releves.payments.store', [fournisseur.id, releve.id])} fields={paymentFields} defaults={{ type: 'cheque', numero_cheque: '', banque: '', tireur_signataire: '', date_emission: '', date_echeance: '', statut: 'en_cours', facture_recue: false, facture_donnee: false, montant: '', note: '' }} trigger={<Button><Plus className="h-4 w-4" />Ajouter chèque</Button>} />
                     </div>
-                    <DataTable
+                    <ExportableDataTable
                         columns={[
                             { key: 'numero_cheque', label: 'N chèque' },
                             { key: 'type', label: 'Type' },
@@ -156,6 +158,8 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         ]}
                         rows={payments.data}
                         pagination={payments}
+                        exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
+                        exportParams={{ ...filters, export: 'payments' }}
                         rowClassName={getChequeRowClass}
                     />
                 </TabsContent>

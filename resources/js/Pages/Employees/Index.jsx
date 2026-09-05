@@ -2,7 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { Download, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -39,7 +39,7 @@ export default function Index({ employees, filters }) {
             <div className="mb-4">
                 <Input placeholder="Recherche nom" defaultValue={filters.search || ''} onChange={(event) => update('search', event.target.value)} />
             </div>
-            <DataTable columns={columns} rows={employees.data} pagination={employees} onRowClick={(row) => router.visit(route('employees.show', row.id))} />
+            <ExportableDataTable columns={columns} rows={employees.data} pagination={employees} exportUrl={route('employees.index')} exportParams={{ ...filters, export: 1 }} onRowClick={(row) => router.visit(route('employees.show', row.id))} />
         </AppLayout>
     );
 }

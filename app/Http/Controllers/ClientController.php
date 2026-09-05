@@ -25,7 +25,7 @@ class ClientController extends Controller
 {
     public function index(Request $request, ClientService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'ville', 'balance_min', 'balance_max']);
+        $filters = [...$request->only(['search', 'ville', 'balance_min', 'balance_max']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
 
         if ($request->boolean('export')) {
             return $service->export($filters);

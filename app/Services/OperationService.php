@@ -6,9 +6,9 @@ use App\Models\Article;
 use App\Models\Depot;
 use App\Models\Employee;
 use App\Models\Operation;
+use App\Support\DownloadFilename;
 use App\Support\ExcelExport;
 use App\Support\FinancePdf;
-use App\Support\DownloadFilename;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -38,6 +38,7 @@ class OperationService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)
+            ->when($filters['selected_ids'] ?? [], fn ($query, array $ids) => $query->whereKey($ids))
             ->latest()
             ->get()
             ->map(fn (Operation $operation) => [

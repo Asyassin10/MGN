@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Article;
 use App\Models\Depot;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Support\ExcelExport;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ArticleService
@@ -28,6 +28,7 @@ class ArticleService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)
+            ->when($filters['selected_ids'] ?? [], fn ($query, array $ids) => $query->whereKey($ids))
             ->withCount('depots')
             ->latest()
             ->get()

@@ -30,6 +30,7 @@ class EmployeeService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)
+            ->when($filters['selected_ids'] ?? [], fn ($query, array $ids) => $query->whereKey($ids))
             ->latest()
             ->get()
             ->map(fn (Employee $employee) => [

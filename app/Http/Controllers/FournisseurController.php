@@ -24,7 +24,7 @@ class FournisseurController extends Controller
 {
     public function index(Request $request, FournisseurService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'ville', 'balance_min', 'balance_max']);
+        $filters = [...$request->only(['search', 'ville', 'balance_min', 'balance_max']), 'selected_ids' => $this->selectedIds($request)];
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -43,7 +43,7 @@ class FournisseurController extends Controller
 
     public function relevesIndex(Request $request, FournisseurService $service): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'fournisseur_id', 'date_from', 'date_to']);
+        $filters = [...$request->only(['search', 'fournisseur_id', 'date_from', 'date_to']), 'selected_ids' => $this->selectedIds($request)];
 
         if ($request->boolean('export')) {
             return $service->exportAllReleves($filters);
@@ -69,7 +69,7 @@ class FournisseurController extends Controller
     public function show(Request $request, Fournisseur $fournisseur, FournisseurService $service): Response|StreamedResponse
     {
         if ($request->boolean('export')) {
-            return $service->exportReleves($fournisseur);
+            return $service->exportReleves($fournisseur, ['selected_ids' => $this->selectedIds($request)]);
         }
 
         return Inertia::render('Fournisseurs/Show', [
@@ -118,10 +118,10 @@ class FournisseurController extends Controller
     {
         $export = $request->string('export')->toString();
         if ($export === 'factures') {
-            return $service->exportReleveFactures($releve, $request->all());
+            return $service->exportReleveFactures($releve, [...$request->all(), 'selected_ids' => $this->selectedIds($request)]);
         }
         if ($export === 'payments') {
-            return $service->exportRelevePayments($releve, $request->all());
+            return $service->exportRelevePayments($releve, [...$request->all(), 'selected_ids' => $this->selectedIds($request)]);
         }
 
         return Inertia::render('Fournisseurs/ReleveShow', [
@@ -233,5 +233,13 @@ class FournisseurController extends Controller
         $cheque->update($data);
 
         return back()->with('success', 'Statut mis à jour.');
+    }
+
+    private function selectedIds(Request $request): array
+    {
+        return $request->validate([
+            'selected_ids' => ['nullable', 'array'],
+            'selected_ids.*' => ['integer', 'distinct'],
+        ])['selected_ids'] ?? [];
     }
 }

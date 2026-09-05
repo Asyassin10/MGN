@@ -20,7 +20,7 @@ class DepotController extends Controller
     public function index(Request $request, DepotService $service): Response|StreamedResponse
     {
         if ($request->boolean('export')) {
-            return $service->exportDepots();
+            return $service->exportDepots($this->selectedIds($request));
         }
 
         return Inertia::render('Depots/Index', [
@@ -38,7 +38,7 @@ class DepotController extends Controller
     public function show(Request $request, Depot $depot, DepotService $service): Response|StreamedResponse
     {
         if ($request->boolean('export')) {
-            return $service->exportArticles($depot, $request->string('search')->toString() ?: null);
+            return $service->exportArticles($depot, $request->string('search')->toString() ?: null, $this->selectedIds($request));
         }
 
         return Inertia::render('Depots/Show', [
@@ -88,5 +88,10 @@ class DepotController extends Controller
         $depot->articles()->syncWithoutDetaching([$article->id => ['quantity' => $newQuantity]]);
 
         return back()->with('success', 'Stock mis à jour.');
+    }
+
+    private function selectedIds(Request $request): array
+    {
+        return $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? [];
     }
 }

@@ -74,6 +74,7 @@ class ClientService
     public function export(array $filters): StreamedResponse
     {
         $rows = $this->baseQuery($filters)
+            ->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))
             ->latest()
             ->get()
             ->map(fn (Client $client) => [
