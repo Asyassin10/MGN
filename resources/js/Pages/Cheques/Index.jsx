@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Download, LogOut, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
 import DataTable from '@/Components/DataTable';
@@ -34,6 +34,9 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
     const sortieFields = [{ name: 'est_sorti', label: 'Chèque sorti ?', type: 'select', options: [{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }] }, { name: 'fournisseur_sortie_nom', label: 'Nom du fournisseur' }];
     const pageIds = cheques.data.map((row) => row.id);
     const allPageRowsSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+    const selectedTotal = useMemo(() => cheques.data
+        .filter((row) => selectedIds.includes(row.id))
+        .reduce((total, row) => total + Number(row.montant || 0), 0), [cheques.data, selectedIds]);
     const toggleRow = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id]);
     const togglePage = () => setSelectedIds(allPageRowsSelected ? [] : pageIds);
     const downloadExcel = (ids = []) => window.location.assign(route('cheques.export', { ...filters, ...(ids.length ? { selected_ids: ids } : {}) }));
@@ -65,7 +68,7 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
             <SearchableSelect value={filters.sortie || ''} onChange={(sortie) => updateFilters({ sortie })} options={[{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }]} placeholder="Tous les chèques" />
         </div>
-        {selectedIds.length ? <div className="mb-4 flex items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><span>{selectedIds.length} chèque(s) sélectionné(s)</span><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button></div> : null}
+        {selectedIds.length ? <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="font-semibold">{selectedIds.length} chèque(s) sélectionné(s) · Total : {money(selectedTotal)}</span></div> : null}
         <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.est_sorti ? 'status-row status-row-sorti' : getChequeRowClass(row)} empty="Aucun chèque." />
     </AppLayout>;
 }
