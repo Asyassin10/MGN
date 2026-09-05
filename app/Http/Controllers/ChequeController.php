@@ -38,7 +38,7 @@ class ChequeController extends Controller
             'selected_ids.*' => ['integer', 'distinct', 'exists:cheques,id'],
         ])['selected_ids'] ?? [];
 
-        $rows = $this->filteredQuery($filters)
+        $rows = ($selectedIds !== [] ? Cheque::query() : $this->filteredQuery($filters))
             ->when($selectedIds !== [], fn (Builder $query) => $query->whereKey($selectedIds))
             ->latest('id')
             ->get();

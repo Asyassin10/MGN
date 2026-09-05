@@ -161,6 +161,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
                         exportParams={{ ...filters, export: 'payments' }}
                         rowClassName={getSupplierPaymentRowClass}
+                        preserveSelection
                     />
                 </TabsContent>
             </Tabs>

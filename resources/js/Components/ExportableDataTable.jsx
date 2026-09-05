@@ -4,27 +4,41 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { money } from '@/lib/utils';
 
-export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, empty, onRowClick, rowClassName }) {
-    const [selectedIds, setSelectedIds] = useState([]);
+export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, empty, onRowClick, rowClassName, preserveSelection = false }) {
+    const [selectedRows, setSelectedRows] = useState({});
+    const selectedIds = useMemo(() => Object.keys(selectedRows).map(Number), [selectedRows]);
     const pageIds = useMemo(() => (rows || []).map((row) => row.id), [rows]);
     const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
-    const selectedTotal = useMemo(() => (rows || [])
-        .filter((row) => selectedIds.includes(row.id))
-        .reduce((total, row) => total + Number(row.montant || 0), 0), [rows, selectedIds]);
+    const selectedTotal = useMemo(() => Object.values(selectedRows)
+        .reduce((total, row) => total + Number(row.montant || 0), 0), [selectedRows]);
 
-    useEffect(() => setSelectedIds([]), [pageIds]);
+    useEffect(() => {
+        if (!preserveSelection) setSelectedRows({});
+    }, [pageIds, preserveSelection]);
 
     const download = (ids = []) => {
         const params = new URLSearchParams(Object.entries(exportParams).filter(([, value]) => value !== '' && value !== null && value !== undefined));
         ids.forEach((id) => params.append('selected_ids[]', id));
         window.location.assign(`${exportUrl}${exportUrl.includes('?') ? '&' : '?'}${params.toString()}`);
     };
-    const toggle = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id]);
-    const toggleAll = () => setSelectedIds(allSelected ? [] : pageIds);
+    const toggle = (row) => setSelectedRows((current) => {
+        const next = { ...current };
+        if (next[row.id]) delete next[row.id];
+        else next[row.id] = row;
+        return next;
+    });
+    const toggleAll = () => setSelectedRows((current) => {
+        const next = { ...current };
+        (rows || []).forEach((row) => {
+            if (allSelected) delete next[row.id];
+            else next[row.id] = row;
+        });
+        return next;
+    });
     const selectionColumn = {
         key: 'selection',
         label: <input aria-label="Sélectionner toutes les lignes affichées" type="checkbox" checked={allSelected} onChange={toggleAll} />,
-        render: (row) => <input aria-label="Sélectionner cette ligne" type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggle(row.id)} />,
+        render: (row) => <input aria-label="Sélectionner cette ligne" type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggle(row)} />,
     };
 
     return <>

@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/react';
 import { Download, LogOut, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
 import DataTable from '@/Components/DataTable';
@@ -27,24 +27,34 @@ const fields = [
 ];
 
 export default function Index({ cheques, filters, montantDisponible, chequesDisponiblesCount }) {
-    const [selectedIds, setSelectedIds] = useState([]);
+    const [selectedRows, setSelectedRows] = useState({});
     const updateFilters = (changes) => router.get(route('cheques.index'), { ...filters, ...changes }, { preserveState: true, replace: true });
     const inlineUpdate = (row, changes) => router.patch(route('cheques.inline', row.id), changes, { preserveScroll: true, preserveState: true });
     const defaults = { type: 'cheque', numero_cheque: '', client_nom: '', tireur_signataire: '', date_emission: '', date_echeance: '', statut: 'en_cours', montant: '', note: '' };
     const sortieFields = [{ name: 'est_sorti', label: 'Chèque sorti ?', type: 'select', options: [{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }] }, { name: 'fournisseur_sortie_nom', label: 'Nom du fournisseur' }];
+    const selectedIds = useMemo(() => Object.keys(selectedRows).map(Number), [selectedRows]);
     const pageIds = cheques.data.map((row) => row.id);
     const allPageRowsSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
-    const selectedTotal = useMemo(() => cheques.data
-        .filter((row) => selectedIds.includes(row.id))
-        .reduce((total, row) => total + Number(row.montant || 0), 0), [cheques.data, selectedIds]);
-    const toggleRow = (id) => setSelectedIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id]);
-    const togglePage = () => setSelectedIds(allPageRowsSelected ? [] : pageIds);
+    const selectedTotal = useMemo(() => Object.values(selectedRows)
+        .reduce((total, row) => total + Number(row.montant || 0), 0), [selectedRows]);
+    const toggleRow = (row) => setSelectedRows((current) => {
+        const next = { ...current };
+        if (next[row.id]) delete next[row.id];
+        else next[row.id] = row;
+        return next;
+    });
+    const togglePage = () => setSelectedRows((current) => {
+        const next = { ...current };
+        cheques.data.forEach((row) => {
+            if (allPageRowsSelected) delete next[row.id];
+            else next[row.id] = row;
+        });
+        return next;
+    });
     const downloadExcel = (ids = []) => window.location.assign(route('cheques.export', { ...filters, ...(ids.length ? { selected_ids: ids } : {}) }));
 
-    useEffect(() => setSelectedIds([]), [cheques.data]);
-
     const columns = [
-        { key: 'selection', label: <input aria-label="Sélectionner tous les chèques affichés" type="checkbox" checked={allPageRowsSelected} onChange={togglePage} />, render: (row) => <input aria-label={`Sélectionner le chèque ${row.numero_cheque}`} type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleRow(row.id)} /> },
+        { key: 'selection', label: <input aria-label="Sélectionner tous les chèques affichés" type="checkbox" checked={allPageRowsSelected} onChange={togglePage} />, render: (row) => <input aria-label={`Sélectionner le chèque ${row.numero_cheque}`} type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleRow(row)} /> },
         { key: 'numero_cheque', label: 'N° chèque' },
         { key: 'type', label: 'Type', render: (row) => row.type === 'cheque' ? 'Chèque' : 'Effet' },
         { key: 'client_nom', label: 'Client' },

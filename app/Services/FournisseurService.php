@@ -97,7 +97,10 @@ class FournisseurService
 
     public function exportRelevePayments(FournisseurReleveCompte $releve, array $filters): StreamedResponse
     {
-        return ExcelExport::download('releve-'.$releve->id.'-cheques-export', ['Numero', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut', 'Facture recue', 'Facture donnee'], $this->chequesQuery($releve, $filters)->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest('date_echeance')->latest('id')->get()->map(fn (FournisseurCheque $cheque) => [$cheque->numero_cheque, $cheque->type, $cheque->banque, $cheque->tireur_signataire, $cheque->montant, $cheque->date_emission?->format('Y-m-d'), $cheque->date_echeance?->format('Y-m-d'), $cheque->statut, $cheque->facture_recue ? 'Oui' : 'Non', $cheque->facture_donnee ? 'Oui' : 'Non']));
+        $selectedIds = $filters['selected_ids'] ?? [];
+        $query = $selectedIds !== [] ? $releve->cheques() : $this->chequesQuery($releve, $filters);
+
+        return ExcelExport::download('releve-'.$releve->id.'-cheques-export', ['Numero', 'Type', 'Banque', 'Tireur / signataire', 'Montant', 'Emission', 'Echeance', 'Statut', 'Facture recue', 'Facture donnee'], $query->when($selectedIds !== [], fn (Builder $query, array $ids) => $query->whereKey($ids))->latest('date_echeance')->latest('id')->get()->map(fn (FournisseurCheque $cheque) => [$cheque->numero_cheque, $cheque->type, $cheque->banque, $cheque->tireur_signataire, $cheque->montant, $cheque->date_emission?->format('Y-m-d'), $cheque->date_echeance?->format('Y-m-d'), $cheque->statut, $cheque->facture_recue ? 'Oui' : 'Non', $cheque->facture_donnee ? 'Oui' : 'Non']));
     }
 
     public function pdfReleve(Fournisseur $fournisseur, FournisseurReleveCompte $releve): Response
