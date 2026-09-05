@@ -130,7 +130,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                 <TabsContent value="payments">
                     <div className="mb-3 grid gap-2 xl:grid-cols-[1fr_1fr_180px_280px_170px_190px]">
                         <Input placeholder="N chèque" defaultValue={filters.payment_cheque || ''} onChange={(event) => update({ payment_cheque: event.target.value })} />
-                        <Input placeholder="Banque" defaultValue={filters.payment_banque || ''} onChange={(event) => update({ payment_banque: event.target.value })} />
+                        <Input placeholder="Tireur / signataire" defaultValue={filters.payment_tireur_signataire || ''} onChange={(event) => update({ payment_tireur_signataire: event.target.value })} />
                         <SearchableSelect value={filters.payment_statut || ''} onChange={(value) => update({ payment_statut: value })} options={[{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }]} placeholder="Tous statuts" />
                         <DateRangeFilter
                             label="Période paiement"

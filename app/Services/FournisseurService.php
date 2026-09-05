@@ -162,6 +162,6 @@ class FournisseurService
 
     private function chequesQuery(FournisseurReleveCompte $releve, array $filters)
     {
-        return $releve->cheques()->when($filters['payment_cheque'] ?? null, fn ($query, $value) => $query->where('numero_cheque', 'like', "%{$value}%"))->when($filters['payment_banque'] ?? null, fn ($query, $value) => $query->where('banque', 'like', "%{$value}%"))->when($filters['payment_statut'] ?? null, fn ($query, $value) => $query->where('statut', $value));
+        return $releve->cheques()->when($filters['payment_cheque'] ?? null, fn ($query, $value) => $query->where('numero_cheque', 'like', "%{$value}%"))->when($filters['payment_tireur_signataire'] ?? null, fn ($query, $value) => $query->where('tireur_signataire', 'like', "%{$value}%"))->when($filters['payment_statut'] ?? null, fn ($query, $value) => $query->where('statut', $value));
     }
 }
