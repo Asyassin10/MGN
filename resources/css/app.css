@@ -177,6 +177,16 @@
     color: #fff;
 }
 
+.status-row-sorti .text-red-700 {
+    background-color: #fff;
+    color: #991b1b;
+}
+
+.status-row-sorti .text-red-700:hover {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+}
+
 .invoice-row-received {
     background-color: #eff6ff;
     color: #1e40af;
