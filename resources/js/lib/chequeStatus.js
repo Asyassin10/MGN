@@ -12,3 +12,15 @@ export function getChequeRowClass(row) {
 
     return rowClasses[row.statut] || '';
 }
+
+export function getSupplierPaymentRowClass(row) {
+    if (row.facture_donnee) {
+        return 'status-row-complete';
+    }
+
+    if (row.facture_recue) {
+        return 'status-row-sorti';
+    }
+
+    return getChequeRowClass(row);
+}

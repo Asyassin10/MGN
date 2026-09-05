@@ -6,10 +6,10 @@ export default function BalanceCard({ label, value, positive = 'green', format =
     const color = isPositive ? (positive === 'green' ? 'text-green-700' : 'text-red-700') : (positive === 'green' ? 'text-red-700' : 'text-green-700');
 
     return (
-        <Card>
+        <Card className="summary-card">
             <CardContent>
-                <div className="text-sm font-medium uppercase text-zinc-500">{label}</div>
-                <div className={`mt-2 text-xl font-semibold ${color}`}>{format === 'number' ? Number(value || 0) : money(value)}</div>
+                <div className="summary-label">{label}</div>
+                <div className={`summary-value ${color}`}>{format === 'number' ? Number(value || 0) : money(value)}</div>
             </CardContent>
         </Card>
     );

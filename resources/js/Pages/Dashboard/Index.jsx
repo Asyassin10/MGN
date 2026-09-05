@@ -51,12 +51,12 @@ function Kpi({ label, value, color, icon: Icon, currency = true, suffix = '', va
     const displayValue = typeof value === 'number' ? (currency ? money(value) : number(value)) : value;
 
     return (
-        <Card className={`border-l-4 ${cardColors[color]}`}>
+        <Card className={`summary-card border-l-4 ${cardColors[color]}`}>
             <CardContent className="flex min-h-24 items-center justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="text-sm font-medium uppercase text-zinc-500">{label}</div>
-                    <div className={`mt-2 break-words text-2xl font-semibold ${valueClassName}`}>{displayValue}{suffix}</div>
-                    {detail ? <div className="mt-1 text-sm font-medium text-zinc-600">{detail}</div> : null}
+                    <div className="summary-label">{label}</div>
+                    <div className={`summary-value break-words ${valueClassName}`}>{displayValue}{suffix}</div>
+                    {detail ? <div className="mt-1 text-base font-medium text-zinc-600">{detail}</div> : null}
                 </div>
                 <Icon className={`h-5 w-5 shrink-0 ${cardColors[color].split(' ').at(-1)}`} />
             </CardContent>

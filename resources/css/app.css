@@ -130,6 +130,25 @@
     border-color: var(--section-100);
 }
 
+.summary-card .summary-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.summary-card .summary-value {
+    margin-top: 0.65rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.summary-card .summary-value > .inline-flex {
+    font-size: 1.35rem;
+    padding: 0.4rem 0.7rem;
+}
+
 .status-row-en-cours {
     background-color: #fffbeb;
     color: #92400e;

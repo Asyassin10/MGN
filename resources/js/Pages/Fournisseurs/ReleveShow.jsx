@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { money } from '@/lib/utils';
 import InvoiceReceiptSelect from '@/Components/InvoiceReceiptSelect';
 import SearchableSelect from '@/Components/SearchableSelect';
-import { getChequeRowClass } from '@/lib/chequeStatus';
+import { getSupplierPaymentRowClass } from '@/lib/chequeStatus';
 
 function DateRangeFilter({ from, to, onChange, label = 'Période' }) {
     const value = from || to ? `${from || 'Début'} - ${to || 'Fin'}` : label;
@@ -88,11 +88,11 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                 Fournisseur : <Link className="font-medium text-zinc-950 hover:underline" href={route('fournisseurs.show', fournisseur.id)}>{fournisseur.nom}</Link>
             </div>
             <div className="mb-4 grid gap-4 md:grid-cols-5">
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Code client</div><div className="mt-2 font-medium">{releve.code_client}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Date relevé</div><div className="mt-2 font-medium">{releve.date_releve}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Factures reçues aujourd’hui ({releve.today_factures_count})</div><div className="mt-2 font-medium text-red-700">{money(releve.today_total_factures)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Paiements donnés aujourd’hui ({releve.today_payments_count})</div><div className="mt-2 font-medium text-emerald-700">{money(releve.today_total_paye)}</div></CardContent></Card>
-                <Card><CardContent><div className="text-sm uppercase text-zinc-500">Reste</div><div className="mt-2 font-medium">{money(releve.balance)}</div></CardContent></Card>
+                <Card className="summary-card"><CardContent><div className="summary-label">Code client</div><div className="summary-value">{releve.code_client}</div></CardContent></Card>
+                <Card className="summary-card"><CardContent><div className="summary-label">Date relevé</div><div className="summary-value">{releve.date_releve}</div></CardContent></Card>
+                <Card className="summary-card"><CardContent><div className="summary-label">Factures reçues aujourd’hui ({releve.today_factures_count})</div><div className="summary-value text-red-700">{money(releve.today_total_factures)}</div></CardContent></Card>
+                <Card className="summary-card"><CardContent><div className="summary-label">Paiements donnés aujourd’hui ({releve.today_payments_count})</div><div className="summary-value text-emerald-700">{money(releve.today_total_paye)}</div></CardContent></Card>
+                <Card className="summary-card"><CardContent><div className="summary-label">Reste</div><div className="summary-value">{money(releve.balance)}</div></CardContent></Card>
             </div>
 
             <Tabs value={activeTab} onValueChange={changeTab}>
@@ -160,7 +160,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         pagination={payments}
                         exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
                         exportParams={{ ...filters, export: 'payments' }}
-                        rowClassName={getChequeRowClass}
+                        rowClassName={getSupplierPaymentRowClass}
                     />
                 </TabsContent>
             </Tabs>
