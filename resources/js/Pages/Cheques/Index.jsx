@@ -68,7 +68,7 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
             <SearchableSelect value={filters.sortie || ''} onChange={(sortie) => updateFilters({ sortie })} options={[{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }]} placeholder="Tous les chèques" />
         </div>
-        {selectedIds.length ? <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="font-semibold">{selectedIds.length} chèque(s) sélectionné(s) · Total : {money(selectedTotal)}</span></div> : null}
+        {selectedIds.length ? <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-base font-bold md:text-lg">{selectedIds.length} chèque(s) sélectionné(s) · Total : {money(selectedTotal)}</span></div> : null}
         <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.est_sorti ? 'status-row status-row-sorti' : getChequeRowClass(row)} empty="Aucun chèque." />
     </AppLayout>;
 }

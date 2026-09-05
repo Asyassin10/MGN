@@ -28,7 +28,7 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
     };
 
     return <>
-        <div className="mb-3 flex flex-wrap items-center gap-2"><Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>{selectedIds.length ? <><Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-sm font-semibold text-emerald-800">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span></> : null}</div>
+        <div className="mb-3 flex flex-wrap items-center gap-2"><Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>{selectedIds.length ? <><Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span></> : null}</div>
         <DataTable columns={[selectionColumn, ...columns]} rows={rows} pagination={pagination} empty={empty} onRowClick={onRowClick} rowClassName={rowClassName} />
     </>;
 }
