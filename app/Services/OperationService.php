@@ -128,7 +128,7 @@ class OperationService
         return FinancePdf::preview([
             'title' => 'Operation '.$operation->reference,
             'subtitle' => 'Bon de commande',
-            'brand' => 'Droguerie Palmeraie',
+            'brand' => 'Droguerie P',
             'meta' => [
                 'Reference operation' => $operation->reference,
                 'Date' => $operation->created_at->format('d/m/Y H:i'),

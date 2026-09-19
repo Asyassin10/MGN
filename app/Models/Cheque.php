@@ -8,7 +8,7 @@ class Cheque extends Model
 {
     public const STATUSES = ['en_cours', 'en_caisse', 'impaye'];
 
-    public const TYPES = ['cheque', 'effet'];
+    public const TYPES = ['cheque', 'effet', 'virement'];
 
     protected $fillable = [
         'type',

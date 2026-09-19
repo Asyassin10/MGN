@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { BadgeAlert, Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, UserRound, Users, WalletCards } from 'lucide-react';
+import { BadgeAlert, Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, UserRound, Users, Wallet, WalletCards } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,7 @@ const sections = [
             { label: 'Impayés', route: 'cheques.impayes.index', icon: BadgeAlert },
         ],
     },
+    { label: 'Caisse', route: 'caisse.index', icon: Wallet, theme: 'cheques', permission: 'caisse' },
     { label: 'RH / Employés', route: 'employees.index', icon: UserRound, permission: 'admin' },
     { label: 'Utilisateurs', route: 'users.index', icon: ShieldCheck, permission: 'admin' },
     { label: 'Historique', route: 'activity-history.index', icon: ListChecks, permission: 'admin' },
@@ -78,7 +79,7 @@ export default function AppSidebar({ className, onNavigate }) {
                     const theme = getSectionThemeByKey(section.theme);
                     if (!section.children) {
                         return (
-                            <Link key={section.label} href={route(section.route)} onClick={onNavigate} className={`flex h-10 items-center gap-2 rounded-md px-3 text-base ${active ? 'bg-zinc-100 font-medium text-zinc-950' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
+                            <Link key={section.label} href={route(section.route)} onClick={onNavigate} className={`flex h-10 items-center gap-2 rounded-md px-3 text-base ${active ? (theme ? `${theme.sidebarGroup} font-medium` : 'bg-zinc-100 font-medium text-zinc-950') : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
                                 <Icon className="h-4 w-4" />
                                 {section.label}
                             </Link>

@@ -4,8 +4,8 @@ import DataTable from '@/Components/DataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 
-const modules = ['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques'];
-const moduleLabels = { dashboard: 'Dashboard', depots: 'Dépôt', fournisseurs: 'Fournisseurs', clients: 'Clients', cheques: 'Chèques' };
+const modules = ['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques', 'caisse'];
+const moduleLabels = { dashboard: 'Dashboard', depots: 'Dépôt', fournisseurs: 'Fournisseurs', clients: 'Clients', cheques: 'Chèques', caisse: 'Caisse' };
 const fields = [{ name: 'name', label: 'Nom complet' }, { name: 'pin', label: 'PIN (6 chiffres)', type: 'password' }, ...modules.map((module) => ({ name: `module_${module}`, label: `Accès ${moduleLabels[module]}`, type: 'checkbox' }))];
 export default function Index({ users }) {
     const toDefaults = (user = {}) => ({

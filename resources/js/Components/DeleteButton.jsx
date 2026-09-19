@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 export default function DeleteButton({ action, title = 'Supprimer cet élément ?', message = 'Cette action est définitive.', showLabel = true, className }) {
     const [open, setOpen] = useState(false);
     const { auth } = usePage().props;
-    const module = action.includes('/fournisseurs') ? 'fournisseurs' : action.includes('/clients') ? 'clients' : action.includes('/employees') ? 'employees' : action.includes('/cheques') ? 'cheques' : action.includes('/depots') || action.includes('/articles') || action.includes('/operations') ? 'depots' : null;
+    const module = action.includes('/fournisseurs') ? 'fournisseurs' : action.includes('/clients') ? 'clients' : action.includes('/employees') ? 'employees' : action.includes('/cheques') ? 'cheques' : action.includes('/caisse') ? 'caisse' : action.includes('/depots') || action.includes('/articles') || action.includes('/operations') ? 'depots' : null;
 
     if (module && auth.user?.role !== 'admin' && !auth.user?.permissions?.delete?.includes(module)) return null;
 

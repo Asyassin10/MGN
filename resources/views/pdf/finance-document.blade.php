@@ -47,21 +47,6 @@
             text-align: right;
         }
 
-        .brand-box {
-            display: inline-block;
-            background: #4b5563;
-            padding: 6px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
-
-        .logo {
-            width: 92px;
-            height: 92px;
-            display: block;
-            border-radius: 8px;
-        }
-
         .title {
             font-size: 22px;
             font-weight: 700;
@@ -158,13 +143,8 @@
                 </div>
             </td>
             <td class="brand-cell">
-                @if ($logoDataUri)
-                    <div class="brand-box">
-                        <img src="{{ $logoDataUri }}" class="logo" alt="Droguerie Palmeraie">
-                    </div>
-                @endif
                 <div class="subtitle">{{ $document['subtitle'] ?? 'Document' }}</div>
-                <h1 class="title">{{ $document['brand'] ?? 'Droguerie Palmeraie' }}</h1>
+                <h1 class="title">{{ $document['brand'] ?? 'Droguerie P' }}</h1>
             </td>
         </tr>
     </table>

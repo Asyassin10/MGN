@@ -47,11 +47,11 @@ class UserController extends Controller
 
     private function validated(Request $request, bool $creating = true): array
     {
-        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
+        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques', 'caisse'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
         $request->merge(['modules' => $modules]);
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,cheques'],
+            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,cheques,caisse'],
             'pin' => [$creating ? 'required' : 'nullable', 'digits:6'],
         ];
         $data = $request->validate($rules);

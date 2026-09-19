@@ -1,11 +1,12 @@
 import * as Popover from '@radix-ui/react-popover';
 import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, Download, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Download, Plus } from 'lucide-react';
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
 import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
+import PrintPdfButton from '@/Components/PrintPdfButton';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
@@ -66,7 +67,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
         { name: 'montant', label: 'Montant DH', type: 'number' },
     ];
     const paymentFields = [
-        { name: 'type', label: 'Type', type: 'select', options: [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }] },
+        { name: 'type', label: 'Type', type: 'select', options: [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }, { value: 'virement', label: 'Virement' }] },
         { name: 'numero_cheque', label: 'N chèque' },
         { name: 'banque', label: 'Banque' },
         { name: 'tireur_signataire', label: 'Tireur / signataire' },
@@ -82,7 +83,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
     return (
         <AppLayout
             title={`Relevé ${releve.code_client}`}
-            actions={<><Link href={route('fournisseurs.show', fournisseur.id)}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Liste des relevés</Button></Link><a href={route('fournisseurs.releves.pdf', [fournisseur.id, releve.id])} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF relevé</Button></a><CrudDialog title="Modifier relevé compte" action={route('fournisseurs.releves.update', [fournisseur.id, releve.id])} method="patch" fields={releveFields} defaults={releve} trigger={<Button variant="outline">Modifier relevé</Button>} /><DeleteButton action={route('fournisseurs.releves.destroy', [fournisseur.id, releve.id])} title={`Supprimer le relevé ${releve.code_client} ?`} message="La suppression sera refusée tant que ce relevé contient des factures ou paiements." /></>}
+            actions={<><Link href={route('fournisseurs.show', fournisseur.id)}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Liste des relevés</Button></Link><PrintPdfButton url={route('fournisseurs.releves.pdf', [fournisseur.id, releve.id])} label="Voir PDF relevé" /><CrudDialog title="Modifier relevé compte" action={route('fournisseurs.releves.update', [fournisseur.id, releve.id])} method="patch" fields={releveFields} defaults={releve} trigger={<Button variant="outline">Modifier relevé</Button>} /><DeleteButton action={route('fournisseurs.releves.destroy', [fournisseur.id, releve.id])} title={`Supprimer le relevé ${releve.code_client} ?`} message="La suppression sera refusée tant que ce relevé contient des factures ou paiements." /></>}
         >
             <div className="mb-4 text-base text-zinc-600">
                 Fournisseur : <Link className="font-medium text-zinc-950 hover:underline" href={route('fournisseurs.show', fournisseur.id)}>{fournisseur.nom}</Link>
@@ -154,7 +155,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                             { key: 'statut', label: 'Statut', render: (row) => <SearchableSelect value={row.statut} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { statut: value }, { preserveScroll: true })} options={[{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }]} allowEmpty={false} /> },
                             { key: 'facture_recue', label: 'Facture reçue', render: (row) => <InvoiceReceiptSelect value={row.facture_recue} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { facture_recue: value }, { preserveScroll: true })} /> },
                             { key: 'facture_donnee', label: 'Facture donnée', render: (row) => <InvoiceReceiptSelect value={row.facture_donnee} onChange={(value) => router.patch(route('fournisseurs.releves.cheques.status', [fournisseur.id, releve.id, row.id]), { facture_donnee: value }, { preserveScroll: true })} /> },
-                            { key: 'actions', label: 'Actions', render: (row) => <div className="flex flex-wrap gap-2"><a href={route('fournisseurs.releves.payments.pdf', [fournisseur.id, releve.id, row.id])} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a><CrudDialog title="Modifier paiement" action={route('fournisseurs.releves.payments.update', [fournisseur.id, releve.id, row.id])} method="patch" fields={paymentFields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} /><DeleteButton action={route('fournisseurs.releves.payments.destroy', [fournisseur.id, releve.id, row.id])} title="Supprimer ce paiement ?" /></div> },
+                            { key: 'actions', label: 'Actions', render: (row) => <div className="flex flex-wrap gap-2"><PrintPdfButton url={route('fournisseurs.releves.payments.pdf', [fournisseur.id, releve.id, row.id])} size="sm" /><CrudDialog title="Modifier paiement" action={route('fournisseurs.releves.payments.update', [fournisseur.id, releve.id, row.id])} method="patch" fields={paymentFields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} /><DeleteButton action={route('fournisseurs.releves.payments.destroy', [fournisseur.id, releve.id, row.id])} title="Supprimer ce paiement ?" /></div> },
                         ]}
                         rows={payments.data}
                         pagination={payments}

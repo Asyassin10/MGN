@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CaisseController;
 use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\ChequeImpayeController;
 use App\Http\Controllers\ClientController;
@@ -85,8 +86,13 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/cheques/{cheque}/status', [FournisseurController::class, 'updateChequeStatus'])->name('fournisseurs.releves.cheques.status');
     });
 
+    Route::middleware('permission:caisse')->group(function (): void {
+        Route::resource('caisse', CaisseController::class)->only(['index', 'store', 'update', 'destroy']);
+    });
+
     Route::middleware('permission:clients')->group(function (): void {
         Route::resource('clients', ClientController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
+        Route::get('/clients/{client}/releve/pdf', [ClientController::class, 'pdfReleve'])->name('clients.releve.pdf');
         Route::post('/clients/{client}/entries', [ClientController::class, 'storeEntry'])->name('clients.entries.store');
         Route::patch('/clients/{client}/entries/{entry}', [ClientController::class, 'updateEntry'])->name('clients.entries.update');
         Route::delete('/clients/{client}/entries/{entry}', [ClientController::class, 'destroyEntry'])->name('clients.entries.destroy');

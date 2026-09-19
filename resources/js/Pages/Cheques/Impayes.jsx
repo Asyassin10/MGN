@@ -10,7 +10,7 @@ import SearchableSelect from '@/Components/SearchableSelect';
 import { Card, CardContent } from '@/Components/ui/card';
 import { money } from '@/lib/utils';
 
-const types = [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }];
+const types = [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }, { value: 'virement', label: 'Virement' }];
 const statuses = [{ value: 'impaye', label: 'Impayé' }, { value: 'paye', label: 'Payé' }];
 const paymentModes = [{ value: 'espece', label: 'Espèce' }, { value: 'virement', label: 'Virement' }, { value: 'cheque', label: 'Chèque' }];
 const fields = [
@@ -31,7 +31,7 @@ export default function Impayes({ cheques, filters, impayesCount, impayesMontant
 
     const columns = [
         { key: 'numero_cheque', label: 'N° chèque' },
-        { key: 'type', label: 'Type', render: (row) => row.type === 'cheque' ? 'Chèque' : 'Effet' },
+        { key: 'type', label: 'Type', render: (row) => types.find((type) => type.value === row.type)?.label || row.type },
         { key: 'fournisseur_nom', label: 'Fournisseur' },
         { key: 'client_nom', label: 'Client' },
         { key: 'tireur_signataire', label: 'Tireur / signataire' },

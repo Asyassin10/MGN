@@ -17,7 +17,7 @@ class SettingsController extends Controller
     {
         $filters = $request->only('bank_search');
 
-        return Inertia::render('Settings/Index', ['banks' => Bank::query()->withCount(['chequeClients', 'chequeFournisseurs'])->when($filters['bank_search'] ?? null, fn ($query, $value) => $query->where('name', 'like', "%{$value}%"))->orderBy('name')->paginate(100)->withQueryString(), 'filters' => $filters]);
+        return Inertia::render('Settings/Index', ['banks' => Bank::query()->withCount(['chequeClients', 'chequeFournisseurs'])->when($filters['bank_search'] ?? null, fn ($query, $value) => $query->where('name', 'like', "%{$value}%"))->latest()->paginate(100)->withQueryString(), 'filters' => $filters]);
     }
 
     public function updatePin(UpdatePinRequest $request): RedirectResponse

@@ -15,6 +15,7 @@ import {
     ReceiptText,
     TrendingUp,
     Users,
+    Wallet,
     WalletCards,
     XCircle,
 } from 'lucide-react';
@@ -42,6 +43,7 @@ const cardColors = {
     cyan: 'border-l-cyan-600 text-cyan-700',
     zinc: 'border-l-zinc-500 text-zinc-700',
     orange: 'border-l-orange-500 text-orange-700',
+    fuchsia: 'border-l-fuchsia-600 text-fuchsia-700',
 };
 
 const chartColors = ['#2563eb', '#059669', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2', '#71717a', '#ea580c'];
@@ -112,7 +114,7 @@ function PiePanel({ title, data, moneyValues = true }) {
         <ChartPanel title={title} empty={!data?.length}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={initialChartSize}>
                 <PieChart>
-                    <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={88} paddingAngle={2}>
+                    <Pie data={data} dataKey="value" nameKey="name" innerRadius={54} outerRadius={88} paddingAngle={2} minAngle={8}>
                         {data.map((entry, index) => (
                             <Cell key={entry.name} fill={entry.color || chartColors[index % chartColors.length]} />
                         ))}
@@ -164,6 +166,7 @@ function GlobalDashboard({ data }) {
                 <Kpi label="Montant disponible des chèques" value={data.kpis.cheques_disponibles_total} color="violet" icon={WalletCards} valueClassName="text-violet-700" detail={`${number(data.kpis.cheques_disponibles_count)} chèque(s) non sorti(s)`} />
                 <Kpi label="Chèques fournisseurs non encaissés" value={data.kpis.cheques_fournisseurs_en_attente_count} color="amber" icon={WalletCards} currency={false} detail={`Total: ${money(data.kpis.cheques_fournisseurs_en_attente_total)}`} />
                 <Kpi label="Clients en retard +30 jours" value={data.kpis.clients_overdue_count} color="red" icon={AlertTriangle} currency={false} />
+                {data.kpis.caisse_solde !== null ? <Kpi label="Solde caisse" value={data.kpis.caisse_solde} color="fuchsia" icon={Wallet} valueClassName={data.kpis.caisse_solde >= 0 ? 'text-fuchsia-700' : 'text-red-600'} /> : null}
             </div>
             <div className="max-w-xl">
                 <PiePanel title="Situation financière globale" data={data.comparison.filter((item) => item.value > 0)} emptyText="Aucun montant à payer, à recevoir ou en chèques disponibles." />

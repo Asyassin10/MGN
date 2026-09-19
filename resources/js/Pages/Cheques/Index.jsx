@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import { money } from '@/lib/utils';
 import { getChequeRowClass } from '@/lib/chequeStatus';
 
-const types = [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }];
+const types = [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }, { value: 'virement', label: 'Virement' }];
 const statuses = [{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }];
 const fields = [
     { name: 'type', label: 'Type', type: 'select', options: types },
@@ -56,7 +56,7 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
     const columns = [
         { key: 'selection', label: <input aria-label="Sélectionner tous les chèques affichés" type="checkbox" checked={allPageRowsSelected} onChange={togglePage} />, render: (row) => <input aria-label={`Sélectionner le chèque ${row.numero_cheque}`} type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleRow(row)} /> },
         { key: 'numero_cheque', label: 'N° chèque' },
-        { key: 'type', label: 'Type', render: (row) => row.type === 'cheque' ? 'Chèque' : 'Effet' },
+        { key: 'type', label: 'Type', render: (row) => types.find((type) => type.value === row.type)?.label || row.type },
         { key: 'client_nom', label: 'Client' },
         { key: 'tireur_signataire', label: 'Tireur / signataire' },
         { key: 'montant', label: 'Montant', render: (row) => money(row.montant) },

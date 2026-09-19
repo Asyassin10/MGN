@@ -141,6 +141,13 @@ class ClientController extends Controller
         return $service->pdfPayment($client, $payment);
     }
 
+    public function pdfReleve(Request $request, Client $client, ClientService $service): \Symfony\Component\HttpFoundation\Response
+    {
+        $filters = $request->validate(['date_from' => ['nullable', 'date'], 'date_to' => ['nullable', 'date']]);
+
+        return $service->pdfReleve($client, $filters);
+    }
+
     public function storeCheque(StoreChequeClientRequest $request, Client $client): RedirectResponse
     {
         $client->cheques()->create($this->chequeData($request));

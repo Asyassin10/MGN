@@ -63,11 +63,11 @@ class ClientService
         return [
             'client' => $this->serialize($client),
             'entries' => $entriesQuery
-                ->latest('date_entree')
+                ->latest()
                 ->paginate(100, ['*'], 'entries_page')
                 ->withQueryString()
                 ->through(fn (ClientEntry $entry) => $this->serializeEntry($entry)),
-            'payments' => ['data' => $paymentsQuery->latest('date_paiement')->latest('id')->get()->map(fn (ClientPayment $payment) => $this->serializePayment($payment))->toBase()->merge($this->chequesQuery($client, $filters)->latest('date_echeance')->latest('id')->get()->map(fn (ChequeClient $cheque) => $this->serializeCheque($cheque))->toBase())->sortByDesc('sort_key')->values()->all(), 'links' => []],
+            'payments' => ['data' => $paymentsQuery->latest()->latest('id')->get()->map(fn (ClientPayment $payment) => $this->serializePayment($payment))->toBase()->merge($this->chequesQuery($client, $filters)->latest()->latest('id')->get()->map(fn (ChequeClient $cheque) => $this->serializeCheque($cheque))->toBase())->sortByDesc('sort_key')->values()->all(), 'links' => []],
         ];
     }
 
@@ -92,7 +92,8 @@ class ClientService
     public function exportEntries(Client $client, array $filters): StreamedResponse
     {
         $rows = $this->entriesQuery($client, $filters)
-            ->latest('date_entree')
+            ->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))
+            ->latest()
             ->get()
             ->map(fn (ClientEntry $entry) => [
                 $entry->date_entree?->format('Y-m-d'),
@@ -105,8 +106,13 @@ class ClientService
 
     public function exportPayments(Client $client, array $filters): StreamedResponse
     {
+        $selectedIds = collect($filters['selected_ids'] ?? []);
+        $paymentIds = $selectedIds->reject(fn ($id) => str_starts_with((string) $id, 'cheque-'))->map(fn ($id) => (int) $id)->all();
+        $chequeIds = $selectedIds->filter(fn ($id) => str_starts_with((string) $id, 'cheque-'))->map(fn ($id) => (int) str_replace('cheque-', '', (string) $id))->all();
+
         $rows = $this->paymentsQuery($client, $filters)
-            ->latest('date_paiement')
+            ->when($selectedIds->isNotEmpty(), fn (Builder $query) => $query->whereKey($paymentIds))
+            ->latest()
             ->get()
             ->map(fn (ClientPayment $payment) => [
                 $payment->date_paiement?->format('Y-m-d'),
@@ -114,7 +120,7 @@ class ClientService
                 $payment->mode,
                 $payment->reference,
                 $payment->note,
-            ])->merge($this->chequesQuery($client, $filters)->get()->map(fn (ChequeClient $cheque) => [$cheque->date_emission?->format('Y-m-d'), $cheque->montant, $cheque->type, $cheque->numero_cheque, $cheque->banque, $cheque->statut]));
+            ])->merge($this->chequesQuery($client, $filters)->when($selectedIds->isNotEmpty(), fn (Builder $query) => $query->whereKey($chequeIds))->latest()->get()->map(fn (ChequeClient $cheque) => [$cheque->date_emission?->format('Y-m-d'), $cheque->montant, $cheque->type, $cheque->numero_cheque, $cheque->banque, $cheque->statut]));
 
         return ExcelExport::download('client-'.$client->id.'-paiements-export', ['Date', 'Montant', 'Mode', 'Reference / Numero', 'Banque', 'Statut'], $rows);
     }
@@ -126,7 +132,7 @@ class ClientService
         return FinancePdf::preview([
             'title' => 'Paiement client '.$client->nom,
             'subtitle' => 'Paiement client',
-            'brand' => 'Droguerie Palmeraie',
+            'brand' => 'Droguerie P',
             'meta' => [
                 'Client' => $client->nom,
                 'Date paiement' => $payment->date_paiement?->format('d/m/Y'),
@@ -143,6 +149,72 @@ class ClientService
                 'note' => $payment->note ?: '-',
             ]],
         ], DownloadFilename::pdf('paiement-client', $client->nom, $payment->reference ?: (string) $payment->id, $payment->date_paiement?->format('Y-m-d') ?: 'date'));
+    }
+
+    public function pdfReleve(Client $client, array $filters): Response
+    {
+        $dateFrom = $filters['date_from'] ?? null;
+        $dateTo = $filters['date_to'] ?? null;
+
+        $entries = $client->entries()
+            ->when($dateFrom, fn ($query, $value) => $query->whereDate('date_entree', '>=', $value))
+            ->when($dateTo, fn ($query, $value) => $query->whereDate('date_entree', '<=', $value))
+            ->get();
+
+        $payments = $client->payments()
+            ->when($dateFrom, fn ($query, $value) => $query->whereDate('date_paiement', '>=', $value))
+            ->when($dateTo, fn ($query, $value) => $query->whereDate('date_paiement', '<=', $value))
+            ->get();
+
+        $cheques = $client->cheques()
+            ->when($dateFrom, fn ($query, $value) => $query->whereDate('date_emission', '>=', $value))
+            ->when($dateTo, fn ($query, $value) => $query->whereDate('date_emission', '<=', $value))
+            ->get();
+
+        $rows = $entries->map(fn (ClientEntry $entry) => [
+            'sort_date' => $entry->date_entree,
+            'date' => $entry->date_entree?->format('d/m/Y'),
+            'entree' => number_format((float) $entry->montant, 2, ',', ' ').' MAD',
+            'paiement' => '-',
+            'description' => $entry->description ?: '-',
+        ])->concat($payments->map(fn (ClientPayment $payment) => [
+            'sort_date' => $payment->date_paiement,
+            'date' => $payment->date_paiement?->format('d/m/Y'),
+            'entree' => '-',
+            'paiement' => number_format((float) $payment->montant, 2, ',', ' ').' MAD',
+            'description' => $payment->note ?: ($payment->reference ?: '-'),
+        ]))->concat($cheques->map(fn (ChequeClient $cheque) => [
+            'sort_date' => $cheque->date_emission,
+            'date' => $cheque->date_emission?->format('d/m/Y'),
+            'entree' => '-',
+            'paiement' => number_format((float) $cheque->montant, 2, ',', ' ').' MAD',
+            'description' => $cheque->motif ?: (ucfirst($cheque->type).' '.$cheque->numero_cheque),
+        ]))->sortBy('sort_date')->values();
+
+        $totalEntrees = (float) $entries->sum('montant');
+        $totalPaiements = (float) $payments->sum('montant') + (float) $cheques->sum('montant');
+
+        return FinancePdf::preview([
+            'title' => 'Releve de compte '.$client->nom,
+            'subtitle' => 'Releve compte client',
+            'brand' => 'Droguerie P',
+            'meta' => [
+                'Client' => $client->nom,
+                'Periode' => ($dateFrom ? \Illuminate\Support\Carbon::parse($dateFrom)->format('d/m/Y') : 'Debut').' - '.($dateTo ? \Illuminate\Support\Carbon::parse($dateTo)->format('d/m/Y') : "Aujourd'hui"),
+            ],
+            'columns' => [
+                ['key' => 'date', 'label' => 'Date'],
+                ['key' => 'entree', 'label' => 'Entree', 'align' => 'right'],
+                ['key' => 'paiement', 'label' => 'Paiement', 'align' => 'right'],
+                ['key' => 'description', 'label' => 'Description'],
+            ],
+            'rows' => $rows->all(),
+            'summary' => [
+                'Total entrees' => number_format($totalEntrees, 2, ',', ' ').' MAD',
+                'Total paiements' => number_format($totalPaiements, 2, ',', ' ').' MAD',
+                'Solde' => number_format($totalEntrees - $totalPaiements, 2, ',', ' ').' MAD',
+            ],
+        ], DownloadFilename::pdf('releve-client', $client->nom, $dateFrom ?: 'debut', $dateTo ?: 'fin'));
     }
 
     private function baseQuery(array $filters): Builder
@@ -224,7 +296,7 @@ class ClientService
             'note' => $payment->note,
             'record_type' => 'payment',
             'sort_date' => $payment->date_paiement?->format('Y-m-d'),
-            'sort_key' => sprintf('%s-%010d', $payment->date_paiement?->format('Y-m-d') ?: '', $payment->id),
+            'sort_key' => sprintf('%s-%010d', $payment->created_at?->format('Y-m-d H:i:s') ?: '', $payment->id),
         ];
     }
 
@@ -238,6 +310,6 @@ class ClientService
 
     private function serializeCheque(ChequeClient $cheque): array
     {
-        return ['id' => 'cheque-'.$cheque->id, 'resource_id' => $cheque->id, 'record_type' => 'cheque', 'sort_date' => $cheque->date_emission?->format('Y-m-d') ?: $cheque->date_echeance?->format('Y-m-d'), 'sort_key' => sprintf('%s-%010d', $cheque->date_emission?->format('Y-m-d') ?: $cheque->date_echeance?->format('Y-m-d') ?: '', $cheque->id), 'date_paiement' => $cheque->date_emission?->format('Y-m-d'), 'montant' => (float) $cheque->montant, 'mode' => $cheque->type, 'reference' => $cheque->numero_cheque, 'numero_cheque' => $cheque->numero_cheque, 'banque' => $cheque->banque, 'tireur_signataire' => $cheque->tireur_signataire, 'date_emission' => $cheque->date_emission?->format('Y-m-d'), 'date_echeance' => $cheque->date_echeance?->format('Y-m-d'), 'statut' => $cheque->statut, 'facture_recue' => $cheque->facture_recue, 'facture_donnee' => $cheque->facture_donnee, 'note' => $cheque->motif];
+        return ['id' => 'cheque-'.$cheque->id, 'resource_id' => $cheque->id, 'record_type' => 'cheque', 'sort_date' => $cheque->date_emission?->format('Y-m-d') ?: $cheque->date_echeance?->format('Y-m-d'), 'sort_key' => sprintf('%s-%010d', $cheque->created_at?->format('Y-m-d H:i:s') ?: '', $cheque->id), 'date_paiement' => $cheque->date_emission?->format('Y-m-d'), 'montant' => (float) $cheque->montant, 'mode' => $cheque->type, 'reference' => $cheque->numero_cheque, 'numero_cheque' => $cheque->numero_cheque, 'banque' => $cheque->banque, 'tireur_signataire' => $cheque->tireur_signataire, 'date_emission' => $cheque->date_emission?->format('Y-m-d'), 'date_echeance' => $cheque->date_echeance?->format('Y-m-d'), 'statut' => $cheque->statut, 'facture_recue' => $cheque->facture_recue, 'facture_donnee' => $cheque->facture_donnee, 'note' => $cheque->motif];
     }
 }

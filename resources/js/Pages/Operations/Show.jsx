@@ -1,11 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { Download, FileText } from 'lucide-react';
+import { Download } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import DataTable from '@/Components/DataTable';
 import DeleteButton from '@/Components/DeleteButton';
+import PrintPdfButton from '@/Components/PrintPdfButton';
 
 export default function Show({ operation }) {
     const columns = [
@@ -19,7 +20,7 @@ export default function Show({ operation }) {
             title={operation.reference || `Opération #${operation.id}`}
             actions={
                 <>
-                    <a href={operation.pdf_url} target="_blank" rel="noopener noreferrer"><Button variant="outline"><FileText className="h-4 w-4" />Voir PDF</Button></a>
+                    <PrintPdfButton url={operation.pdf_url} />
                     <a href={operation.excel_url}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a>
                     <Link href={route('operations.edit', operation.id)}><Button>Modifier</Button></Link>
                     <Link href={route('operations.index')}><Button variant="outline">Retour</Button></Link>

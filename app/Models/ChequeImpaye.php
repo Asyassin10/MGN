@@ -8,7 +8,7 @@ class ChequeImpaye extends Model
 {
     public const STATUSES = ['impaye', 'paye'];
 
-    public const TYPES = ['cheque', 'effet'];
+    public const TYPES = ['cheque', 'effet', 'virement'];
 
     protected $table = 'cheques_impayes';
 

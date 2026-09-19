@@ -57,6 +57,9 @@ class DashboardService
         $clientBalance = max(round($clientDue - $clientPaid, 2), 0);
         $availableChequeCount = $availableCheques->count();
         $availableChequeTotal = (float) $availableCheques->sum('montant');
+        $isAdmin = auth()->user()?->isAdmin();
+        $caisseEntree = (float) DB::table('caisse_entries')->where('type', 'entree')->sum('montant');
+        $caisseSortie = (float) DB::table('caisse_entries')->where('type', 'sortie')->sum('montant');
 
         return [
             'kpis' => [
@@ -69,11 +72,13 @@ class DashboardService
                 'cheques_disponibles_count' => $availableChequeCount,
                 'cheques_disponibles_total' => $availableChequeTotal,
                 'clients_overdue_count' => $overdueClients->count(),
+                'caisse_solde' => $isAdmin ? round($caisseEntree - $caisseSortie, 2) : null,
             ],
             'comparison' => [
                 ['name' => 'Reste à payer fournisseurs', 'value' => $supplierBalance, 'color' => '#dc2626'],
                 ['name' => 'Reste à recevoir des clients', 'value' => $clientBalance, 'color' => '#059669'],
                 ['name' => 'Chèques non sortis disponibles', 'value' => $availableChequeTotal, 'color' => '#7c3aed'],
+                ...($isAdmin ? [['name' => 'Solde caisse disponible', 'value' => max(round($caisseEntree - $caisseSortie, 2), 0), 'color' => '#c026d3']] : []),
             ],
             'overdue_clients' => $overdueClients,
         ];
@@ -201,7 +206,7 @@ class DashboardService
             'monthlyFactures' => $this->monthlyAmounts(DB::table('fournisseur_factures')->get(['date_facture', 'montant']), 'date_facture'),
             'recentFactures' => FournisseurFacture::query()
                 ->with('fournisseur')
-                ->latest('date_facture')
+                ->latest()
                 ->take(8)
                 ->get()
                 ->map(fn (FournisseurFacture $facture) => [
@@ -266,7 +271,7 @@ class DashboardService
             'monthlyEntries' => $this->monthlyAmounts(DB::table('client_entries')->get(['date_entree', 'montant']), 'date_entree'),
             'recentEntries' => ClientEntry::query()
                 ->with('client')
-                ->latest('date_entree')
+                ->latest()
                 ->take(8)
                 ->get()
                 ->map(fn (ClientEntry $entry) => [

@@ -48,14 +48,14 @@ class EmployeeController extends Controller
             'employee' => $employee,
             'month' => $month,
             'calendar' => $calendar,
-            'absences' => $employee->absences()->latest('absence_date')->get()->map(fn ($absence) => ['id' => $absence->id, 'absence_date' => $absence->absence_date?->format('Y-m-d'), 'status' => $absence->status, 'note' => $absence->note]),
-            'salaryPayments' => $employee->salaryPayments()->latest('payment_date')->get()->map(fn ($payment) => ['id' => $payment->id, 'month' => $payment->month, 'type' => $payment->type, 'payment_date' => $payment->payment_date?->format('Y-m-d'), 'amount' => (float) $payment->amount, 'status' => $payment->status, 'note' => $payment->note]),
+            'absences' => $employee->absences()->latest()->get()->map(fn ($absence) => ['id' => $absence->id, 'absence_date' => $absence->absence_date?->format('Y-m-d'), 'status' => $absence->status, 'note' => $absence->note]),
+            'salaryPayments' => $employee->salaryPayments()->latest()->get()->map(fn ($payment) => ['id' => $payment->id, 'month' => $payment->month, 'type' => $payment->type, 'payment_date' => $payment->payment_date?->format('Y-m-d'), 'amount' => (float) $payment->amount, 'status' => $payment->status, 'note' => $payment->note]),
         ]);
     }
 
     public function paymentHistory(Employee $employee): Response
     {
-        $payments = $employee->salaryPayments()->latest('payment_date')->get()->map(fn (EmployeeSalaryPayment $payment) => ['id' => $payment->id, 'month' => $payment->month, 'type' => $payment->type, 'payment_date' => $payment->payment_date?->format('Y-m-d'), 'amount' => (float) $payment->amount, 'note' => $payment->note]);
+        $payments = $employee->salaryPayments()->latest()->get()->map(fn (EmployeeSalaryPayment $payment) => ['id' => $payment->id, 'month' => $payment->month, 'type' => $payment->type, 'payment_date' => $payment->payment_date?->format('Y-m-d'), 'amount' => (float) $payment->amount, 'note' => $payment->note]);
 
         return Inertia::render('Employees/PaymentHistory', [
             'employee' => ['id' => $employee->id, 'name' => $employee->name],
@@ -66,7 +66,7 @@ class EmployeeController extends Controller
 
     public function absenceHistory(Employee $employee): Response
     {
-        $absences = $employee->absences()->latest('absence_date')->get()->map(fn ($absence) => ['id' => $absence->id, 'absence_date' => $absence->absence_date?->format('Y-m-d'), 'status' => $absence->status, 'note' => $absence->note]);
+        $absences = $employee->absences()->latest()->get()->map(fn ($absence) => ['id' => $absence->id, 'absence_date' => $absence->absence_date?->format('Y-m-d'), 'status' => $absence->status, 'note' => $absence->note]);
 
         return Inertia::render('Employees/AbsenceHistory', ['employee' => ['id' => $employee->id, 'name' => $employee->name], 'absences' => $absences, 'count' => $absences->count()]);
     }

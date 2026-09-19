@@ -4,10 +4,10 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { money } from '@/lib/utils';
 
-export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, empty, onRowClick, rowClassName, preserveSelection = false }) {
+export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, empty, onRowClick, rowClassName, preserveSelection = false, selectable = true }) {
     const [selectedRows, setSelectedRows] = useState({});
-    const selectedIds = useMemo(() => Object.keys(selectedRows).map(Number), [selectedRows]);
-    const pageIds = useMemo(() => (rows || []).map((row) => row.id), [rows]);
+    const selectedIds = useMemo(() => Object.keys(selectedRows), [selectedRows]);
+    const pageIds = useMemo(() => (rows || []).map((row) => String(row.id)), [rows]);
     const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
     const selectedTotal = useMemo(() => Object.values(selectedRows)
         .reduce((total, row) => total + Number(row.montant || 0), 0), [selectedRows]);
@@ -38,11 +38,11 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
     const selectionColumn = {
         key: 'selection',
         label: <input aria-label="Sélectionner toutes les lignes affichées" type="checkbox" checked={allSelected} onChange={toggleAll} />,
-        render: (row) => <input aria-label="Sélectionner cette ligne" type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggle(row)} />,
+        render: (row) => <input aria-label="Sélectionner cette ligne" type="checkbox" checked={selectedIds.includes(String(row.id))} onClick={(event) => event.stopPropagation()} onChange={() => toggle(row)} />,
     };
 
     return <>
-        <div className="mb-3 flex flex-wrap items-center gap-2"><Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>{selectedIds.length ? <><Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span></> : null}</div>
-        <DataTable columns={[selectionColumn, ...columns]} rows={rows} pagination={pagination} empty={empty} onRowClick={onRowClick} rowClassName={rowClassName} />
+        <div className="mb-3 flex flex-wrap items-center gap-2"><Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>{selectable && selectedIds.length ? <><Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span></> : null}</div>
+        <DataTable columns={selectable ? [selectionColumn, ...columns] : columns} rows={rows} pagination={pagination} empty={empty} onRowClick={onRowClick} rowClassName={rowClassName} />
     </>;
 }
