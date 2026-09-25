@@ -7,7 +7,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Checkbox } from '@/Components/ui/checkbox';
 import SearchableSelect from '@/Components/SearchableSelect';
 
-export default function CrudDialog({ title, trigger, action, method = 'post', fields, defaults = {}, submitLabel = 'Enregistrer' }) {
+export default function CrudDialog({ title, trigger, action, method = 'post', fields, defaults = {}, submitLabel = 'Enregistrer', preserveState = false }) {
     const [open, setOpen] = useState(false);
     const { data, setData, post, patch, processing, errors, reset } = useForm(defaults);
 
@@ -17,9 +17,15 @@ export default function CrudDialog({ title, trigger, action, method = 'post', fi
 
     const submit = (event) => {
         event.preventDefault();
+        // Radix's DialogContent renders via a React Portal: DOM placement moves, but React's
+        // synthetic events still bubble through the React tree. Without this, submitting a
+        // CrudDialog nested inside another <form> (e.g. a quick-create dialog opened from
+        // within a bigger form) would also trigger that outer form's onSubmit.
+        event.stopPropagation();
         const visit = method === 'patch' ? patch : post;
         visit(action, {
             preserveScroll: true,
+            preserveState,
             onSuccess: () => {
                 setOpen(false);
                 reset();

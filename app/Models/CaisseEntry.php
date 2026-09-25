@@ -18,6 +18,7 @@ class CaisseEntry extends Model
     {
         return [
             'montant' => 'decimal:2',
+            'validated_at' => 'datetime',
         ];
     }
 
@@ -29,5 +30,15 @@ class CaisseEntry extends Model
     public function fournisseur(): BelongsTo
     {
         return $this->belongsTo(Fournisseur::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 }

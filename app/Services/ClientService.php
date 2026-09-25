@@ -220,6 +220,7 @@ class ClientService
     private function baseQuery(array $filters): Builder
     {
         return Client::query()
+            ->whereNull('source')
             ->withSum('entries', 'montant')
             ->withSum('payments', 'montant')
             ->withSum('cheques', 'montant')

@@ -88,6 +88,9 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('permission:caisse')->group(function (): void {
         Route::resource('caisse', CaisseController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('/caisse/quick-client', [CaisseController::class, 'quickStoreClient'])->name('caisse.quick-client');
+        Route::post('/caisse/quick-fournisseur', [CaisseController::class, 'quickStoreFournisseur'])->name('caisse.quick-fournisseur');
+        Route::patch('/caisse/{caisse}/validate', [CaisseController::class, 'approve'])->name('caisse.validate')->middleware('permission:admin');
     });
 
     Route::middleware('permission:clients')->group(function (): void {

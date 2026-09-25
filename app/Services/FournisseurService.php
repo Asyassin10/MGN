@@ -150,7 +150,7 @@ class FournisseurService
 
     private function baseQuery(array $filters): Builder
     {
-        return Fournisseur::query()->withSum('factures', 'montant')->withSum('cheques', 'montant')->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('nom', 'like', "%{$value}%")->orWhere('telephone', 'like', "%{$value}%")->orWhere('ville', 'like', "%{$value}%")))->when($filters['ville'] ?? null, fn ($query, $value) => $query->where('ville', 'like', "%{$value}%"));
+        return Fournisseur::query()->whereNull('source')->withSum('factures', 'montant')->withSum('cheques', 'montant')->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('nom', 'like', "%{$value}%")->orWhere('telephone', 'like', "%{$value}%")->orWhere('ville', 'like', "%{$value}%")))->when($filters['ville'] ?? null, fn ($query, $value) => $query->where('ville', 'like', "%{$value}%"));
     }
 
     private function relevesQuery(array $filters): Builder

@@ -12,7 +12,7 @@ class Fournisseur extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['nom', 'telephone', 'ville', 'note'];
+    protected $fillable = ['nom', 'telephone', 'ville', 'note', 'source'];
 
     protected $appends = ['balance'];
 

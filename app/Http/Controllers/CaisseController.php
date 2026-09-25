@@ -16,7 +16,7 @@ class CaisseController extends Controller
     public function index(Request $request): Response
     {
         $entries = CaisseEntry::query()
-            ->with(['client:id,nom', 'fournisseur:id,nom'])
+            ->with(['client:id,nom', 'fournisseur:id,nom', 'user:id,name'])
             ->latest()
             ->paginate(100)
             ->through(fn (CaisseEntry $entry) => [
@@ -26,6 +26,8 @@ class CaisseController extends Controller
                 'party_label' => $entry->client?->nom ?? $entry->fournisseur?->nom,
                 'montant' => (float) $entry->montant,
                 'note' => $entry->note,
+                'created_by' => $entry->user?->name,
+                'validated' => $entry->validated_at !== null,
                 'created_at' => $entry->created_at->format('Y-m-d H:i'),
             ]);
 
@@ -33,6 +35,7 @@ class CaisseController extends Controller
             'entries' => $entries,
             'parties' => $this->partyOptions(),
             'kpis' => $request->user()?->isAdmin() ? $this->kpis() : null,
+            'newParty' => session('newParty'),
         ]);
     }
 
@@ -50,7 +53,15 @@ class CaisseController extends Controller
 
     public function store(StoreCaisseEntryRequest $request): RedirectResponse
     {
-        CaisseEntry::create($request->validated());
+        $entry = new CaisseEntry($request->validated());
+        $entry->user_id = $request->user()->id;
+
+        if ($request->user()->isAdmin()) {
+            $entry->validated_at = now();
+            $entry->validated_by = $request->user()->id;
+        }
+
+        $entry->save();
 
         return back()->with('success', 'Mouvement de caisse enregistré.');
     }
@@ -67,6 +78,47 @@ class CaisseController extends Controller
         $caisse->delete();
 
         return back()->with('success', 'Mouvement de caisse supprimé.');
+    }
+
+    public function approve(Request $request, CaisseEntry $caisse): RedirectResponse
+    {
+        $caisse->validated_at = now();
+        $caisse->validated_by = $request->user()->id;
+        $caisse->save();
+
+        return back()->with('success', 'Mouvement validé.');
+    }
+
+    public function quickStoreClient(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['nom' => ['required', 'string', 'max:255']]);
+
+        $client = Client::create([
+            ...$data,
+            'source' => 'caisse',
+            'note' => 'Créé depuis Caisse',
+        ]);
+
+        return back()->with([
+            'success' => 'Client créé.',
+            'newParty' => ['value' => "client:{$client->id}", 'label' => "Client — {$client->nom}"],
+        ]);
+    }
+
+    public function quickStoreFournisseur(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['nom' => ['required', 'string', 'max:255']]);
+
+        $fournisseur = Fournisseur::create([
+            ...$data,
+            'source' => 'caisse',
+            'note' => 'Créé depuis Caisse',
+        ]);
+
+        return back()->with([
+            'success' => 'Fournisseur créé.',
+            'newParty' => ['value' => "fournisseur:{$fournisseur->id}", 'label' => "Fournisseur — {$fournisseur->nom}"],
+        ]);
     }
 
     private function partyOptions(): array

@@ -23,11 +23,12 @@ class AuthController extends Controller
 
         $user = $request->user();
         $destination = $user->isAdmin() ? route('dashboard') : match (true) {
+            $user->canAccess('dashboard') => route('dashboard'),
             $user->canAccess('depots') => route('depots.index'),
             $user->canAccess('fournisseurs') => route('fournisseurs.index'),
             $user->canAccess('clients') => route('clients.index'),
             $user->canAccess('cheques') => route('cheques.index'),
-            $user->canAccess('dashboard') => route('dashboard'),
+            $user->canAccess('caisse') => route('caisse.index'),
             default => route('dashboard'),
         };
 

@@ -1,5 +1,6 @@
+import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import CrudDialog from '@/Components/CrudDialog';
+import CaisseMovementDialog from '@/Components/CaisseMovementDialog';
 import DataTable from '@/Components/DataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Badge } from '@/Components/ui/badge';
@@ -7,15 +8,8 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { money } from '@/lib/utils';
 
-const types = [{ value: 'entree', label: 'Entrée' }, { value: 'sortie', label: 'Sortie' }];
-
-export default function Index({ entries, parties, kpis }) {
-    const fields = [
-        { name: 'type', label: 'Type', type: 'select', options: types, allowEmpty: false },
-        { name: 'party', label: 'Client / Fournisseur', type: 'select', options: parties, allowEmpty: false },
-        { name: 'montant', label: 'Montant', type: 'number' },
-        { name: 'note', label: 'Note', type: 'textarea' },
-    ];
+export default function Index({ entries, parties, kpis, newParty }) {
+    const { auth } = usePage().props;
     const defaults = { type: 'entree', party: '', montant: '', note: '' };
 
     const columns = [
@@ -24,12 +18,16 @@ export default function Index({ entries, parties, kpis }) {
         { key: 'party_label', label: 'Client / Fournisseur', render: (row) => <span className="text-lg font-semibold">{row.party_label}</span> },
         { key: 'montant', label: 'Montant', render: (row) => <span className={`text-lg font-semibold ${row.type === 'entree' ? 'text-emerald-700' : 'text-red-700'}`}>{money(row.montant)}</span> },
         { key: 'note', label: 'Note' },
+        { key: 'created_by', label: 'Créé par', render: (row) => row.created_by || '—' },
         {
             key: 'actions',
             label: 'Actions',
             render: (row) => (
                 <div className="flex flex-wrap gap-2">
-                    <CrudDialog title="Modifier le mouvement" action={route('caisse.update', row.id)} method="patch" fields={fields} defaults={row} trigger={<Button size="sm" variant="outline">Modifier</Button>} />
+                    {!row.validated && auth.user?.role === 'admin' ? (
+                        <Button size="sm" onClick={() => router.patch(route('caisse.validate', row.id), {}, { preserveScroll: true })}>Valider</Button>
+                    ) : null}
+                    <CaisseMovementDialog title="Modifier le mouvement" action={route('caisse.update', row.id)} method="patch" defaults={row} parties={parties} newParty={newParty} trigger={<Button size="sm" variant="outline">Modifier</Button>} />
                     <DeleteButton action={route('caisse.destroy', row.id)} title="Supprimer ce mouvement ?" />
                 </div>
             ),
@@ -37,7 +35,7 @@ export default function Index({ entries, parties, kpis }) {
     ];
 
     return (
-        <AppLayout title="Caisse" actions={<CrudDialog title="Nouveau mouvement de caisse" action={route('caisse.store')} fields={fields} defaults={defaults} trigger={<Button>Nouveau mouvement</Button>} />}>
+        <AppLayout title="Caisse" actions={<CaisseMovementDialog title="Nouveau mouvement de caisse" action={route('caisse.store')} defaults={defaults} parties={parties} newParty={newParty} trigger={<Button>Nouveau mouvement</Button>} />}>
             {kpis ? (
                 <div className="mb-4 grid gap-3 md:grid-cols-3">
                     <Card><CardContent><div className="text-sm text-zinc-500">Total entrées</div><div className="mt-1 text-2xl font-semibold text-emerald-700">{money(kpis.total_entree)}</div></CardContent></Card>
@@ -45,7 +43,7 @@ export default function Index({ entries, parties, kpis }) {
                     <Card><CardContent><div className="text-sm text-zinc-500">Solde (entrées - sorties)</div><div className={`mt-1 text-2xl font-semibold ${kpis.solde >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{money(kpis.solde)}</div></CardContent></Card>
                 </div>
             ) : null}
-            <DataTable columns={columns} rows={entries.data} pagination={entries} empty="Aucun mouvement de caisse." />
+            <DataTable columns={columns} rows={entries.data} pagination={entries} empty="Aucun mouvement de caisse." rowClassName={(row) => auth.user?.role !== 'admin' ? '' : row.validated ? 'status-row-complete' : 'status-row status-row-sorti'} />
         </AppLayout>
     );
 }
