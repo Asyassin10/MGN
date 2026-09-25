@@ -16,7 +16,7 @@ export default function Index({ entries, parties, kpis, newParty }) {
         { key: 'created_at', label: 'Date' },
         { key: 'type', label: 'Type', render: (row) => <Badge className="text-base" variant={row.type === 'entree' ? 'green' : 'red'}>{row.type === 'entree' ? 'Entrée' : 'Sortie'}</Badge> },
         { key: 'party_label', label: 'Client / Fournisseur', render: (row) => <span className="text-lg font-semibold">{row.party_label}</span> },
-        { key: 'montant', label: 'Montant', render: (row) => <span className={`text-lg font-semibold ${row.type === 'entree' ? 'text-emerald-700' : 'text-red-700'}`}>{money(row.montant)}</span> },
+        { key: 'montant', label: 'Montant', render: (row) => <span className="text-lg font-semibold">{money(row.montant)}</span> },
         { key: 'note', label: 'Note' },
         { key: 'created_by', label: 'Créé par', render: (row) => row.created_by || '—' },
         {
