@@ -102,6 +102,32 @@ class FournisseurController extends Controller
         return redirect()->route('fournisseurs.index')->with('success', 'Fournisseur supprimé.');
     }
 
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach (Fournisseur::whereKey($data['selected_ids'])->get() as $fournisseur) {
+            $message = DeleteBlockers::message('ce fournisseur', [
+                'relevés compte' => $fournisseur->releveComptes()->count(),
+                'factures' => $fournisseur->factures()->count(),
+                'chèques fournisseur' => $fournisseur->cheques()->count(),
+            ]);
+
+            if ($message) {
+                $blocked++;
+                continue;
+            }
+
+            $fournisseur->delete();
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' fournisseur(s) non supprimé(s) car ils possèdent un historique financier ou des chèques.');
+        }
+
+        return back()->with('success', 'Fournisseurs supprimés.');
+    }
+
     public function storeFacture(StoreFournisseurFactureRequest $request, Fournisseur $fournisseur): RedirectResponse
     {
         return back()->with('error', 'Sélectionnez un relevé compte avant d’ajouter une facture.');
@@ -158,6 +184,56 @@ class FournisseurController extends Controller
         }
 
         return redirect()->route('fournisseurs.show', $fournisseur)->with('success', 'Relevé compte supprimé.');
+    }
+
+    public function destroySelectedReleves(Request $request, Fournisseur $fournisseur): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach ($fournisseur->releveComptes()->whereKey($data['selected_ids'])->get() as $releve) {
+            $message = DeleteBlockers::message('ce relevé', [
+                'factures' => $releve->factures()->count(),
+                'chèques' => $releve->cheques()->count(),
+            ]);
+
+            if ($message) {
+                $blocked++;
+                continue;
+            }
+
+            $releve->delete();
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' relevé(s) non supprimé(s) car ils contiennent des factures ou paiements.');
+        }
+
+        return back()->with('success', 'Relevés compte supprimés.');
+    }
+
+    public function destroySelectedRelevesGlobal(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach (FournisseurReleveCompte::whereKey($data['selected_ids'])->get() as $releve) {
+            $message = DeleteBlockers::message('ce relevé', [
+                'factures' => $releve->factures()->count(),
+                'chèques' => $releve->cheques()->count(),
+            ]);
+
+            if ($message) {
+                $blocked++;
+                continue;
+            }
+
+            $releve->delete();
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' relevé(s) non supprimé(s) car ils contiennent des factures ou paiements.');
+        }
+
+        return back()->with('success', 'Relevés compte supprimés.');
     }
 
     public function pdfReleve(Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurService $service): \Symfony\Component\HttpFoundation\Response

@@ -95,4 +95,23 @@ class OperationController extends Controller
 
         return redirect()->route('operations.index')->with('success', 'Opération supprimée et stock rétabli.');
     }
+
+    public function destroySelected(Request $request, OperationService $service): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach (Operation::whereKey($data['selected_ids'])->get() as $operation) {
+            try {
+                $service->delete($operation);
+            } catch (ValidationException) {
+                $blocked++;
+            }
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' opération(s) non supprimée(s) car leur stock a déjà été consommé.');
+        }
+
+        return back()->with('success', 'Opérations supprimées et stock rétabli.');
+    }
 }

@@ -125,4 +125,23 @@ class EmployeeController extends Controller
 
         return back()->with('success', 'Employé supprimé.');
     }
+
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach (Employee::whereKey($data['selected_ids'])->get() as $employee) {
+            if ($employee->operations()->count() > 0) {
+                $blocked++;
+                continue;
+            }
+            $employee->delete();
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' employé(s) non supprimé(s) car des opérations leur sont associées.');
+        }
+
+        return back()->with('success', 'Employés supprimés.');
+    }
 }

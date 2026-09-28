@@ -80,6 +80,7 @@ export default function RelevesIndex({ releves, fournisseurs, filters }) {
                 pagination={releves}
                 exportUrl={route('fournisseurs.releves.index')}
                 exportParams={{ ...filters, export: 1 }}
+                deleteUrl={route('fournisseurs.releves.index.destroy-selected')}
                 empty="Aucun relevé compte trouvé."
                 onRowClick={(row) => router.visit(route('fournisseurs.releves.show', [row.fournisseur_id, row.id]))}
             />

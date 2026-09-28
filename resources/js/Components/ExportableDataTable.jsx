@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { Download, Trash2 } from 'lucide-react';
 import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import { money } from '@/lib/utils';
 
 export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, deleteUrl, empty, onRowClick, rowClassName, preserveSelection = false, selectable = true }) {
+    const { auth } = usePage().props;
+    const canDelete = deleteUrl && auth.user?.role === 'admin';
     const [selectedRows, setSelectedRows] = useState({});
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const selectedIds = useMemo(() => Object.keys(selectedRows), [selectedRows]);
@@ -59,12 +61,12 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
             <Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>
             {selectable && selectedIds.length ? <>
                 <Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button>
-                {deleteUrl ? <Button variant="destructive" onClick={() => setConfirmingDelete(true)}><Trash2 className="h-4 w-4" />Supprimer la sélection</Button> : null}
+                {canDelete ? <Button variant="destructive" onClick={() => setConfirmingDelete(true)}><Trash2 className="h-4 w-4" />Supprimer la sélection</Button> : null}
                 <span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span>
             </> : null}
         </div>
         <DataTable columns={selectable ? [selectionColumn, ...columns] : columns} rows={rows} pagination={pagination} empty={empty} onRowClick={onRowClick} rowClassName={rowClassName} />
-        {deleteUrl ? (
+        {canDelete ? (
             <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
                 <DialogContent className="max-w-md">
                     <DialogHeader><DialogTitle>Supprimer {selectedIds.length} élément(s) ?</DialogTitle></DialogHeader>

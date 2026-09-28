@@ -39,7 +39,7 @@ export default function Index({ employees, filters }) {
             <div className="mb-4">
                 <Input placeholder="Recherche nom" defaultValue={filters.search || ''} onChange={(event) => update('search', event.target.value)} />
             </div>
-            <ExportableDataTable columns={columns} rows={employees.data} pagination={employees} exportUrl={route('employees.index')} exportParams={{ ...filters, export: 1 }} onRowClick={(row) => router.visit(route('employees.show', row.id))} />
+            <ExportableDataTable columns={columns} rows={employees.data} pagination={employees} exportUrl={route('employees.index')} exportParams={{ ...filters, export: 1 }} deleteUrl={route('employees.destroy-selected')} onRowClick={(row) => router.visit(route('employees.show', row.id))} />
         </AppLayout>
     );
 }

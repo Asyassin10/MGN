@@ -54,4 +54,15 @@ class ArticleController extends Controller
 
         return back()->with('success', 'Article supprimé et retiré de tous les dépôts.');
     }
+
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        Article::whereKey($data['selected_ids'])->get()->each(function (Article $article): void {
+            $article->depots()->detach();
+            $article->delete();
+        });
+
+        return back()->with('success', 'Articles supprimés.');
+    }
 }

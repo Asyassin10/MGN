@@ -55,6 +55,7 @@ export default function Show({ fournisseur, releves }) {
                 pagination={releves}
                 exportUrl={route('fournisseurs.show', fournisseur.id)}
                 exportParams={{ export: 1 }}
+                deleteUrl={route('fournisseurs.releves.destroy-selected', fournisseur.id)}
                 empty="Aucun relevé compte pour ce fournisseur."
                 onRowClick={(row) => router.visit(route('fournisseurs.releves.show', [fournisseur.id, row.id]))}
             />

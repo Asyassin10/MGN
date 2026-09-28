@@ -113,6 +113,14 @@ class ClientController extends Controller
         return back()->with('success', 'Entrée supprimée.');
     }
 
+    public function destroySelectedEntries(Request $request, Client $client): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $client->entries()->whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', 'Entrées supprimées.');
+    }
+
     public function storePayment(StoreClientPaymentRequest $request, Client $client): RedirectResponse
     {
         $client->payments()->create($request->validated());
@@ -134,6 +142,19 @@ class ClientController extends Controller
         $payment->delete();
 
         return back()->with('success', 'Paiement supprimé.');
+    }
+
+    public function destroySelectedPayments(Request $request, Client $client): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1']]);
+        $selectedIds = collect($data['selected_ids']);
+        $paymentIds = $selectedIds->reject(fn ($id) => str_starts_with((string) $id, 'cheque-'))->map(fn ($id) => (int) $id)->all();
+        $chequeIds = $selectedIds->filter(fn ($id) => str_starts_with((string) $id, 'cheque-'))->map(fn ($id) => (int) str_replace('cheque-', '', (string) $id))->all();
+
+        $client->payments()->whereKey($paymentIds)->delete();
+        $client->cheques()->whereKey($chequeIds)->delete();
+
+        return back()->with('success', 'Paiements supprimés.');
     }
 
     public function pdfPayment(Client $client, ClientPayment $payment, ClientService $service): \Symfony\Component\HttpFoundation\Response

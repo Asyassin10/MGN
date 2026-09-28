@@ -71,6 +71,32 @@ class DepotController extends Controller
         return redirect()->route('depots.index')->with('success', 'Dépôt supprimé.');
     }
 
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $blocked = 0;
+        foreach (Depot::whereKey($data['selected_ids'])->get() as $depot) {
+            $message = DeleteBlockers::message('ce dépôt', [
+                'opérations' => $depot->operations()->count(),
+                'articles avec stock non nul' => $depot->articles()->wherePivot('quantity', '!=', 0)->count(),
+            ]);
+
+            if ($message) {
+                $blocked++;
+                continue;
+            }
+
+            $depot->articles()->detach();
+            $depot->delete();
+        }
+
+        if ($blocked) {
+            return back()->with('error', $blocked.' dépôt(s) non supprimé(s) car leur stock n’est pas nul ou ils contiennent des opérations.');
+        }
+
+        return back()->with('success', 'Dépôts supprimés.');
+    }
+
     public function adjustStock(AdjustDepotStockRequest $request, Depot $depot): RedirectResponse
     {
         $validated = $request->validated();
