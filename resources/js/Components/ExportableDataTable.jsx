@@ -6,7 +6,7 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { money } from '@/lib/utils';
 
-export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, deleteUrl, empty, onRowClick, rowClassName, preserveSelection = false, selectable = true }) {
+export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, deleteUrl, empty, onRowClick, rowClassName, preserveSelection = false, selectable = true, totalField = 'montant', totalLabel = 'Total' }) {
     const { auth } = usePage().props;
     const canDelete = deleteUrl && auth.user?.role === 'admin';
     const [selectedRows, setSelectedRows] = useState({});
@@ -15,7 +15,7 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
     const pageIds = useMemo(() => (rows || []).map((row) => String(row.id)), [rows]);
     const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
     const selectedTotal = useMemo(() => Object.values(selectedRows)
-        .reduce((total, row) => total + Number(row.montant || 0), 0), [selectedRows]);
+        .reduce((total, row) => total + Number(row[totalField] || 0), 0), [selectedRows, totalField]);
 
     useEffect(() => {
         if (!preserveSelection) setSelectedRows({});
@@ -62,7 +62,7 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
             {selectable && selectedIds.length ? <>
                 <Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button>
                 {canDelete ? <Button variant="destructive" onClick={() => setConfirmingDelete(true)}><Trash2 className="h-4 w-4" />Supprimer la sélection</Button> : null}
-                <span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · Total : {money(selectedTotal)}</span>
+                <span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · {totalLabel} : {money(selectedTotal)}</span>
             </> : null}
         </div>
         <DataTable columns={selectable ? [selectionColumn, ...columns] : columns} rows={rows} pagination={pagination} empty={empty} onRowClick={onRowClick} rowClassName={rowClassName} />

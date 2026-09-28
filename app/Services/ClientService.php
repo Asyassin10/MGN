@@ -77,14 +77,19 @@ class ClientService
             ->when($filters['selected_ids'] ?? [], fn (Builder $query, array $ids) => $query->whereKey($ids))
             ->latest()
             ->get()
-            ->map(fn (Client $client) => [
-                $client->nom,
-                $client->ville,
-                $client->telephone,
-                round((float) ($client->entries_sum_montant ?? 0), 2),
-                round((float) ($client->payments_sum_montant ?? 0), 2),
-                round(((float) ($client->entries_sum_montant ?? 0)) - ((float) ($client->payments_sum_montant ?? 0)), 2),
-            ]);
+            ->map(function (Client $client) {
+                $totalDu = (float) ($client->entries_sum_montant ?? 0);
+                $totalPaye = (float) ($client->payments_sum_montant ?? 0) + (float) ($client->cheques_sum_montant ?? 0);
+
+                return [
+                    $client->nom,
+                    $client->ville,
+                    $client->telephone,
+                    round($totalDu, 2),
+                    round($totalPaye, 2),
+                    round($totalDu - $totalPaye, 2),
+                ];
+            });
 
         return ExcelExport::download('clients-export', ['Nom', 'Ville', 'Telephone', 'Total du', 'Total paye', 'Solde'], $rows);
     }
