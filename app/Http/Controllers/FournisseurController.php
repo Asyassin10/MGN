@@ -198,6 +198,15 @@ class FournisseurController extends Controller
         return back()->with('success', 'Facture supprimée.');
     }
 
+    public function destroySelectedFactures(Request $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
+    {
+        abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $releve->factures()->whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', 'Factures supprimées.');
+    }
+
     public function storeRelevePayment(StoreFournisseurChequeRequest $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
     {
         abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
@@ -224,6 +233,15 @@ class FournisseurController extends Controller
         $payment->delete();
 
         return back()->with('success', 'Paiement supprimé.');
+    }
+
+    public function destroySelectedPayments(Request $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve): RedirectResponse
+    {
+        abort_if($releve->fournisseur_id !== $fournisseur->id, 404);
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $releve->cheques()->whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', 'Paiements supprimés.');
     }
 
     public function updateChequeStatus(Request $request, Fournisseur $fournisseur, FournisseurReleveCompte $releve, FournisseurCheque $cheque): RedirectResponse

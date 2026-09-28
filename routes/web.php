@@ -78,10 +78,12 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/fournisseurs/{fournisseur}/releves/{releve}/factures', [FournisseurController::class, 'storeReleveFacture'])->name('fournisseurs.releves.factures.store');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/factures/{facture}', [FournisseurController::class, 'updateFacture'])->name('fournisseurs.releves.factures.update');
         Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/factures/{facture}', [FournisseurController::class, 'destroyFacture'])->name('fournisseurs.releves.factures.destroy');
+        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/factures', [FournisseurController::class, 'destroySelectedFactures'])->name('fournisseurs.releves.factures.destroy-selected');
         Route::post('/fournisseurs/{fournisseur}/releves/{releve}/payments', [FournisseurController::class, 'storeRelevePayment'])->name('fournisseurs.releves.payments.store');
         Route::get('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}/pdf', [FournisseurController::class, 'pdfPayment'])->name('fournisseurs.releves.payments.pdf');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'updatePayment'])->name('fournisseurs.releves.payments.update');
         Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'destroyPayment'])->name('fournisseurs.releves.payments.destroy');
+        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments', [FournisseurController::class, 'destroySelectedPayments'])->name('fournisseurs.releves.payments.destroy-selected');
         Route::post('/fournisseurs/{fournisseur}/factures', [FournisseurController::class, 'storeFacture'])->name('fournisseurs.factures.store');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/cheques/{cheque}/status', [FournisseurController::class, 'updateChequeStatus'])->name('fournisseurs.releves.cheques.status');
     });

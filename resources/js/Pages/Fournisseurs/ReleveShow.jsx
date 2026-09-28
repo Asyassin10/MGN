@@ -125,6 +125,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         pagination={factures}
                         exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
                         exportParams={{ ...filters, export: 'factures' }}
+                        deleteUrl={route('fournisseurs.releves.factures.destroy-selected', [fournisseur.id, releve.id])}
                     />
                 </TabsContent>
 
@@ -161,6 +162,7 @@ export default function ReleveShow({ fournisseur, releve, factures, payments, fi
                         pagination={payments}
                         exportUrl={route('fournisseurs.releves.show', [fournisseur.id, releve.id])}
                         exportParams={{ ...filters, export: 'payments' }}
+                        deleteUrl={route('fournisseurs.releves.payments.destroy-selected', [fournisseur.id, releve.id])}
                         rowClassName={getSupplierPaymentRowClass}
                         preserveSelection
                     />
