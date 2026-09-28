@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { Download, LogOut, Plus } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { Download, LogOut, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
@@ -9,6 +9,7 @@ import SearchableSelect from '@/Components/SearchableSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Card, CardContent } from '@/Components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { money } from '@/lib/utils';
 import { getChequeRowClass } from '@/lib/chequeStatus';
 
@@ -27,7 +28,9 @@ const fields = [
 ];
 
 export default function Index({ cheques, filters, montantDisponible, chequesDisponiblesCount }) {
+    const { auth } = usePage().props;
     const [selectedRows, setSelectedRows] = useState({});
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     const updateFilters = (changes) => router.get(route('cheques.index'), { ...filters, ...changes }, { preserveState: true, replace: true });
     const inlineUpdate = (row, changes) => router.patch(route('cheques.inline', row.id), changes, { preserveScroll: true, preserveState: true });
     const defaults = { type: 'cheque', numero_cheque: '', client_nom: '', tireur_signataire: '', date_emission: '', date_echeance: '', statut: 'en_cours', montant: '', note: '' };
@@ -52,6 +55,16 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
         return next;
     });
     const downloadExcel = (ids = []) => window.location.assign(route('cheques.export', { ...filters, ...(ids.length ? { selected_ids: ids } : {}) }));
+    const deleteSelected = () => {
+        router.delete(route('cheques.destroy-selected'), {
+            data: { selected_ids: selectedIds },
+            preserveScroll: true,
+            onSuccess: () => {
+                setSelectedRows({});
+                setConfirmingDelete(false);
+            },
+        });
+    };
 
     const columns = [
         { key: 'selection', label: <input aria-label="Sélectionner tous les chèques affichés" type="checkbox" checked={allPageRowsSelected} onChange={togglePage} />, render: (row) => <input aria-label={`Sélectionner le chèque ${row.numero_cheque}`} type="checkbox" checked={selectedIds.includes(row.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleRow(row)} /> },
@@ -78,7 +91,19 @@ export default function Index({ cheques, filters, montantDisponible, chequesDisp
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
             <SearchableSelect value={filters.sortie || ''} onChange={(sortie) => updateFilters({ sortie })} options={[{ value: '1', label: 'Oui' }, { value: '0', label: 'Non' }]} placeholder="Tous les chèques" />
         </div>
-        {selectedIds.length ? <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button><span className="text-base font-bold md:text-lg">{selectedIds.length} chèque(s) sélectionné(s) · Total : {money(selectedTotal)}</span></div> : null}
+        {selectedIds.length ? <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-900"><Button size="sm" onClick={() => downloadExcel(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button>{auth.user?.role === 'admin' ? <Button size="sm" variant="destructive" onClick={() => setConfirmingDelete(true)}><Trash2 className="h-4 w-4" />Supprimer la sélection</Button> : null}<span className="text-base font-bold md:text-lg">{selectedIds.length} chèque(s) sélectionné(s) · Total : {money(selectedTotal)}</span></div> : null}
         <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.est_sorti ? 'status-row status-row-sorti' : getChequeRowClass(row)} empty="Aucun chèque." />
+        {auth.user?.role === 'admin' ? (
+            <Dialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader><DialogTitle>Supprimer {selectedIds.length} chèque(s) ?</DialogTitle></DialogHeader>
+                    <p className="mb-5 text-base text-zinc-600">Cette action est définitive.</p>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <Button type="button" variant="outline" onClick={() => setConfirmingDelete(false)}>Annuler</Button>
+                        <Button type="button" variant="destructive" onClick={deleteSelected}>Confirmer la suppression</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        ) : null}
     </AppLayout>;
 }

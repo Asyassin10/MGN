@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/cheques/{cheque}/inline', [ChequeController::class, 'updateInline'])->name('cheques.inline');
         Route::patch('/cheques/{cheque}', [ChequeController::class, 'update'])->name('cheques.update');
         Route::delete('/cheques/{cheque}', [ChequeController::class, 'destroy'])->name('cheques.destroy');
+        Route::delete('/cheques', [ChequeController::class, 'destroySelected'])->name('cheques.destroy-selected');
     });
     Route::middleware('permission:admin')->group(function (): void {
         Route::resource('employees', EmployeeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);

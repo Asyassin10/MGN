@@ -105,6 +105,14 @@ class ChequeController extends Controller
         return back()->with('success', 'Chèque supprimé.');
     }
 
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        Cheque::whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', 'Chèques supprimés.');
+    }
+
     private function validated(Request $request): array
     {
         return $request->validate([
