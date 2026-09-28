@@ -8,15 +8,18 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { money } from '@/lib/utils';
 
+const modeLabels = { espece: 'Espèce', virement: 'Virement', cheque: 'Chèque', effet: 'Effet' };
+
 export default function Index({ entries, parties, kpis, newParty }) {
     const { auth } = usePage().props;
-    const defaults = { type: 'entree', party: '', montant: '', note: '' };
+    const defaults = { type: 'entree', party: '', montant: '', mode: '', note: '' };
 
     const columns = [
         { key: 'created_at', label: 'Date' },
         { key: 'type', label: 'Type', render: (row) => <Badge className="text-base" variant={row.type === 'entree' ? 'green' : 'red'}>{row.type === 'entree' ? 'Entrée' : 'Sortie'}</Badge> },
         { key: 'party_label', label: 'Client / Fournisseur', render: (row) => <span className="text-lg font-semibold">{row.party_label}</span> },
         { key: 'montant', label: 'Montant', render: (row) => <span className="text-lg font-semibold">{money(row.montant)}</span> },
+        { key: 'mode', label: 'Mode', render: (row) => modeLabels[row.mode] || '—' },
         { key: 'note', label: 'Note' },
         { key: 'created_by', label: 'Créé par', render: (row) => row.created_by || '—' },
         {

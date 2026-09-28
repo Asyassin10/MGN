@@ -12,7 +12,9 @@ class CaisseEntry extends Model
 
     public const TYPES = ['entree', 'sortie'];
 
-    protected $fillable = ['type', 'client_id', 'fournisseur_id', 'montant', 'note'];
+    public const MODES = ['espece', 'virement', 'cheque', 'effet'];
+
+    protected $fillable = ['type', 'client_id', 'fournisseur_id', 'montant', 'mode', 'note'];
 
     protected function casts(): array
     {

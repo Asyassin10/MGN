@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\CaisseEntry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -11,9 +12,10 @@ class StoreCaisseEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['required', Rule::in(['entree', 'sortie'])],
+            'type' => ['required', Rule::in(CaisseEntry::TYPES)],
             'party' => ['required', 'string', 'regex:/^(client|fournisseur):\d+$/'],
             'montant' => ['required', 'numeric', 'min:0'],
+            'mode' => ['nullable', Rule::in(CaisseEntry::MODES)],
             'note' => ['nullable', 'string'],
         ];
     }

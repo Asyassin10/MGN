@@ -25,6 +25,7 @@ class CaisseController extends Controller
                 'party' => $entry->client_id ? "client:{$entry->client_id}" : "fournisseur:{$entry->fournisseur_id}",
                 'party_label' => $entry->client?->nom ?? $entry->fournisseur?->nom,
                 'montant' => (float) $entry->montant,
+                'mode' => $entry->mode,
                 'note' => $entry->note,
                 'created_by' => $entry->user?->name,
                 'validated' => $entry->validated_at !== null,

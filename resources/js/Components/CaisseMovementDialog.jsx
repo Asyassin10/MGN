@@ -9,6 +9,7 @@ import SearchableSelect from '@/Components/SearchableSelect';
 import CrudDialog from '@/Components/CrudDialog';
 
 const types = [{ value: 'entree', label: 'Entrée' }, { value: 'sortie', label: 'Sortie' }];
+const modes = [{ value: 'espece', label: 'Espèce' }, { value: 'virement', label: 'Virement' }, { value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }];
 
 export default function CaisseMovementDialog({ title, action, method = 'post', defaults, submitLabel = 'Enregistrer', parties, trigger, newParty }) {
     const [open, setOpen] = useState(false);
@@ -73,6 +74,11 @@ export default function CaisseMovementDialog({ title, action, method = 'post', d
                         <span className="font-medium text-zinc-700">Montant</span>
                         <Input type="number" value={data.montant} onChange={(event) => setData('montant', event.target.value)} />
                         {errors.montant ? <span className="text-sm text-red-600">{errors.montant}</span> : null}
+                    </label>
+                    <label className="grid gap-1 text-base">
+                        <span className="font-medium text-zinc-700">Mode</span>
+                        <SearchableSelect value={data.mode || ''} onChange={(value) => setData('mode', value)} options={modes} placeholder="Mode de paiement" />
+                        {errors.mode ? <span className="text-sm text-red-600">{errors.mode}</span> : null}
                     </label>
                     <label className="grid gap-1 text-base">
                         <span className="font-medium text-zinc-700">Note</span>
