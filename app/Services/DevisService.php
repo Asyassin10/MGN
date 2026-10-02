@@ -40,8 +40,10 @@ class DevisService
         return [
             'fournisseurs' => Fournisseur::query()->whereNull('source')->orderBy('nom')->get(['id', 'nom'])
                 ->map(fn (Fournisseur $item) => ['value' => (string) $item->id, 'label' => $item->nom])->all(),
-            'articles' => Article::query()->orderBy('name')->get(['id', 'reference', 'name'])
-                ->map(fn (Article $item) => ['value' => (string) $item->id, 'label' => "{$item->reference} - {$item->display_name}"])->all(),
+            'groups' => \App\Models\ArticleGroup::query()->orderBy('name')->get(['id', 'name'])
+                ->map(fn ($group) => ['value' => (string) $group->id, 'label' => $group->name])->all(),
+            'articles' => Article::query()->orderBy('name')->get(['id', 'reference', 'name', 'group_id'])
+                ->map(fn (Article $item) => ['value' => (string) $item->id, 'label' => "{$item->reference} - {$item->display_name}", 'group_id' => (string) ($item->group_id ?? '')])->all(),
         ];
     }
 
