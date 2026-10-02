@@ -7,14 +7,23 @@ import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 
-const fields = [{ name: 'reference', label: 'Code' }, { name: 'name', label: 'Article' }];
+import { articleFields } from '@/lib/articleFields';
+import { money } from '@/lib/utils';
 
-export default function Show({ article, depots, operations }) {
-    return <AppLayout title={article.name} actions={<><Link href={route('articles.index')}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Retour aux articles</Button></Link><CrudDialog title="Modifier article" action={route('articles.update', article.id)} method="patch" fields={fields} defaults={article} trigger={<Button variant="outline">Modifier</Button>} /><DeleteButton action={route('articles.destroy', article.id)} title="Supprimer cet article ?" message="L’article sera retiré de tous les dépôts. Ses lignes d’opérations associées seront également supprimées." /></>}>
+export default function Show({ article, depots, operations, groups }) {
+    const fields = articleFields(groups);
+    const prices = [['Purchase price HT (سعر الشراء)', article.prix_achat_ht], ['Retail price HT (سعر التقسيط)', article.prix_detail_ht], ['Semi-wholesale HT (نصف الجملة)', article.prix_demi_gros_ht], ['Wholesale HT (الجملة)', article.prix_gros_ht], ['Special HT (خاص)', article.prix_special_ht], ['Min price (الأدنى)', article.prix_min], ['Max price (الأقصى)', article.prix_max]];
+    return <AppLayout title={article.name} actions={<><Link href={route('articles.index')}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Retour aux articles</Button></Link><CrudDialog title="Modifier article" action={route('articles.update', article.id)} method="patch" fields={fields} defaults={article} wide trigger={<Button variant="outline">Modifier</Button>} /><DeleteButton action={route('articles.destroy', article.id)} title="Supprimer cet article ?" message="L’article sera retiré de tous les dépôts. Ses lignes d’opérations associées seront également supprimées." /></>}>
         <div className="mb-5 grid gap-4 md:grid-cols-3">
             <Card><CardContent><div className="text-sm uppercase text-zinc-500">Code article</div><div className="mt-2 font-medium">{article.reference}</div></CardContent></Card>
             <Card><CardContent><div className="text-sm uppercase text-zinc-500">Article</div><div className="mt-2 font-medium">{article.name}</div></CardContent></Card>
             <Card><CardContent><div className="text-sm uppercase text-zinc-500">Quantité totale</div><div className="mt-2 text-2xl font-semibold">{article.total_quantity}</div></CardContent></Card>
+        </div>
+
+        <div className="mb-5 grid gap-4 md:grid-cols-4">
+            <Card><CardContent><div className="text-sm uppercase text-zinc-500">Groupe (العائلة)</div><div className="mt-2 font-medium">{article.group_name || '-'}</div></CardContent></Card>
+            <Card><CardContent><div className="text-sm uppercase text-zinc-500">Unité (الوحدة)</div><div className="mt-2 font-medium">{article.unite}</div></CardContent></Card>
+            {prices.map(([label, value]) => <Card key={label}><CardContent><div className="text-sm uppercase text-zinc-500">{label}</div><div className="mt-2 font-medium">{money(value)}</div></CardContent></Card>)}
         </div>
 
         <div className="mb-6"><h2 className="mb-3 text-lg font-semibold text-zinc-950">Stock par dépôt</h2><DataTable columns={[{ key: 'name', label: 'Dépôt', render: (row) => <Link className="font-medium hover:underline" href={route('depots.show', row.id)}>{row.name}</Link> }, { key: 'location', label: 'Emplacement', render: (row) => row.location || '—' }, { key: 'quantity', label: 'Quantité' }]} rows={depots} pagination={{ links: [] }} empty="Cet article n’est assigné à aucun dépôt." /></div>

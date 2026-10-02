@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Support\ArticleNameLookup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -12,8 +13,32 @@ class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['reference', 'name'];
+    public const PRICE_FIELDS = [
+        'commission_vendeur', 'stock_minimum', 'poids',
+        'prix_achat_ht', 'prix_achat_ttc',
+        'marge_detail', 'marge_demi_gros', 'marge_gros', 'marge_special',
+        'prix_detail_ht', 'prix_detail_ttc', 'prix_demi_gros_ht', 'prix_demi_gros_ttc',
+        'prix_gros_ht', 'prix_gros_ttc', 'prix_special_ht', 'prix_special_ttc',
+        'prix_min', 'prix_max',
+    ];
+
+    public const UNITS = ['U', 'L'];
+
+    protected $fillable = [
+        'reference', 'name', 'group_id', 'nom_fournisseur', 'unite',
+        'commission_vendeur', 'stock_minimum', 'poids',
+        'prix_achat_ht', 'prix_achat_ttc',
+        'marge_detail', 'marge_demi_gros', 'marge_gros', 'marge_special',
+        'prix_detail_ht', 'prix_detail_ttc', 'prix_demi_gros_ht', 'prix_demi_gros_ttc',
+        'prix_gros_ht', 'prix_gros_ttc', 'prix_special_ht', 'prix_special_ttc',
+        'prix_min', 'prix_max',
+    ];
     protected $appends = ['display_name'];
+
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(ArticleGroup::class, 'group_id');
+    }
 
     public function depots(): BelongsToMany
     {

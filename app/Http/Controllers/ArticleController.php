@@ -16,7 +16,7 @@ class ArticleController extends Controller
 {
     public function index(Request $request, ArticleService $service): Response|StreamedResponse
     {
-        $filters = [...$request->only('search'), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
+        $filters = [...$request->only(['search', 'group_id']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
 
         if ($request->boolean('export')) {
             return $service->export($filters);
@@ -25,12 +25,13 @@ class ArticleController extends Controller
         return Inertia::render('Articles/Index', [
             'articles' => $service->list($filters),
             'filters' => $filters,
+            'groups' => $service->groupOptions(),
         ]);
     }
 
     public function show(Article $article, ArticleService $service): Response
     {
-        return Inertia::render('Articles/Show', $service->show($article));
+        return Inertia::render('Articles/Show', [...$service->show($article), 'groups' => $service->groupOptions()]);
     }
 
     public function store(StoreArticleRequest $request): RedirectResponse

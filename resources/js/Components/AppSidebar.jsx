@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { BadgeAlert, Boxes, Building2, ChevronDown, Handshake, LayoutDashboard, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, UserRound, Users, Wallet, WalletCards } from 'lucide-react';
+import { BadgeAlert, Boxes, Building2, ChevronDown, ClipboardList, FileText, Handshake, LayoutDashboard, Layers, ListChecks, LogOut, PackageSearch, ReceiptText, Settings, ShieldCheck, Truck, UserRound, Users, Wallet, WalletCards } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,9 @@ const sections = [
             { label: 'Dépôt', route: 'depots.index', icon: PackageSearch },
             { label: 'Articles', route: 'articles.index', icon: Boxes },
             { label: 'Opérations', route: 'operations.index', icon: ListChecks },
+            { label: 'Devis', route: 'devis.index', icon: ClipboardList },
+            { label: 'Bons de livraison', route: 'livraisons.index', icon: Truck },
+            { label: 'Groupes', route: 'groupes.index', icon: Layers },
         ],
     },
     {

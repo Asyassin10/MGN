@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Article;
+use App\Models\ArticleGroup;
 use App\Models\Depot;
 use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -18,8 +19,7 @@ class ArticleService
             ->paginate(100)
             ->withQueryString()
             ->through(fn (Article $article) => [
-                'id' => $article->id,
-                'reference' => $article->reference,
+                ...$this->fields($article),
                 'name' => $article->display_name,
                 'total_quantity' => (int) ($article->total_quantity ?? 0),
             ]);
@@ -35,10 +35,15 @@ class ArticleService
             ->map(fn (Article $article) => [
                 $article->reference,
                 $article->display_name,
+                $article->group?->name,
+                $article->unite,
+                $article->prix_achat_ht,
+                $article->prix_detail_ht,
+                $article->prix_gros_ht,
                 $article->depots_count,
             ]);
 
-        return ExcelExport::download('articles-export', ['Code', 'Article', 'Depots assignes'], $rows);
+        return ExcelExport::download('articles-export', ['Code', 'Article', 'Groupe', 'Unite', 'Prix achat HT', 'Prix detail HT', 'Prix gros HT', 'Depots assignes'], $rows);
     }
 
     public function show(Article $article): array
@@ -47,8 +52,7 @@ class ArticleService
 
         return [
             'article' => [
-                'id' => $article->id,
-                'reference' => $article->reference,
+                ...$this->fields($article),
                 'name' => $article->display_name,
                 'total_quantity' => (int) $article->depots->sum('pivot.quantity'),
             ],
@@ -80,11 +84,38 @@ class ArticleService
         ];
     }
 
+    public function groupOptions(): array
+    {
+        return ArticleGroup::query()->orderBy('name')->get(['id', 'name'])
+            ->map(fn (ArticleGroup $group) => ['value' => (string) $group->id, 'label' => $group->name])
+            ->all();
+    }
+
+    private function fields(Article $article): array
+    {
+        $data = [
+            'id' => $article->id,
+            'reference' => $article->reference,
+            'group_id' => (string) ($article->group_id ?? ''),
+            'group_name' => $article->group?->name,
+            'nom_fournisseur' => $article->nom_fournisseur,
+            'unite' => $article->unite,
+        ];
+
+        foreach (Article::PRICE_FIELDS as $field) {
+            $data[$field] = (float) $article->{$field};
+        }
+
+        return $data;
+    }
+
     private function baseQuery(array $filters)
     {
         return Article::query()
+            ->with('group')
             ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                 ->where('reference', 'like', "%{$value}%")
-                ->orWhere('name', 'like', "%{$value}%")));
+                ->orWhere('name', 'like', "%{$value}%")))
+            ->when($filters['group_id'] ?? null, fn ($query, $value) => $query->where('group_id', $value));
     }
 }

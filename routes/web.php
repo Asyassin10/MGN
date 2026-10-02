@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArticleGroupController;
+use App\Http\Controllers\BonLivraisonController;
+use App\Http\Controllers\DevisController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaisseController;
 use App\Http\Controllers\ChequeController;
@@ -38,6 +41,28 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/operations', [OperationController::class, 'destroySelected'])->name('operations.destroy-selected');
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
         Route::get('/operations/{operation}/pdf', [OperationController::class, 'pdf'])->name('operations.pdf');
+
+        Route::get('/groupes', [ArticleGroupController::class, 'index'])->name('groupes.index');
+        Route::post('/groupes', [ArticleGroupController::class, 'store'])->name('groupes.store');
+        Route::get('/groupes/{groupe}', [ArticleGroupController::class, 'show'])->name('groupes.show');
+        Route::patch('/groupes/assign', [ArticleGroupController::class, 'assign'])->name('groupes.assign');
+        Route::patch('/groupes/{groupe}/retirer', [ArticleGroupController::class, 'remove'])->name('groupes.remove');
+        Route::patch('/groupes/{groupe}', [ArticleGroupController::class, 'update'])->name('groupes.update');
+        Route::delete('/groupes/{groupe}', [ArticleGroupController::class, 'destroy'])->name('groupes.destroy');
+
+        Route::get('/devis', [DevisController::class, 'index'])->name('devis.index');
+        Route::get('/devis/create', [DevisController::class, 'create'])->name('devis.create');
+        Route::post('/devis', [DevisController::class, 'store'])->name('devis.store');
+        Route::get('/devis/{devis}/pdf', [DevisController::class, 'pdf'])->name('devis.pdf');
+        Route::patch('/devis/{devis}/validate', [DevisController::class, 'validateDevis'])->name('devis.validate');
+        Route::patch('/devis/{devis}/cancel', [DevisController::class, 'cancel'])->name('devis.cancel');
+        Route::delete('/devis/{devis}', [DevisController::class, 'destroy'])->name('devis.destroy');
+
+        Route::get('/livraisons', [BonLivraisonController::class, 'index'])->name('livraisons.index');
+        Route::get('/livraisons/create', [BonLivraisonController::class, 'create'])->name('livraisons.create');
+        Route::post('/livraisons', [BonLivraisonController::class, 'store'])->name('livraisons.store');
+        Route::get('/livraisons/{livraison}/pdf', [BonLivraisonController::class, 'pdf'])->name('livraisons.pdf');
+        Route::delete('/livraisons/{livraison}', [BonLivraisonController::class, 'destroy'])->name('livraisons.destroy');
     });
     Route::middleware('permission:cheques')->group(function (): void {
         Route::get('/cheques/impayes', [ChequeImpayeController::class, 'index'])->name('cheques.impayes.index');
