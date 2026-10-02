@@ -8,12 +8,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsurePermission
 {
-    public function handle(Request $request, Closure $next, string $module): Response
+    public function handle(Request $request, Closure $next, string $module, ?string $deleteMode = null): Response
     {
         $user = $request->user();
 
         abort_unless($user && ($module === 'admin' ? $user->isAdmin() : $user->canAccess($module)), 403);
         abort_if($request->isMethod('delete') && ! $user->canDelete($module), 403);
+        abort_if($request->isMethod('delete') && $deleteMode === 'admin_delete' && ! $user->isAdmin(), 403);
 
         return $next($request);
     }

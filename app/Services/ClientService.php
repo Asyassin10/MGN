@@ -250,6 +250,7 @@ class ClientService
             'nom' => $client->nom,
             'telephone' => $client->telephone,
             'ville' => $client->ville,
+            'price_type' => $client->price_type ?: 'detail',
             'note' => $client->note,
             'total_du' => round($totalDu, 2),
             'total_paye' => round($totalPaye, 2),

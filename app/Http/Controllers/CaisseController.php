@@ -6,19 +6,27 @@ use App\Http\Requests\StoreCaisseEntryRequest;
 use App\Models\CaisseEntry;
 use App\Models\Client;
 use App\Models\Fournisseur;
+use App\Support\ExcelExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CaisseController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|StreamedResponse
     {
+        if ($request->boolean('export')) {
+            return $this->export($this->selectedIds($request));
+        }
+
         $entries = CaisseEntry::query()
             ->with(['client:id,nom', 'fournisseur:id,nom', 'user:id,name'])
             ->latest()
+            ->latest('id')
             ->paginate(100)
+            ->withQueryString()
             ->through(fn (CaisseEntry $entry) => [
                 'id' => $entry->id,
                 'type' => $entry->type,
@@ -38,6 +46,37 @@ class CaisseController extends Controller
             'kpis' => $request->user()?->isAdmin() ? $this->kpis() : null,
             'newParty' => session('newParty'),
         ]);
+    }
+
+    private function export(array $selectedIds): StreamedResponse
+    {
+        $modes = ['espece' => 'Espèce', 'virement' => 'Virement', 'cheque' => 'Chèque', 'effet' => 'Effet'];
+
+        $rows = CaisseEntry::query()
+            ->with(['client:id,nom', 'fournisseur:id,nom', 'user:id,name'])
+            ->when($selectedIds, fn ($query, array $ids) => $query->whereKey($ids))
+            ->latest()
+            ->latest('id')
+            ->get()
+            ->map(fn (CaisseEntry $entry) => [
+                $entry->created_at->format('Y-m-d H:i'),
+                $entry->type === 'entree' ? 'Entree' : 'Sortie',
+                $entry->client?->nom ?? $entry->fournisseur?->nom,
+                $entry->montant,
+                $modes[$entry->mode] ?? '',
+                $entry->note,
+                $entry->user?->name,
+            ]);
+
+        return ExcelExport::download('caisse-export', ['Date', 'Type', 'Client / Fournisseur', 'Montant', 'Mode', 'Note', 'Cree par'], $rows);
+    }
+
+    private function selectedIds(Request $request): array
+    {
+        return $request->validate([
+            'selected_ids' => ['nullable', 'array'],
+            'selected_ids.*' => ['integer', 'distinct'],
+        ])['selected_ids'] ?? [];
     }
 
     private function kpis(): array
@@ -79,6 +118,14 @@ class CaisseController extends Controller
         $caisse->delete();
 
         return back()->with('success', 'Mouvement de caisse supprimé.');
+    }
+
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $count = CaisseEntry::whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', $count.' mouvement(s) de caisse supprimé(s).');
     }
 
     public function approve(Request $request, CaisseEntry $caisse): RedirectResponse

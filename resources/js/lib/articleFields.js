@@ -39,3 +39,7 @@ export function articleFields(groups) {
         num('prix_max', 'Max price (السعر الأقصى)'),
     ];
 }
+
+export const clientPriceTypeOptions = priceTypeOptions
+    .filter((option) => ['detail', 'demi_gros', 'gros', 'special'].includes(option.value))
+    .map(({ value, label }) => ({ value, label }));

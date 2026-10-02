@@ -7,11 +7,12 @@ import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { money } from '@/lib/utils';
+import { clientPriceTypeOptions } from '@/lib/articleFields';
 import BalanceCard from '@/Components/BalanceCard';
 
 export default function Index({ clients, filters, summary }) {
     const update = (key, value) => router.get(route('clients.index'), { ...filters, [key]: value }, { preserveState: true, replace: true });
-    const fields = [{ name: 'nom', label: 'Nom' }, { name: 'telephone', label: 'Téléphone' }, { name: 'ville', label: 'Ville' }, { name: 'note', label: 'Note', type: 'textarea' }];
+    const fields = [{ name: 'nom', label: 'Nom' }, { name: 'telephone', label: 'Téléphone' }, { name: 'ville', label: 'Ville' }, { name: 'price_type', label: 'Price type (نوع السعر)', type: 'select', options: clientPriceTypeOptions }, { name: 'note', label: 'Note', type: 'textarea' }];
     const columns = [
         { key: 'nom', label: 'Nom', render: (row) => <Link className="font-medium text-zinc-950 hover:underline" href={route('clients.show', row.id)}>{row.nom}</Link> },
         { key: 'ville', label: 'Ville' },

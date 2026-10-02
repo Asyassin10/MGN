@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 
-export default function Pagination({ links = [] }) {
+export default function Pagination({ links = [], preserveState = false }) {
     if (!links.length) return null;
 
     return (
@@ -10,6 +10,7 @@ export default function Pagination({ links = [] }) {
                     key={`${link.label}-${index}`}
                     href={link.url || '#'}
                     preserveScroll
+                    preserveState={preserveState}
                     className={`shrink-0 rounded-md border px-2 py-1 text-sm ${link.active ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-700'} ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                     dangerouslySetInnerHTML={{ __html: link.label }}
                 />

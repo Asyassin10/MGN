@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Devis extends Model
 {
     public const STATUS_PENDING = 'en_attente';
+    public const STATUS_PARTIAL = 'partiel';
     public const STATUS_VALIDATED = 'valide';
     public const STATUS_CANCELLED = 'annule';
 

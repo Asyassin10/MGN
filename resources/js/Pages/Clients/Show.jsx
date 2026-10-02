@@ -17,13 +17,14 @@ import { Badge } from '@/Components/ui/badge';
 import { money } from '@/lib/utils';
 import InvoiceReceiptSelect from '@/Components/InvoiceReceiptSelect';
 import { getChequeRowClass } from '@/lib/chequeStatus';
+import { clientPriceTypeOptions } from '@/lib/articleFields';
 
 const modes = [{ value: 'espece', label: 'Espèce' }, { value: 'virement', label: 'Virement' }];
 
 export default function Show({ client, entries, payments, filters }) {
     const [releveRange, setReleveRange] = useState({ from: '', to: '' });
     const update = (key, value) => router.get(route('clients.show', client.id), { ...filters, [key]: value }, { preserveState: true, replace: true });
-    const clientFields = [{ name: 'nom', label: 'Nom' }, { name: 'telephone', label: 'Téléphone' }, { name: 'ville', label: 'Ville' }, { name: 'note', label: 'Note', type: 'textarea' }];
+    const clientFields = [{ name: 'nom', label: 'Nom' }, { name: 'telephone', label: 'Téléphone' }, { name: 'ville', label: 'Ville' }, { name: 'price_type', label: 'Price type (نوع السعر)', type: 'select', options: clientPriceTypeOptions }, { name: 'note', label: 'Note', type: 'textarea' }];
     const entryFields = [{ name: 'date_entree', label: 'Date', type: 'date' }, { name: 'montant', label: 'Montant', type: 'number' }, { name: 'description', label: 'Description' }];
     const paymentFields = [{ name: 'date_paiement', label: 'Date', type: 'date' }, { name: 'montant', label: 'Montant', type: 'number' }, { name: 'mode', label: 'Mode', type: 'select', options: modes }, { name: 'reference', label: 'Référence' }, { name: 'note', label: 'Note', type: 'textarea' }];
     const chequeFields = [{ name: 'type', label: 'Type', type: 'select', options: [{ value: 'cheque', label: 'Chèque' }, { value: 'effet', label: 'Effet' }, { value: 'virement', label: 'Virement' }] }, { name: 'numero_cheque', label: 'N chèque' }, { name: 'banque', label: 'Banque' }, { name: 'tireur_signataire', label: 'Tireur / signataire' }, { name: 'date_emission', label: 'Émission', type: 'date' }, { name: 'date_echeance', label: 'Échéance', type: 'date' }, { name: 'statut', label: 'Statut', type: 'select', options: [{ value: 'en_cours', label: 'En cours' }, { value: 'en_caisse', label: 'En caisse' }, { value: 'impaye', label: 'Impayé' }] }, { name: 'facture_recue', label: 'Facture reçue', type: 'checkbox' }, { name: 'facture_donnee', label: 'Facture donnée', type: 'checkbox' }, { name: 'montant', label: 'Montant', type: 'number' }, { name: 'motif', label: 'Motif', type: 'textarea' }];

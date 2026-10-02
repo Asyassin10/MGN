@@ -2,7 +2,7 @@ import { router } from '@inertiajs/react';
 import { Banknote, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import CrudDialog from '@/Components/CrudDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -51,6 +51,16 @@ export default function Impayes({ cheques, filters, impayesCount, impayesMontant
             <SearchableSelect value={filters.type || ''} onChange={(type) => updateFilters({ type })} options={types} placeholder="Tous les types" />
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
         </div>
-        <DataTable columns={columns} rows={cheques.data} pagination={cheques} rowClassName={(row) => row.statut === 'paye' ? 'status-row-complete' : 'status-row status-row-sorti'} empty="Aucun chèque impayé." />
+        <ExportableDataTable
+            columns={columns}
+            rows={cheques.data}
+            pagination={cheques}
+            empty="Aucun chèque impayé."
+            exportUrl={route('cheques.impayes.index')}
+            exportParams={{ ...filters, export: 1 }}
+            deleteUrl={route('cheques.impayes.destroy-selected')}
+            preserveSelection
+            rowClassName={(row) => row.statut === 'paye' ? 'status-row-complete' : 'status-row status-row-sorti'}
+        />
     </AppLayout>;
 }

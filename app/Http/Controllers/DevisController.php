@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Devis;
+use App\Models\DevisLine;
 use App\Services\DevisService;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -16,11 +18,14 @@ class DevisController extends Controller
     public function index(Request $request, DevisService $service): Response
     {
         $filters = $request->only(['search', 'status', 'fournisseur_id']);
+        $options = $service->options();
 
         return Inertia::render('Devis/Index', [
             'devis' => $service->list($filters),
             'filters' => $filters,
-            'fournisseurs' => $service->options()['fournisseurs'],
+            'fournisseurs' => $options['fournisseurs'],
+            'groups' => $options['groups'],
+            'articles' => $options['articles'],
             'depots' => $service->depotOptions(),
         ]);
     }
@@ -42,31 +47,51 @@ class DevisController extends Controller
 
         $devis = $service->create($data, $request->user());
 
-        return redirect()->route('devis.index')->with('success', 'Devis '.$devis->reference.' créé.');
+        return redirect()->route('devis.index')->with('success', 'Bon de commande '.$devis->reference.' créé.');
     }
 
-    public function validateDevis(Request $request, Devis $devis, DevisService $service): RedirectResponse
+    public function addLine(Request $request, Devis $devis, DevisService $service): RedirectResponse
     {
-        $data = $request->validate(['depot_id' => ['required', 'integer', 'exists:depots,id']]);
+        $data = $request->validate([
+            'article_id' => ['required', 'integer', 'exists:articles,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
 
-        try {
-            $service->validate($devis, (int) $data['depot_id']);
-        } catch (ValidationException $exception) {
-            return back()->with('error', $exception->validator->errors()->first());
-        }
+        return $this->run(fn () => $service->addLine($devis, (int) $data['article_id'], (int) $data['quantity']), 'Article ajouté au bon de commande.');
+    }
 
-        return back()->with('success', 'Devis validé : le stock du dépôt a été mis à jour.');
+    public function updateLine(Request $request, Devis $devis, DevisLine $line, DevisService $service): RedirectResponse
+    {
+        abort_if($line->devis_id !== $devis->id, 404);
+        $data = $request->validate(['quantity' => ['required', 'integer', 'min:1']]);
+
+        return $this->run(fn () => $service->updateLine($devis, $line, (int) $data['quantity']), 'Quantité mise à jour.');
+    }
+
+    public function removeLine(Devis $devis, DevisLine $line, DevisService $service): RedirectResponse
+    {
+        abort_if($line->devis_id !== $devis->id, 404);
+
+        return $this->run(fn () => $service->removeLine($devis, $line), 'Article retiré du bon de commande.');
+    }
+
+    public function validateLine(Request $request, Devis $devis, DevisLine $line, DevisService $service): RedirectResponse
+    {
+        abort_if($line->devis_id !== $devis->id, 404);
+        $data = $request->validate([
+            'depot_id' => ['required', 'integer', 'exists:depots,id'],
+            'quantity' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        return $this->run(
+            fn () => $service->validateLine($devis, $line, (int) $data['depot_id'], isset($data['quantity']) ? (int) $data['quantity'] : null),
+            'Article validé : stock ajouté au dépôt.',
+        );
     }
 
     public function cancel(Devis $devis, DevisService $service): RedirectResponse
     {
-        try {
-            $service->cancel($devis);
-        } catch (ValidationException $exception) {
-            return back()->with('error', $exception->validator->errors()->first());
-        }
-
-        return back()->with('success', 'Devis annulé.');
+        return $this->run(fn () => $service->cancel($devis), 'Bon de commande annulé.');
     }
 
     public function pdf(Devis $devis, DevisService $service): HttpResponse
@@ -76,12 +101,23 @@ class DevisController extends Controller
 
     public function destroy(Devis $devis): RedirectResponse
     {
-        if ($devis->status === Devis::STATUS_VALIDATED) {
-            return back()->with('error', 'Un devis validé ne peut pas être supprimé : le stock a déjà été ajouté.');
+        if (in_array($devis->status, [Devis::STATUS_VALIDATED, Devis::STATUS_PARTIAL], true)) {
+            return back()->with('error', 'Un bon de commande validé (même partiellement) ne peut pas être supprimé : du stock a déjà été ajouté.');
         }
 
         $devis->delete();
 
-        return back()->with('success', 'Devis supprimé.');
+        return back()->with('success', 'Bon de commande supprimé.');
+    }
+
+    private function run(Closure $action, string $success): RedirectResponse
+    {
+        try {
+            $action();
+        } catch (ValidationException $exception) {
+            return back()->with('error', $exception->validator->errors()->first());
+        }
+
+        return back()->with('success', $success);
     }
 }

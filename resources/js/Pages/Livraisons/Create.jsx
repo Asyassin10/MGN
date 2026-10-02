@@ -16,7 +16,7 @@ const priceFor = (article, priceType) => Number(article?.[priceTypeOptions.find(
 
 export default function Create({ clients, depots, articles, groups, employees }) {
     const { data, setData, post, processing, errors } = useForm({ client_id: '', client_nom: '', employee_id: '', mode_paiement: 'espece', note: '', lines: [] });
-    const [line, setLine] = useState({ article_id: '', depot_id: depots[0]?.value || '', quantity: 1, price_type: 'detail', prix: 0 });
+    const [line, setLine] = useState({ article_id: '', depot_id: depots[0]?.value || '', quantity: 0, price_type: 'detail', prix: 0 });
     const [groupFilter, setGroupFilter] = useState('');
     const articleOf = (id) => articles.find((article) => article.value === String(id));
     const stockOf = (article, depotId) => Number(article?.stocks?.[String(depotId)] || 0);
@@ -25,12 +25,18 @@ export default function Create({ clients, depots, articles, groups, employees })
         .map((article) => ({ ...article, label: article.label + ' (stock: ' + stockOf(article, line.depot_id) + ')' })), [articles, line.depot_id, groupFilter]);
     const pickDepot = (depotId) => setLine({ ...line, depot_id: depotId, article_id: '', prix: 0 });
 
-    const pickArticle = (articleId) => setLine({ ...line, article_id: articleId, prix: priceFor(articleOf(articleId), line.price_type) });
+    const pickClient = (clientId) => {
+        setData('client_id', clientId);
+        const priceType = clients.find((client) => client.value === String(clientId))?.price_type || 'detail';
+        setLine((current) => ({ ...current, price_type: priceType, prix: priceFor(articleOf(current.article_id), priceType) }));
+    };
+    const clientPriceLabel = priceTypeOptions.find((option) => option.value === (clients.find((client) => client.value === String(data.client_id))?.price_type))?.label;
+    const pickArticle = (articleId) => setLine({ ...line, article_id: articleId, quantity: 0, prix: priceFor(articleOf(articleId), line.price_type) });
     const pickPriceType = (priceType) => setLine({ ...line, price_type: priceType, prix: priceFor(articleOf(line.article_id), priceType) });
     const addLine = () => {
-        if (!line.article_id || !line.depot_id) return;
-        setData('lines', [...data.lines, { ...line, quantity: Number(line.quantity || 1), prix: Number(line.prix || 0) }]);
-        setLine({ ...line, article_id: '', quantity: 1, prix: 0 });
+        if (!line.article_id || !line.depot_id || Number(line.quantity) < 1) return;
+        setData('lines', [...data.lines, { ...line, quantity: Number(line.quantity), prix: Number(line.prix || 0) }]);
+        setLine({ ...line, article_id: '', quantity: 0, prix: 0 });
     };
     const total = data.lines.reduce((sum, item) => sum + item.quantity * item.prix, 0);
     const submit = (event) => {
@@ -39,11 +45,11 @@ export default function Create({ clients, depots, articles, groups, employees })
     };
 
     return (
-        <AppLayout title="Nouveau bon de livraison">
+        <AppLayout title="Nouveau devis">
             <Card className="max-w-5xl"><CardContent>
                 <form onSubmit={submit} className="grid gap-4">
                     <div className="grid gap-3 md:grid-cols-2">
-                        <label className="grid gap-1 text-base"><span className="font-medium text-zinc-700">Client (الزبون)</span><SearchableSelect value={data.client_id} onChange={(value) => setData('client_id', value)} options={clients} placeholder="Client" /></label>
+                        <label className="grid gap-1 text-base"><span className="font-medium text-zinc-700">Client (الزبون)</span><SearchableSelect value={data.client_id} onChange={pickClient} options={clients} placeholder="Client" />{clientPriceLabel ? <span className="text-sm text-zinc-500">Type de prix du client : {clientPriceLabel}</span> : null}</label>
                         <label className="grid gap-1 text-base"><span className="font-medium text-zinc-700">Client name if not in list (اسم الزبون)</span><Input value={data.client_nom} onChange={(event) => setData('client_nom', event.target.value)} disabled={Boolean(data.client_id)} /></label>
                     </div>
                     <div className="grid gap-3 md:grid-cols-2">
@@ -56,10 +62,10 @@ export default function Create({ clients, depots, articles, groups, employees })
                         <label className="grid gap-1 text-sm md:col-span-2"><span className="font-medium text-zinc-700">Depot (المستودع)</span><SearchableSelect value={line.depot_id} onChange={pickDepot} options={depots} placeholder="Dépôt" allowEmpty={false} /></label>
                         <label className="grid gap-1 text-sm md:col-span-2"><span className="font-medium text-zinc-700">Filter by group (حسب العائلة)</span><SearchableSelect value={groupFilter} onChange={(value) => { setGroupFilter(value); setLine({ ...line, article_id: '', prix: 0 }); }} options={groups} placeholder="Tous les groupes" emptyLabel="Tous les groupes" /></label>
                         <label className="grid gap-1 text-sm md:col-span-2"><span className="font-medium text-zinc-700">Article (السلعة) · {depotArticles.length} en stock</span><SearchableSelect value={line.article_id} onChange={pickArticle} options={depotArticles} placeholder="Article du dépôt" /></label>
-                        <label className="grid gap-1 text-sm"><span className="font-medium text-zinc-700">Quantity (الكمية)</span><Input type="number" min="1" max={stockOf(articleOf(line.article_id), line.depot_id) || undefined} value={line.quantity} onChange={(event) => setLine({ ...line, quantity: event.target.value })} aria-label="Quantity (الكمية)" /></label>
+                        <label className="grid gap-1 text-sm"><span className="font-medium text-zinc-700">Quantity (الكمية)</span><Input type="number" min="0" max={stockOf(articleOf(line.article_id), line.depot_id) || undefined} value={line.quantity} onChange={(event) => setLine({ ...line, quantity: event.target.value })} aria-label="Quantity (الكمية)" /></label>
                         <label className="grid gap-1 text-sm md:col-span-2"><span className="font-medium text-zinc-700">Price type (نوع السعر)</span><SearchableSelect value={line.price_type} onChange={pickPriceType} options={priceTypeOptions} placeholder="Prix" allowEmpty={false} /></label>
-                        <label className="grid gap-1 text-sm"><span className="font-medium text-zinc-700">Price (السعر)</span><Input type="number" min="0" step="any" value={line.prix} onChange={(event) => setLine({ ...line, prix: event.target.value })} aria-label="Price (السعر)" /></label>
-                        <div className="md:col-span-6"><Button type="button" onClick={addLine}><Plus className="h-4 w-4" />Ajouter la ligne</Button></div>
+                        <label className="grid gap-1 text-sm"><span className="font-medium text-zinc-700">Price (السعر)</span><Input type="number" step="any" value={line.prix} readOnly tabIndex={-1} className="cursor-not-allowed bg-zinc-100" aria-label="Price (السعر)" /></label>
+                        <div className="md:col-span-6"><Button type="button" disabled={!line.article_id || Number(line.quantity) < 1} onClick={addLine}><Plus className="h-4 w-4" />Ajouter la ligne</Button></div>
                     </div>
 
                     {errors.lines ? <div className="text-base text-red-600">{errors.lines}</div> : null}
@@ -77,7 +83,7 @@ export default function Create({ clients, depots, articles, groups, employees })
                         ))}
                     </div>
                     <div className="text-right text-xl font-bold text-emerald-800">Total : {money(total)}</div>
-                    <div><Button disabled={processing}>Enregistrer le bon</Button></div>
+                    <div><Button disabled={processing}>Enregistrer le devis</Button></div>
                 </form>
             </CardContent></Card>
         </AppLayout>

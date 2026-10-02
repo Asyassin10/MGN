@@ -36,8 +36,8 @@ class BonLivraisonService
     public function options(): array
     {
         return [
-            'clients' => Client::query()->whereNull('source')->orderBy('nom')->get(['id', 'nom'])
-                ->map(fn (Client $item) => ['value' => (string) $item->id, 'label' => $item->nom])->all(),
+            'clients' => Client::query()->whereNull('source')->orderBy('nom')->get(['id', 'nom', 'price_type'])
+                ->map(fn (Client $item) => ['value' => (string) $item->id, 'label' => $item->nom, 'price_type' => $item->price_type ?: 'detail'])->all(),
             'depots' => Depot::query()->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Depot $item) => ['value' => (string) $item->id, 'label' => $item->name])->all(),
             'employees' => \App\Models\Employee::query()->where('status', 'active')->orderBy('name')->get(['id', 'name'])
@@ -75,7 +75,7 @@ class BonLivraisonService
                 'note' => $data['note'] ?? null,
             ]);
             $bon->user_id = $user->id;
-            $bon->reference = sprintf('BL-%s-%04d', now()->format('Ymd'), $bon->id);
+            $bon->reference = sprintf('DV-%s-%04d', now()->format('Ymd'), $bon->id);
             $bon->save();
 
             $lines = collect($data['lines'])->map(fn (array $line) => $bon->lines()->create([
@@ -92,7 +92,7 @@ class BonLivraisonService
                     'type' => 'sortie',
                     'depot_id' => (int) $depotId,
                     'employee_id' => $bon->employee_id,
-                    'note' => 'Bon de livraison '.$bon->reference,
+                    'note' => 'Devis '.$bon->reference,
                     'lines' => $depotLines->groupBy('article_id')
                         ->map(fn ($group, $articleId) => ['article_id' => (int) $articleId, 'quantity' => (int) $group->sum('quantity')])
                         ->values()
@@ -171,7 +171,7 @@ class BonLivraisonService
             'total' => ['label' => 'المجموع', 'value' => $money($total)],
             'payment' => ['amount_label' => 'المبلغ', 'mode_label' => 'طريقة الدفع', 'amount' => $money($total), 'mode' => BonLivraison::PAYMENT_MODES[$bon->mode_paiement] ?? 'Espèce'],
             'note' => $bon->note,
-        ], DownloadFilename::pdf('bon-livraison', $bon->reference ?: (string) $bon->id));
+        ], DownloadFilename::pdf('devis', $bon->reference ?: (string) $bon->id));
     }
 
     public function serialize(BonLivraison $bon): array

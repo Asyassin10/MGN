@@ -9,7 +9,10 @@ export default function DeleteButton({ action, title = 'Supprimer cet élément 
     const { auth } = usePage().props;
     const module = action.includes('/fournisseurs') ? 'fournisseurs' : action.includes('/clients') ? 'clients' : action.includes('/employees') ? 'employees' : action.includes('/cheques') ? 'cheques' : action.includes('/caisse') ? 'caisse' : action.includes('/depots') || action.includes('/articles') || action.includes('/operations') || action.includes('/groupes') || action.includes('/devis') || action.includes('/livraisons') ? 'depots' : null;
 
-    if (module && auth.user?.role !== 'admin' && !auth.user?.permissions?.delete?.includes(module)) return null;
+    const isAdmin = auth.user?.role === 'admin';
+    // Stock module: only admins can delete, whatever per-user delete permissions say.
+    if (module === 'depots' && !isAdmin) return null;
+    if (module && !isAdmin && !auth.user?.permissions?.delete?.includes(module)) return null;
 
     const destroy = () => {
         // Release the modal overlay before Inertia navigates to a different screen.

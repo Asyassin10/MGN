@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import Pagination from '@/Components/Pagination';
 
-export default function DataTable({ columns, rows, pagination, empty = 'Aucun résultat.', onRowClick, rowClassName }) {
+export default function DataTable({ columns, rows, pagination, empty = 'Aucun résultat.', onRowClick, rowClassName, preserveState = false }) {
     const actionsColumn = columns.find((column) => column.key === 'actions');
     const detailColumns = columns.filter((column) => column.key !== 'actions');
 
@@ -51,7 +51,7 @@ export default function DataTable({ columns, rows, pagination, empty = 'Aucun r�
                 )) : <div className="px-4 py-8 text-center text-base text-zinc-500">{empty}</div>}
             </div>
             <div className="border-t border-zinc-200 px-3 pb-3">
-                <Pagination links={pagination?.links || []} />
+                <Pagination links={pagination?.links || []} preserveState={preserveState} />
             </div>
         </div>
     );

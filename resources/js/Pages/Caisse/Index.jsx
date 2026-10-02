@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import CaisseMovementDialog from '@/Components/CaisseMovementDialog';
-import DataTable from '@/Components/DataTable';
+import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -46,7 +46,20 @@ export default function Index({ entries, parties, kpis, newParty }) {
                     <Card><CardContent><div className="text-sm text-zinc-500">Solde (entrées - sorties)</div><div className={`mt-1 text-2xl font-semibold ${kpis.solde >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>{money(kpis.solde)}</div></CardContent></Card>
                 </div>
             ) : null}
-            <DataTable columns={columns} rows={entries.data} pagination={entries} empty="Aucun mouvement de caisse." rowClassName={(row) => auth.user?.role !== 'admin' ? '' : row.validated ? 'status-row-complete' : 'status-row status-row-sorti'} />
+            <ExportableDataTable
+                columns={columns}
+                rows={entries.data}
+                pagination={entries}
+                empty="Aucun mouvement de caisse."
+                exportUrl={route('caisse.index')}
+                exportParams={{ export: 1 }}
+                deleteUrl={route('caisse.destroy-selected')}
+                preserveSelection
+                totalLabel="Total (entrées − sorties)"
+                totalValue={(row) => (row.type === 'sortie' ? -row.montant : row.montant)}
+                summaryExtra={(rows) => `Entrées : ${money(rows.filter((row) => row.type === 'entree').reduce((sum, row) => sum + row.montant, 0))} · Sorties : ${money(rows.filter((row) => row.type === 'sortie').reduce((sum, row) => sum + row.montant, 0))}`}
+                rowClassName={(row) => auth.user?.role !== 'admin' ? '' : row.validated ? 'status-row-complete' : 'status-row status-row-sorti'}
+            />
         </AppLayout>
     );
 }

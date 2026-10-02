@@ -100,6 +100,12 @@
             margin-top: 6px;
         }
 
+        .stat {
+            text-align: right;
+            font-weight: 700;
+            padding: 1px 3px;
+        }
+
         .totals td {
             vertical-align: middle;
             font-weight: 700;
@@ -184,26 +190,21 @@
 
     <table class="totals">
         <tr>
-            <td style="width: 46%; vertical-align: top;">
-                <table>
-                    @foreach ($document['stats'] ?? [] as $stat)
-                        <tr>
-                            <td style="text-align: left; width: 40%;">{{ $stat['value'] }}</td>
-                            <td style="text-align: right;">{{ $stat['label'] }}</td>
-                        </tr>
-                    @endforeach
-                </table>
+            <td style="width: {{ ! empty($document['total']) ? '46%' : '100%' }}; vertical-align: top; text-align: right;">
+                @foreach ($document['stats'] ?? [] as $stat)
+                    <div class="stat">{{ $stat['value'] }} &nbsp;&nbsp; {{ $stat['label'] }}</div>
+                @endforeach
             </td>
-            <td style="width: 54%; vertical-align: top;">
-                @if (! empty($document['total']))
+            @if (! empty($document['total']))
+                <td style="width: 54%; vertical-align: top;">
                     <table class="total-box">
                         <tr>
                             <td>{{ $document['total']['value'] }}</td>
                             <td class="label" style="width: 40%;">{{ $document['total']['label'] }}</td>
                         </tr>
                     </table>
-                @endif
-            </td>
+                </td>
+            @endif
         </tr>
     </table>
 

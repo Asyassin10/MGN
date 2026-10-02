@@ -166,6 +166,17 @@
     color: #003300;
 }
 
+.status-row-devis-valide,
+.status-row-devis-valide:hover {
+    background-color: #14532d;
+    color: #fff;
+}
+
+.status-row-devis-valide .text-red-700 {
+    background-color: #fff;
+    color: #991b1b;
+}
+
 .status-row-impaye {
     background-color: #fef2f2;
     color: #991b1b;
@@ -200,6 +211,13 @@
 .invoice-row-complete {
     background-color: #ecfdf5;
     color: #065f46;
+}
+
+.status-row button.bg-white,
+.status-row-sorti button.bg-white,
+.status-row-complete button.bg-white,
+.status-row-devis-valide button.bg-white {
+    color: #18181b;
 }
 
 .status-row :is(.text-zinc-950, .text-zinc-900, .text-zinc-800, .text-zinc-700, .text-zinc-600, .text-zinc-500),

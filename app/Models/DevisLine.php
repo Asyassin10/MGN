@@ -11,6 +11,16 @@ class DevisLine extends Model
 
     protected $fillable = ['devis_id', 'article_id', 'quantity'];
 
+    protected function casts(): array
+    {
+        return ['validated_at' => 'datetime'];
+    }
+
+    public function depot(): BelongsTo
+    {
+        return $this->belongsTo(Depot::class);
+    }
+
     public function devis(): BelongsTo
     {
         return $this->belongsTo(Devis::class);

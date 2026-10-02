@@ -31,14 +31,14 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', DashboardController::class)->middleware('permission:dashboard')->name('dashboard');
 
-    Route::middleware('permission:depots')->group(function (): void {
+    Route::middleware('permission:depots,admin_delete')->group(function (): void {
         Route::resource('depots', DepotController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
-        Route::delete('/depots', [DepotController::class, 'destroySelected'])->name('depots.destroy-selected');
+        Route::delete('/depots', [DepotController::class, 'destroySelected'])->name('depots.destroy-selected')->middleware('permission:admin');
         Route::resource('articles', ArticleController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-        Route::delete('/articles', [ArticleController::class, 'destroySelected'])->name('articles.destroy-selected');
+        Route::delete('/articles', [ArticleController::class, 'destroySelected'])->name('articles.destroy-selected')->middleware('permission:admin');
         Route::post('/depots/{depot}/adjust-stock', [DepotController::class, 'adjustStock'])->name('depots.adjust-stock');
         Route::resource('operations', OperationController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
-        Route::delete('/operations', [OperationController::class, 'destroySelected'])->name('operations.destroy-selected');
+        Route::delete('/operations', [OperationController::class, 'destroySelected'])->name('operations.destroy-selected')->middleware('permission:admin');
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
         Route::get('/operations/{operation}/pdf', [OperationController::class, 'pdf'])->name('operations.pdf');
 
@@ -54,7 +54,10 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/devis/create', [DevisController::class, 'create'])->name('devis.create');
         Route::post('/devis', [DevisController::class, 'store'])->name('devis.store');
         Route::get('/devis/{devis}/pdf', [DevisController::class, 'pdf'])->name('devis.pdf');
-        Route::patch('/devis/{devis}/validate', [DevisController::class, 'validateDevis'])->name('devis.validate');
+        Route::post('/devis/{devis}/lines', [DevisController::class, 'addLine'])->name('devis.lines.store');
+        Route::patch('/devis/{devis}/lines/{line}', [DevisController::class, 'updateLine'])->name('devis.lines.update');
+        Route::patch('/devis/{devis}/lines/{line}/retirer', [DevisController::class, 'removeLine'])->name('devis.lines.remove');
+        Route::patch('/devis/{devis}/lines/{line}/validate', [DevisController::class, 'validateLine'])->name('devis.lines.validate');
         Route::patch('/devis/{devis}/cancel', [DevisController::class, 'cancel'])->name('devis.cancel');
         Route::delete('/devis/{devis}', [DevisController::class, 'destroy'])->name('devis.destroy');
 
@@ -70,6 +73,7 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/cheques/impayes/{chequeImpaye}/payer', [ChequeImpayeController::class, 'pay'])->name('cheques.impayes.pay');
         Route::patch('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'update'])->name('cheques.impayes.update');
         Route::delete('/cheques/impayes/{chequeImpaye}', [ChequeImpayeController::class, 'destroy'])->name('cheques.impayes.destroy');
+        Route::delete('/cheques/impayes', [ChequeImpayeController::class, 'destroySelected'])->name('cheques.impayes.destroy-selected')->middleware('permission:admin');
         Route::get('/cheques', [ChequeController::class, 'index'])->name('cheques.index');
         Route::get('/cheques/export', [ChequeController::class, 'export'])->name('cheques.export');
         Route::post('/cheques', [ChequeController::class, 'store'])->name('cheques.store');
@@ -77,11 +81,11 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/cheques/{cheque}/inline', [ChequeController::class, 'updateInline'])->name('cheques.inline');
         Route::patch('/cheques/{cheque}', [ChequeController::class, 'update'])->name('cheques.update');
         Route::delete('/cheques/{cheque}', [ChequeController::class, 'destroy'])->name('cheques.destroy');
-        Route::delete('/cheques', [ChequeController::class, 'destroySelected'])->name('cheques.destroy-selected');
+        Route::delete('/cheques', [ChequeController::class, 'destroySelected'])->name('cheques.destroy-selected')->middleware('permission:admin');
     });
     Route::middleware('permission:admin')->group(function (): void {
         Route::resource('employees', EmployeeController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
-        Route::delete('/employees', [EmployeeController::class, 'destroySelected'])->name('employees.destroy-selected');
+        Route::delete('/employees', [EmployeeController::class, 'destroySelected'])->name('employees.destroy-selected')->middleware('permission:admin');
         Route::get('/employees/{employee}/payments', [EmployeeController::class, 'paymentHistory'])->name('employees.payments.index');
         Route::get('/employees/{employee}/absences', [EmployeeController::class, 'absenceHistory'])->name('employees.absences.index');
         Route::post('/employees/{employee}/work-days', [EmployeeController::class, 'storeWorkDay'])->name('employees.work-days.store');
@@ -99,11 +103,11 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('permission:fournisseurs')->group(function (): void {
         Route::get('/fournisseurs/releves', [FournisseurController::class, 'relevesIndex'])->name('fournisseurs.releves.index');
-        Route::delete('/fournisseurs/releves', [FournisseurController::class, 'destroySelectedRelevesGlobal'])->name('fournisseurs.releves.index.destroy-selected');
+        Route::delete('/fournisseurs/releves', [FournisseurController::class, 'destroySelectedRelevesGlobal'])->name('fournisseurs.releves.index.destroy-selected')->middleware('permission:admin');
         Route::resource('fournisseurs', FournisseurController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
-        Route::delete('/fournisseurs', [FournisseurController::class, 'destroySelected'])->name('fournisseurs.destroy-selected');
+        Route::delete('/fournisseurs', [FournisseurController::class, 'destroySelected'])->name('fournisseurs.destroy-selected')->middleware('permission:admin');
         Route::post('/fournisseurs/{fournisseur}/releves', [FournisseurController::class, 'storeReleve'])->name('fournisseurs.releves.store');
-        Route::delete('/fournisseurs/{fournisseur}/releves', [FournisseurController::class, 'destroySelectedReleves'])->name('fournisseurs.releves.destroy-selected');
+        Route::delete('/fournisseurs/{fournisseur}/releves', [FournisseurController::class, 'destroySelectedReleves'])->name('fournisseurs.releves.destroy-selected')->middleware('permission:admin');
         Route::get('/fournisseurs/{fournisseur}/releves/{releve}', [FournisseurController::class, 'showReleve'])->name('fournisseurs.releves.show');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}', [FournisseurController::class, 'updateReleve'])->name('fournisseurs.releves.update');
         Route::delete('/fournisseurs/{fournisseur}/releves/{releve}', [FournisseurController::class, 'destroyReleve'])->name('fournisseurs.releves.destroy');
@@ -111,18 +115,19 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/fournisseurs/{fournisseur}/releves/{releve}/factures', [FournisseurController::class, 'storeReleveFacture'])->name('fournisseurs.releves.factures.store');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/factures/{facture}', [FournisseurController::class, 'updateFacture'])->name('fournisseurs.releves.factures.update');
         Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/factures/{facture}', [FournisseurController::class, 'destroyFacture'])->name('fournisseurs.releves.factures.destroy');
-        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/factures', [FournisseurController::class, 'destroySelectedFactures'])->name('fournisseurs.releves.factures.destroy-selected');
+        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/factures', [FournisseurController::class, 'destroySelectedFactures'])->name('fournisseurs.releves.factures.destroy-selected')->middleware('permission:admin');
         Route::post('/fournisseurs/{fournisseur}/releves/{releve}/payments', [FournisseurController::class, 'storeRelevePayment'])->name('fournisseurs.releves.payments.store');
         Route::get('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}/pdf', [FournisseurController::class, 'pdfPayment'])->name('fournisseurs.releves.payments.pdf');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'updatePayment'])->name('fournisseurs.releves.payments.update');
         Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments/{payment}', [FournisseurController::class, 'destroyPayment'])->name('fournisseurs.releves.payments.destroy');
-        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments', [FournisseurController::class, 'destroySelectedPayments'])->name('fournisseurs.releves.payments.destroy-selected');
+        Route::delete('/fournisseurs/{fournisseur}/releves/{releve}/payments', [FournisseurController::class, 'destroySelectedPayments'])->name('fournisseurs.releves.payments.destroy-selected')->middleware('permission:admin');
         Route::post('/fournisseurs/{fournisseur}/factures', [FournisseurController::class, 'storeFacture'])->name('fournisseurs.factures.store');
         Route::patch('/fournisseurs/{fournisseur}/releves/{releve}/cheques/{cheque}/status', [FournisseurController::class, 'updateChequeStatus'])->name('fournisseurs.releves.cheques.status');
     });
 
     Route::middleware('permission:caisse')->group(function (): void {
         Route::resource('caisse', CaisseController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::delete('/caisse', [CaisseController::class, 'destroySelected'])->name('caisse.destroy-selected')->middleware('permission:admin');
         Route::post('/caisse/quick-client', [CaisseController::class, 'quickStoreClient'])->name('caisse.quick-client');
         Route::post('/caisse/quick-fournisseur', [CaisseController::class, 'quickStoreFournisseur'])->name('caisse.quick-fournisseur');
         Route::patch('/caisse/{caisse}/validate', [CaisseController::class, 'approve'])->name('caisse.validate')->middleware('permission:admin');
@@ -134,12 +139,12 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/clients/{client}/entries', [ClientController::class, 'storeEntry'])->name('clients.entries.store');
         Route::patch('/clients/{client}/entries/{entry}', [ClientController::class, 'updateEntry'])->name('clients.entries.update');
         Route::delete('/clients/{client}/entries/{entry}', [ClientController::class, 'destroyEntry'])->name('clients.entries.destroy');
-        Route::delete('/clients/{client}/entries', [ClientController::class, 'destroySelectedEntries'])->name('clients.entries.destroy-selected');
+        Route::delete('/clients/{client}/entries', [ClientController::class, 'destroySelectedEntries'])->name('clients.entries.destroy-selected')->middleware('permission:admin');
         Route::post('/clients/{client}/payments', [ClientController::class, 'storePayment'])->name('clients.payments.store');
         Route::get('/clients/{client}/payments/{payment}/pdf', [ClientController::class, 'pdfPayment'])->name('clients.payments.pdf');
         Route::patch('/clients/{client}/payments/{payment}', [ClientController::class, 'updatePayment'])->name('clients.payments.update');
         Route::delete('/clients/{client}/payments/{payment}', [ClientController::class, 'destroyPayment'])->name('clients.payments.destroy');
-        Route::delete('/clients/{client}/payments', [ClientController::class, 'destroySelectedPayments'])->name('clients.payments.destroy-selected');
+        Route::delete('/clients/{client}/payments', [ClientController::class, 'destroySelectedPayments'])->name('clients.payments.destroy-selected')->middleware('permission:admin');
         Route::post('/clients/{client}/cheques', [ClientController::class, 'storeCheque'])->name('clients.cheques.store');
         Route::patch('/clients/{client}/cheques/{cheque}', [ClientController::class, 'updateCheque'])->name('clients.cheques.update');
         Route::patch('/clients/{client}/cheques/{cheque}/status', [ClientController::class, 'updateChequeStatus'])->name('clients.cheques.status');

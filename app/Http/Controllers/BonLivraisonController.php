@@ -47,7 +47,7 @@ class BonLivraisonController extends Controller
 
         $bon = $service->create($data, $request->user());
 
-        return redirect()->route('livraisons.index')->with('success', 'Bon de livraison '.$bon->reference.' enregistré et stock mis à jour.');
+        return redirect()->route('livraisons.index')->with('success', 'Devis '.$bon->reference.' enregistré et stock mis à jour.');
     }
 
     public function pdf(BonLivraison $livraison, BonLivraisonService $service): HttpResponse
@@ -59,6 +59,6 @@ class BonLivraisonController extends Controller
     {
         $service->delete($livraison);
 
-        return back()->with('success', 'Bon de livraison supprimé et stock rétabli.');
+        return back()->with('success', 'Devis supprimé et stock rétabli.');
     }
 }

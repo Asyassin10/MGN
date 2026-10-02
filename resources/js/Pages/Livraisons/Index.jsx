@@ -25,18 +25,18 @@ export default function Index({ bons, filters }) {
             render: (row) => (
                 <div className="flex flex-wrap gap-2">
                     <PrintPdfButton url={row.pdf_url} size="sm" />
-                    <DeleteButton action={route('livraisons.destroy', row.id)} title={`Supprimer ${row.reference} ?`} message="Le stock sorti par ce bon de livraison sera rétabli dans les dépôts." />
+                    <DeleteButton action={route('livraisons.destroy', row.id)} title={`Supprimer ${row.reference} ?`} message="Le stock sorti par ce devis sera rétabli dans les dépôts." />
                 </div>
             ),
         },
     ];
 
     return (
-        <AppLayout title="Bons de livraison" actions={<Link href={route('livraisons.create')}><Button><Plus className="h-4 w-4" />Nouveau bon</Button></Link>}>
+        <AppLayout title="Devis" actions={<Link href={route('livraisons.create')}><Button><Plus className="h-4 w-4" />Nouveau devis</Button></Link>}>
             <div className="mb-4 max-w-md">
                 <Input placeholder="Référence ou client" defaultValue={filters.search || ''} onChange={(event) => router.get(route('livraisons.index'), { search: event.target.value }, { preserveState: true, replace: true })} />
             </div>
-            <DataTable columns={columns} rows={bons.data} pagination={bons} empty="Aucun bon de livraison." />
+            <DataTable columns={columns} rows={bons.data} pagination={bons} empty="Aucun devis." />
         </AppLayout>
     );
 }

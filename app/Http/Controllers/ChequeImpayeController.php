@@ -3,27 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChequeImpaye;
+use App\Support\ExcelExport;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ChequeImpayeController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|StreamedResponse
     {
         $filters = $request->only(['search', 'type', 'statut']);
 
+        if ($request->boolean('export')) {
+            return $this->export($filters, $request->validate([
+                'selected_ids' => ['nullable', 'array'],
+                'selected_ids.*' => ['integer', 'distinct'],
+            ])['selected_ids'] ?? []);
+        }
+
         return Inertia::render('Cheques/Impayes', [
-            'cheques' => ChequeImpaye::query()
-                ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
-                    ->where('numero_cheque', 'like', "%{$value}%")
-                    ->orWhere('fournisseur_nom', 'like', "%{$value}%")
-                    ->orWhere('client_nom', 'like', "%{$value}%")
-                    ->orWhere('tireur_signataire', 'like', "%{$value}%")))
-                ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
-                ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value))
+            'cheques' => $this->filteredQuery($filters)
                 ->latest('id')
                 ->paginate(100)
                 ->withQueryString()
@@ -71,6 +74,51 @@ class ChequeImpayeController extends Controller
         $chequeImpaye->delete();
 
         return back()->with('success', 'Chèque impayé supprimé.');
+    }
+
+    public function destroySelected(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['selected_ids' => ['required', 'array', 'min:1'], 'selected_ids.*' => ['integer']]);
+        $count = ChequeImpaye::whereKey($data['selected_ids'])->delete();
+
+        return back()->with('success', $count.' chèque(s) impayé(s) supprimé(s).');
+    }
+
+    private function export(array $filters, array $selectedIds): StreamedResponse
+    {
+        $modes = ['espece' => 'Espèce', 'virement' => 'Virement', 'cheque' => 'Chèque'];
+
+        $rows = $this->filteredQuery($filters)
+            ->when($selectedIds, fn (Builder $query, array $ids) => $query->whereKey($ids))
+            ->latest('id')
+            ->get()
+            ->map(fn (ChequeImpaye $cheque) => [
+                $cheque->numero_cheque,
+                ucfirst($cheque->type),
+                $cheque->fournisseur_nom,
+                $cheque->client_nom,
+                $cheque->tireur_signataire,
+                $cheque->date_remise?->format('Y-m-d'),
+                $cheque->montant,
+                $cheque->statut === 'paye' ? 'Paye' : 'Impaye',
+                $cheque->date_paiement?->format('Y-m-d'),
+                $modes[$cheque->mode_paiement] ?? '',
+                $cheque->note,
+            ]);
+
+        return ExcelExport::download('cheques-impayes-export', ['N cheque', 'Type', 'Fournisseur', 'Client', 'Tireur / signataire', 'Date remise', 'Montant', 'Statut', 'Date paiement', 'Mode paiement', 'Note'], $rows);
+    }
+
+    private function filteredQuery(array $filters): Builder
+    {
+        return ChequeImpaye::query()
+            ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
+                ->where('numero_cheque', 'like', "%{$value}%")
+                ->orWhere('fournisseur_nom', 'like', "%{$value}%")
+                ->orWhere('client_nom', 'like', "%{$value}%")
+                ->orWhere('tireur_signataire', 'like', "%{$value}%")))
+            ->when($filters['type'] ?? null, fn ($query, $value) => $query->where('type', $value))
+            ->when($filters['statut'] ?? null, fn ($query, $value) => $query->where('statut', $value));
     }
 
     private function validated(Request $request, bool $withPayment = false): array
