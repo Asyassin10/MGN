@@ -88,7 +88,7 @@ export default function PricedLineEditor({ articles, depots, groups, defaultPric
     };
 
     return (
-        <div className={'grid gap-4 rounded-md border p-4 ' + (editing ? 'border-amber-300 bg-amber-50/60' : 'border-zinc-200 bg-zinc-50/60')}>
+        <div className={'grid gap-4 rounded-md border p-4 ' + (editing ? 'border-amber-300 bg-amber-50/60' : 'border-blue-300 bg-white/80')}>
             {editing ? <div className="text-sm font-semibold text-amber-800">Modification de la ligne sélectionnée</div> : null}
             <div className="grid gap-4 md:grid-cols-12">
                 <label className="grid min-w-0 content-start gap-1 text-sm md:col-span-5"><span className="font-medium text-zinc-700">Article (السلعة) · {shownArticles.length} en stock</span><SearchableSelect value={line.article_id} onChange={pickArticle} options={shownArticles} placeholder="Article" /></label>

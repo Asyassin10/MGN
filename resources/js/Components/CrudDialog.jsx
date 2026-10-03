@@ -41,7 +41,7 @@ export default function CrudDialog({ title, trigger, action, method = 'post', fi
                 <form onSubmit={submit} className={wide ? 'grid gap-3 sm:grid-cols-2' : 'grid gap-3'}>
                     {fields.map((field) => (
                         <Fragment key={field.name}>
-                        {field.section ? <div className="mt-2 border-b border-zinc-200 pb-1 text-sm font-semibold uppercase tracking-wide text-emerald-800 sm:col-span-2">{field.section}</div> : null}
+                        {field.section ? <div className="mt-2 border-b border-blue-300 pb-1 text-sm font-semibold uppercase tracking-wide text-blue-900 sm:col-span-2">{field.section}</div> : null}
                         <label className={`grid content-start gap-1 text-base ${field.full ? 'sm:col-span-2' : ''}`}>
                             <span className="font-medium text-zinc-700">{field.label}</span>
                             {field.type === 'textarea' ? (

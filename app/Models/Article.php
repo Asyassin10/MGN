@@ -15,10 +15,7 @@ class Article extends Model
 
     public const PRICE_FIELDS = [
         'commission_vendeur', 'stock_minimum', 'poids',
-        'prix_achat_ht', 'prix_achat_ttc',
-        'marge_detail', 'marge_demi_gros', 'marge_gros', 'marge_special',
-        'prix_detail_ht', 'prix_detail_ttc', 'prix_demi_gros_ht', 'prix_demi_gros_ttc',
-        'prix_gros_ht', 'prix_gros_ttc', 'prix_special_ht', 'prix_special_ttc',
+        'prix_achat_ttc', 'prix_detail_ttc', 'prix_demi_gros_ttc', 'prix_gros_ttc', 'prix_special_ttc',
         'prix_min', 'prix_max',
     ];
 
@@ -27,10 +24,7 @@ class Article extends Model
     protected $fillable = [
         'reference', 'name', 'group_id', 'nom_fournisseur', 'unite',
         'commission_vendeur', 'stock_minimum', 'poids',
-        'prix_achat_ht', 'prix_achat_ttc',
-        'marge_detail', 'marge_demi_gros', 'marge_gros', 'marge_special',
-        'prix_detail_ht', 'prix_detail_ttc', 'prix_demi_gros_ht', 'prix_demi_gros_ttc',
-        'prix_gros_ht', 'prix_gros_ttc', 'prix_special_ht', 'prix_special_ttc',
+        'prix_achat_ttc', 'prix_detail_ttc', 'prix_demi_gros_ttc', 'prix_gros_ttc', 'prix_special_ttc',
         'prix_min', 'prix_max',
     ];
     protected $appends = ['display_name'];

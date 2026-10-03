@@ -12,7 +12,7 @@ import { money } from '@/lib/utils';
 
 export default function Show({ article, depots, operations, groups }) {
     const fields = articleFields(groups);
-    const prices = [['Purchase price HT (سعر الشراء)', article.prix_achat_ht], ['Retail price HT (سعر التقسيط)', article.prix_detail_ht], ['Semi-wholesale HT (نصف الجملة)', article.prix_demi_gros_ht], ['Wholesale HT (الجملة)', article.prix_gros_ht], ['Special HT (خاص)', article.prix_special_ht], ['Min price (الأدنى)', article.prix_min], ['Max price (الأقصى)', article.prix_max]];
+    const prices = [['Purchase price TTC (سعر الشراء)', article.prix_achat_ttc], ['Retail price TTC (سعر التقسيط)', article.prix_detail_ttc], ['Semi-wholesale TTC (نصف الجملة)', article.prix_demi_gros_ttc], ['Wholesale TTC (الجملة)', article.prix_gros_ttc], ['Special TTC (خاص)', article.prix_special_ttc], ['Min price (الأدنى)', article.prix_min], ['Max price (الأقصى)', article.prix_max]];
     return <AppLayout title={article.name} actions={<><Link href={route('articles.index')}><Button variant="outline"><ArrowLeft className="h-4 w-4" />Retour aux articles</Button></Link><CrudDialog title="Modifier article" action={route('articles.update', article.id)} method="patch" fields={fields} defaults={article} wide trigger={<Button variant="outline">Modifier</Button>} /><DeleteButton action={route('articles.destroy', article.id)} title="Supprimer cet article ?" message="L’article sera retiré de tous les dépôts. Ses lignes d’opérations associées seront également supprimées." /></>}>
         <div className="mb-5 grid gap-4 md:grid-cols-3">
             <Card><CardContent><div className="text-sm uppercase text-zinc-500">Code article</div><div className="mt-2 font-medium">{article.reference}</div></CardContent></Card>

@@ -52,9 +52,9 @@ export default function Index({ entries, parties, kpis, newParty, filters = {} }
             <div className="mb-4 max-w-md"><CreatedAtFilter routeName="caisse.index" filters={filters} /></div>
             {isAdmin ? (
                 <div className="mb-3 flex flex-wrap items-center gap-2 text-sm font-medium">
-                    <span className="rounded-md bg-[#166534] px-3 py-1 text-white">Entrée validée</span>
-                    <span className="rounded-md bg-[#bbf7d0] px-3 py-1 text-[#14532d]">Entrée en attente</span>
-                    <span className="rounded-md bg-[#991b1b] px-3 py-1 text-white">Sortie validée</span>
+                    <span className="rounded-md bg-[#00ff00] px-3 py-1 text-[#003300]">Entrée validée</span>
+                    <span className="rounded-md bg-[#f87171] px-3 py-1 text-[#450a0a]">Entrée en attente</span>
+                    <span className="rounded-md bg-[#dc2626] px-3 py-1 text-white">Sortie validée</span>
                     <span className="rounded-md bg-[#facc15] px-3 py-1 text-[#422006]">Sortie en attente</span>
                 </div>
             ) : null}

@@ -121,7 +121,7 @@ export default function Index({ devis, filters, fournisseurs, depots, articles, 
                     <p className="mb-3 text-base text-zinc-600">Pour chaque article, choisissez le dépôt puis cliquez sur la coche verte : la quantité est ajoutée au stock de ce dépôt. Vous pouvez aussi modifier les quantités, retirer ou ajouter des articles tant qu’ils ne sont pas validés.</p>
                     {current ? (
                         <>
-                            <div className="mb-3 overflow-hidden rounded-md border border-zinc-200">
+                            <div className="mb-3 overflow-hidden rounded-md border border-blue-300 bg-white">
                                 <LinesHeader />
                                 {current.lines.map((line) => <LineRow key={line.id + '-' + line.quantity + '-' + line.validated} devis={current} line={line} depots={depots} />)}
                             </div>

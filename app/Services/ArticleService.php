@@ -38,13 +38,13 @@ class ArticleService
                 $article->display_name,
                 $article->group?->name,
                 $article->unite,
-                $article->prix_achat_ht,
-                $article->prix_detail_ht,
-                $article->prix_gros_ht,
+                $article->prix_achat_ttc,
+                $article->prix_detail_ttc,
+                $article->prix_gros_ttc,
                 $article->depots_count,
             ]);
 
-        return ExcelExport::download('articles-export', ['Code', 'Article', 'Groupe', 'Unite', 'Prix achat HT', 'Prix detail HT', 'Prix gros HT', 'Depots assignes'], $rows);
+        return ExcelExport::download('articles-export', ['Code', 'Article', 'Groupe', 'Unite', 'Prix achat TTC', 'Prix detail TTC', 'Prix gros TTC', 'Depots assignes'], $rows);
     }
 
     public function show(Article $article): array

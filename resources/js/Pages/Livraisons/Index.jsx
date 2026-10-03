@@ -149,7 +149,7 @@ export default function Index({ bons, filters, depots, articles, groups }) {
                     {current ? (
                         <>
                             {canEdit ? <HeaderFields key={current.id} bon={current} /> : null}
-                            <div className="mb-3 overflow-hidden rounded-md border border-zinc-200">
+                            <div className="mb-3 overflow-hidden rounded-md border border-blue-300 bg-white">
                                 <LinesHeader />
                                 {current.lines.map((line) => <LineRow key={line.id + '-' + line.quantity + '-' + line.prix + '-' + line.validated} bon={current} line={line} />)}
                             </div>

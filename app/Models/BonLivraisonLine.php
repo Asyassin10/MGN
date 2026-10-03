@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BonLivraisonLine extends Model
 {
     public const PRICE_TYPES = [
-        'detail' => 'prix_detail_ht',
-        'demi_gros' => 'prix_demi_gros_ht',
-        'gros' => 'prix_gros_ht',
-        'special' => 'prix_special_ht',
+        'detail' => 'prix_detail_ttc',
+        'demi_gros' => 'prix_demi_gros_ttc',
+        'gros' => 'prix_gros_ttc',
+        'special' => 'prix_special_ttc',
         'min' => 'prix_min',
         'max' => 'prix_max',
     ];

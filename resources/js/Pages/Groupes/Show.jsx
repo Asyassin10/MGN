@@ -95,7 +95,7 @@ export default function Show({ group, articles, available, filters }) {
                 <DialogContent className="max-w-2xl">
                     <DialogHeader><DialogTitle>Assigner des articles au groupe « {group.name} »</DialogTitle></DialogHeader>
                     <Input className="mb-3" placeholder="Rechercher un article (code ou nom)" value={search} onChange={(event) => setSearch(event.target.value)} />
-                    <div className="mb-3 max-h-80 overflow-auto rounded-md border border-zinc-200">
+                    <div className="mb-3 max-h-80 overflow-auto rounded-md border border-blue-300 bg-white">
                         {shown.length === 0 ? <div className="px-3 py-3 text-base text-zinc-500">Aucun article disponible.</div> : null}
                         {shown.map((article) => (
                             <label key={article.id} className="flex cursor-pointer items-center gap-3 border-b border-zinc-100 px-3 py-2 text-base last:border-b-0 hover:bg-zinc-50">

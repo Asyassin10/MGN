@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { getSectionThemeByKey } from '@/lib/sectionTheme';
 
 const sections = [
-    { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, permission: 'dashboard' },
+    { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard, theme: 'dashboard', permission: 'dashboard' },
     {
         label: 'Dépôt',
         icon: Building2,
@@ -46,10 +46,10 @@ const sections = [
             { label: 'Impayés', route: 'cheques.impayes.index', icon: BadgeAlert },
         ],
     },
-    { label: 'Caisse', route: 'caisse.index', icon: Wallet, theme: 'cheques', permission: 'caisse' },
-    { label: 'RH / Employés', route: 'employees.index', icon: UserRound, permission: 'admin' },
-    { label: 'Utilisateurs', route: 'users.index', icon: ShieldCheck, permission: 'admin' },
-    { label: 'Historique', route: 'activity-history.index', icon: ListChecks, permission: 'admin' },
+    { label: 'Caisse', route: 'caisse.index', icon: Wallet, theme: 'caisse', permission: 'caisse' },
+    { label: 'RH / Employés', route: 'employees.index', icon: UserRound, theme: 'employees', permission: 'admin' },
+    { label: 'Utilisateurs', route: 'users.index', icon: ShieldCheck, theme: 'users', permission: 'admin' },
+    { label: 'Historique', route: 'activity-history.index', icon: ListChecks, theme: 'history', permission: 'admin' },
 ];
 
 function canSee(auth, item) {
@@ -90,8 +90,8 @@ export default function AppSidebar({ className, onNavigate }) {
                     const theme = getSectionThemeByKey(section.theme);
                     if (!section.children) {
                         return (
-                            <Link key={section.label} href={route(section.route)} onClick={onNavigate} className={`flex h-10 items-center gap-2 rounded-md px-3 text-base ${active ? (theme ? `${theme.sidebarGroup} font-medium` : 'bg-zinc-100 font-medium text-zinc-950') : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
-                                <Icon className="h-4 w-4" />
+                            <Link key={section.label} href={route(section.route)} onClick={onNavigate} className={`flex h-10 items-center gap-2 rounded-md px-3 text-base ${active ? `${theme.sidebarActive} font-semibold` : theme.sidebarIdle}`}>
+                                <Icon className={cn('h-4 w-4', theme?.icon)} />
                                 {section.label}
                             </Link>
                         );
@@ -99,19 +99,19 @@ export default function AppSidebar({ className, onNavigate }) {
 
                     return (
                         <div key={section.label}>
-                            <button type="button" onClick={() => setOpen((value) => ({ ...value, [section.label]: !value[section.label] }))} className={`flex h-10 w-full items-center gap-2 rounded-md px-3 text-base ${active ? `${theme.sidebarGroup} font-medium` : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950'}`}>
-                                <Icon className="h-4 w-4" />
+                            <button type="button" onClick={() => setOpen((value) => ({ ...value, [section.label]: !value[section.label] }))} className={`flex h-10 w-full items-center gap-2 rounded-md px-3 text-base ${active ? `${theme.sidebarActive} font-semibold` : theme.sidebarIdle}`}>
+                                <Icon className={cn('h-4 w-4', theme?.icon)} />
                                 <span className="flex-1 text-left">{section.label}</span>
                                 <ChevronDown className={`h-4 w-4 transition ${open[section.label] ? 'rotate-180' : ''}`} />
                             </button>
                             {open[section.label] ? (
-                                <div className={`ml-4 mt-1 space-y-1 border-l pl-2 ${active ? theme.sidebarDivider : 'border-zinc-200'}`}>
+                                <div className={`ml-4 mt-1 space-y-1 border-l pl-2 ${theme.sidebarDivider}`}>
                                     {section.children.filter((child) => !child.permission || canSee(auth, child)).map((child) => {
                                         const ChildIcon = child.icon;
                                         const childActive = isRouteActive(child);
                                         return (
-                                            <Link key={child.label} href={route(child.route, child.params || {})} onClick={onNavigate} className={`flex min-h-9 items-center gap-2 rounded-md px-3 py-1.5 text-sm ${childActive ? `${theme.sidebarChild} font-medium` : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-950'}`}>
-                                                <ChildIcon className="h-3.5 w-3.5" />
+                                            <Link key={child.label} href={route(child.route, child.params || {})} onClick={onNavigate} className={`flex min-h-9 items-center gap-2 rounded-md px-3 py-1.5 text-sm ${childActive ? `${theme.sidebarChild} font-semibold` : theme.sidebarChildIdle}`}>
+                                                <ChildIcon className={cn('h-3.5 w-3.5', theme?.icon)} />
                                                 {child.label}
                                             </Link>
                                         );
