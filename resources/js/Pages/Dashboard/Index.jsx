@@ -35,15 +35,15 @@ const dashboards = [
 ];
 
 const cardColors = {
-    blue: 'border-l-blue-600 text-blue-700',
-    emerald: 'border-l-emerald-600 text-emerald-700',
-    amber: 'border-l-amber-500 text-amber-700',
-    red: 'border-l-red-600 text-red-700',
-    violet: 'border-l-violet-600 text-violet-700',
-    cyan: 'border-l-cyan-600 text-cyan-700',
-    zinc: 'border-l-zinc-500 text-zinc-700',
-    orange: 'border-l-orange-500 text-orange-700',
-    fuchsia: 'border-l-fuchsia-600 text-fuchsia-700',
+    blue: 'border-l-blue-600! text-blue-700',
+    emerald: 'border-l-emerald-600! text-emerald-700',
+    amber: 'border-l-amber-500! text-amber-700',
+    red: 'border-l-red-600! text-red-700',
+    violet: 'border-l-violet-600! text-violet-700',
+    cyan: 'border-l-cyan-600! text-cyan-700',
+    zinc: 'border-l-zinc-500! text-zinc-700',
+    orange: 'border-l-orange-500! text-orange-700',
+    fuchsia: 'border-l-fuchsia-600! text-fuchsia-700',
 };
 
 const chartColors = ['#2563eb', '#059669', '#f59e0b', '#dc2626', '#7c3aed', '#0891b2', '#71717a', '#ea580c'];

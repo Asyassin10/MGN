@@ -66,6 +66,50 @@
     --section-950: #4a044e;
 }
 
+[data-section-theme='dashboard'] {
+    --section-50: #f8fafc;
+    --section-100: #f1f5f9;
+    --section-200: #e2e8f0;
+    --section-500: #64748b;
+    --section-600: #475569;
+    --section-700: #334155;
+    --section-800: #1e293b;
+    --section-950: #020617;
+}
+
+[data-section-theme='caisse'] {
+    --section-50: #ecfeff;
+    --section-100: #cffafe;
+    --section-200: #a5f3fc;
+    --section-500: #06b6d4;
+    --section-600: #0891b2;
+    --section-700: #0e7490;
+    --section-800: #155e75;
+    --section-950: #083344;
+}
+
+[data-section-theme='users'] {
+    --section-50: #fff1f2;
+    --section-100: #ffe4e6;
+    --section-200: #fecdd3;
+    --section-500: #f43f5e;
+    --section-600: #e11d48;
+    --section-700: #be123c;
+    --section-800: #9f1239;
+    --section-950: #4c0519;
+}
+
+[data-section-theme='history'] {
+    --section-50: #f7fee7;
+    --section-100: #ecfccb;
+    --section-200: #d9f99d;
+    --section-500: #84cc16;
+    --section-600: #65a30d;
+    --section-700: #4d7c0f;
+    --section-800: #3f6212;
+    --section-950: #1a2e05;
+}
+
 /* Apply the active business-area color to shared content surfaces. */
 [data-section-theme] {
     color: var(--section-800);
