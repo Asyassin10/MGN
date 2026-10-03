@@ -19,12 +19,15 @@ class DepotController extends Controller
 {
     public function index(Request $request, DepotService $service): Response|StreamedResponse
     {
+        $filters = $request->only(['created_from', 'created_to']);
+
         if ($request->boolean('export')) {
-            return $service->exportDepots($this->selectedIds($request));
+            return $service->exportDepots($this->selectedIds($request), $filters);
         }
 
         return Inertia::render('Depots/Index', [
-            'depots' => $service->list(),
+            'depots' => $service->list($filters),
+            'filters' => $filters,
         ]);
     }
 

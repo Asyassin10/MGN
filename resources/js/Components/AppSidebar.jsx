@@ -12,12 +12,12 @@ const sections = [
         icon: Building2,
         theme: 'depot', permission: 'depots',
         children: [
-            { label: 'Dépôt', route: 'depots.index', icon: PackageSearch },
-            { label: 'Articles', route: 'articles.index', icon: Boxes },
-            { label: 'Opérations', route: 'operations.index', icon: ListChecks },
-            { label: 'Bons de commande', route: 'devis.index', icon: ClipboardList },
-            { label: 'Devis', route: 'livraisons.index', icon: Truck },
-            { label: 'Groupes', route: 'groupes.index', icon: Layers },
+            { label: 'Dépôt', route: 'depots.index', icon: PackageSearch, permission: 'depots' },
+            { label: 'Articles', route: 'articles.index', icon: Boxes, permission: 'articles' },
+            { label: 'Opérations', route: 'operations.index', icon: ListChecks, permission: 'operations' },
+            { label: 'Bons de commande', route: 'devis.index', icon: ClipboardList, permission: 'bons_commande' },
+            { label: 'Devis', route: 'livraisons.index', icon: Truck, permission: 'devis' },
+            { label: 'Groupes', route: 'groupes.index', icon: Layers, permission: 'groupes' },
         ],
     },
     {
@@ -52,6 +52,14 @@ const sections = [
     { label: 'Historique', route: 'activity-history.index', icon: ListChecks, permission: 'admin' },
 ];
 
+function canSee(auth, item) {
+    if (auth.user?.role === 'admin') return true;
+    const granted = auth.user?.permissions?.modules || [];
+    // Sections whose links carry their own permission (Dépôt area) show when at least one link is allowed.
+    if (item.children?.some((child) => child.permission)) return item.children.some((child) => granted.includes(child.permission));
+    return granted.includes(item.permission);
+}
+
 function isRouteActive(item) {
     if (item.active) return item.active.some((name) => route().current(name));
     if (!item.route) return item.children?.some(isRouteActive);
@@ -76,7 +84,7 @@ export default function AppSidebar({ className, onNavigate }) {
                 </div>
             </div>
             <nav className="flex-1 space-y-1 p-2">
-                {sections.filter((section) => auth.user?.role === 'admin' || auth.user?.permissions?.modules?.includes(section.permission)).map((section) => {
+                {sections.filter((section) => canSee(auth, section)).map((section) => {
                     const Icon = section.icon;
                     const active = isRouteActive(section);
                     const theme = getSectionThemeByKey(section.theme);
@@ -98,7 +106,7 @@ export default function AppSidebar({ className, onNavigate }) {
                             </button>
                             {open[section.label] ? (
                                 <div className={`ml-4 mt-1 space-y-1 border-l pl-2 ${active ? theme.sidebarDivider : 'border-zinc-200'}`}>
-                                    {section.children.map((child) => {
+                                    {section.children.filter((child) => !child.permission || canSee(auth, child)).map((child) => {
                                         const ChildIcon = child.icon;
                                         const childActive = isRouteActive(child);
                                         return (

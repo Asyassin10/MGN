@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { Check, ListChecks, Plus, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
+import CreatedAtFilter from '@/Components/CreatedAtFilter';
 import DataTable from '@/Components/DataTable';
 import DeleteButton from '@/Components/DeleteButton';
 import PrintPdfButton from '@/Components/PrintPdfButton';
@@ -13,6 +14,23 @@ import { Input } from '@/Components/ui/input';
 
 const statuses = [{ value: 'en_attente', label: 'En attente' }, { value: 'partiel', label: 'Partiel' }, { value: 'valide', label: 'Validé' }, { value: 'annule', label: 'Annulé' }];
 const statusBadge = { en_attente: ['yellow', 'En attente'], partiel: ['yellow', 'Partiel'], valide: ['green', 'Validé'], annule: ['red', 'Annulé'] };
+
+const LINE_GRID = 'md:grid-cols-[minmax(0,1fr)_120px_220px_96px]';
+
+function LinesHeader() {
+    return (
+        <div className={'hidden gap-3 border-b border-zinc-200 bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-700 md:grid ' + LINE_GRID}>
+            <span>Article (السلعة)</span>
+            <span>Quantity (الكمية)</span>
+            <span>Depot (المستودع)</span>
+            <span className="text-right">Actions</span>
+        </div>
+    );
+}
+
+function FieldLabel({ children }) {
+    return <span className="text-xs font-medium text-zinc-500 md:hidden">{children}</span>;
+}
 
 function LineRow({ devis, line, depots }) {
     const [quantity, setQuantity] = useState(String(line.quantity));
@@ -27,28 +45,27 @@ function LineRow({ devis, line, depots }) {
 
     if (line.validated) {
         return (
-            <div className="flex flex-wrap items-center gap-3 border-b border-zinc-100 bg-emerald-50 px-3 py-2 text-base last:border-b-0">
-                <Check className="h-5 w-5 text-emerald-700" />
-                <span className="min-w-0 flex-1 truncate font-medium text-emerald-900">{line.article}</span>
-                <span className="font-semibold">× {line.quantity}</span>
-                <Badge variant="green">{line.depot}</Badge>
+            <div className={'grid items-center gap-2 border-b border-zinc-100 bg-emerald-50 px-3 py-2 text-base last:border-b-0 md:gap-3 ' + LINE_GRID}>
+                <span className="min-w-0 truncate font-medium text-emerald-900">{line.article}</span>
+                <span className="font-semibold"><FieldLabel>Quantity (الكمية)</FieldLabel><span className="block">{line.quantity}</span></span>
+                <span><FieldLabel>Depot (المستودع)</FieldLabel><Badge variant="green" className="block w-fit">{line.depot}</Badge></span>
+                <span className="md:justify-self-end"><Badge variant="green"><Check className="mr-1 h-4 w-4" />Validé</Badge></span>
             </div>
         );
     }
 
     return (
-        <div className="grid gap-2 border-b border-zinc-100 px-3 py-2 text-base last:border-b-0 md:grid-cols-[1fr_90px_190px_auto] md:items-center">
-            <span className="min-w-0 truncate">{line.article}</span>
-            <Input type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} onBlur={saveQuantity} onKeyDown={(event) => { if (event.key === 'Enter') saveQuantity(); }} aria-label="Quantity (الكمية)" />
-            <SearchableSelect value={depotId} onChange={setDepotId} options={depots} placeholder="Dépôt (المستودع)" allowEmpty={false} />
-            <div className="flex gap-2">
+        <div className={'grid gap-2 border-b border-zinc-100 px-3 py-2 text-base last:border-b-0 md:items-center md:gap-3 ' + LINE_GRID}>
+            <span className="min-w-0 truncate font-medium">{line.article}</span>
+            <label className="grid gap-1"><FieldLabel>Quantity (الكمية)</FieldLabel><Input type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} onBlur={saveQuantity} onKeyDown={(event) => { if (event.key === 'Enter') saveQuantity(); }} aria-label="Quantity (الكمية)" /></label>
+            <label className="grid gap-1"><FieldLabel>Depot (المستودع)</FieldLabel><SearchableSelect value={depotId} onChange={setDepotId} options={depots} placeholder="Choisir le dépôt" allowEmpty={false} /></label>
+            <div className="flex gap-2 md:justify-end">
                 <Button size="icon" className="bg-emerald-600 text-white hover:bg-emerald-700" disabled={!depotId || Number(quantity) < 1} title="Valider cet article dans le dépôt" aria-label="Valider cet article" onClick={validate}><Check className="h-4 w-4" /></Button>
                 <Button size="icon" variant="outline" title="Retirer cet article du bon de commande" aria-label="Retirer cet article" onClick={remove}><X className="h-4 w-4" /></Button>
             </div>
         </div>
     );
 }
-
 export default function Index({ devis, filters, fournisseurs, depots, articles, groups }) {
     const [openId, setOpenId] = useState(null);
     const [groupFilter, setGroupFilter] = useState('');
@@ -90,10 +107,11 @@ export default function Index({ devis, filters, fournisseurs, depots, articles, 
 
     return (
         <AppLayout title="Bons de commande" actions={<Link href={route('devis.create')}><Button><Plus className="h-4 w-4" />Nouveau bon de commande</Button></Link>}>
-            <div className="mb-4 grid gap-2 md:grid-cols-3">
+            <div className="mb-4 grid gap-2 md:grid-cols-4">
                 <Input placeholder="Référence ou fournisseur" defaultValue={filters.search || ''} onChange={(event) => update('search', event.target.value)} />
                 <SearchableSelect value={filters.fournisseur_id || ''} onChange={(value) => update('fournisseur_id', value)} options={fournisseurs} placeholder="Tous les fournisseurs" />
                 <SearchableSelect value={filters.status || ''} onChange={(value) => update('status', value)} options={statuses} placeholder="Tous les statuts" />
+                <CreatedAtFilter routeName="devis.index" filters={filters} />
             </div>
             <DataTable columns={columns} rows={devis.data} pagination={devis} empty="Aucun bon de commande." rowClassName={(row) => row.status === 'valide' ? 'status-row status-row-devis-valide' : row.status === 'annule' ? 'status-row status-row-sorti' : ''} />
 
@@ -103,7 +121,8 @@ export default function Index({ devis, filters, fournisseurs, depots, articles, 
                     <p className="mb-3 text-base text-zinc-600">Pour chaque article, choisissez le dépôt puis cliquez sur la coche verte : la quantité est ajoutée au stock de ce dépôt. Vous pouvez aussi modifier les quantités, retirer ou ajouter des articles tant qu’ils ne sont pas validés.</p>
                     {current ? (
                         <>
-                            <div className="mb-3 rounded-md border border-zinc-200">
+                            <div className="mb-3 overflow-hidden rounded-md border border-zinc-200">
+                                <LinesHeader />
                                 {current.lines.map((line) => <LineRow key={line.id + '-' + line.quantity + '-' + line.validated} devis={current} line={line} depots={depots} />)}
                             </div>
                             {canEdit ? (

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CreatedAtFilter;
 use App\Models\ChequeImpaye;
 use App\Support\ExcelExport;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +17,7 @@ class ChequeImpayeController extends Controller
 {
     public function index(Request $request): Response|StreamedResponse
     {
-        $filters = $request->only(['search', 'type', 'statut']);
+        $filters = $request->only(['search', 'type', 'statut', 'created_from', 'created_to']);
 
         if ($request->boolean('export')) {
             return $this->export($filters, $request->validate([
@@ -111,7 +112,7 @@ class ChequeImpayeController extends Controller
 
     private function filteredQuery(array $filters): Builder
     {
-        return ChequeImpaye::query()
+        return CreatedAtFilter::apply(ChequeImpaye::query(), $filters)
             ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                 ->where('numero_cheque', 'like', "%{$value}%")
                 ->orWhere('fournisseur_nom', 'like', "%{$value}%")

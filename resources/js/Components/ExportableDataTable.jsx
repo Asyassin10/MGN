@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Download, Trash2 } from 'lucide-react';
+import { Download, Trash2, X } from 'lucide-react';
 import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { money } from '@/lib/utils';
+import usePersistentSelection from '@/lib/usePersistentSelection';
 
-export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, deleteUrl, empty, onRowClick, rowClassName, preserveSelection = false, selectable = true, totalField = 'montant', totalLabel = 'Total', totalValue, summaryExtra }) {
+export default function ExportableDataTable({ columns, rows, pagination, exportUrl, exportParams = {}, deleteUrl, empty, onRowClick, rowClassName, preserveSelection = true, selectable = true, totalField = 'montant', totalLabel = 'Total', totalValue, summaryExtra }) {
     const { auth } = usePage().props;
     const canDelete = deleteUrl && auth.user?.role === 'admin';
-    const [selectedRows, setSelectedRows] = useState({});
+    const [selectedRows, setSelectedRows] = usePersistentSelection(exportUrl + '|' + (exportParams.export ?? ''));
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const selectedIds = useMemo(() => Object.keys(selectedRows), [selectedRows]);
     const pageIds = useMemo(() => (rows || []).map((row) => String(row.id)), [rows]);
@@ -18,8 +19,22 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
         .reduce((total, row) => total + (totalValue ? totalValue(row) : Number(row[totalField] || 0)), 0), [selectedRows, totalField, totalValue]);
 
     useEffect(() => {
-        if (!preserveSelection) setSelectedRows({});
-    }, [pageIds, preserveSelection]);
+        if (!preserveSelection) {
+            setSelectedRows({});
+            return;
+        }
+        setSelectedRows((current) => {
+            const next = { ...current };
+            let changed = false;
+            (rows || []).forEach((row) => {
+                if (next[row.id]) {
+                    next[row.id] = row;
+                    changed = true;
+                }
+            });
+            return changed ? next : current;
+        });
+    }, [rows, preserveSelection]);
 
     const download = (ids = []) => {
         const params = new URLSearchParams(Object.entries(exportParams).filter(([, value]) => value !== '' && value !== null && value !== undefined));
@@ -61,6 +76,7 @@ export default function ExportableDataTable({ columns, rows, pagination, exportU
             <Button variant="outline" onClick={() => download()}><Download className="h-4 w-4" />Exporter Excel</Button>
             {selectable && selectedIds.length ? <>
                 <Button onClick={() => download(selectedIds)}><Download className="h-4 w-4" />Exporter la sélection</Button>
+                <Button variant="outline" onClick={() => setSelectedRows({})}><X className="h-4 w-4" />Tout désélectionner</Button>
                 {canDelete ? <Button variant="destructive" onClick={() => setConfirmingDelete(true)}><Trash2 className="h-4 w-4" />Supprimer la sélection</Button> : null}
                 <span className="text-base font-bold text-emerald-800 md:text-lg">{selectedIds.length} sélectionné(s) · {totalLabel} : {money(selectedTotal)}</span>
                 {summaryExtra ? <span className="text-sm font-semibold text-zinc-700">{summaryExtra(Object.values(selectedRows))}</span> : null}

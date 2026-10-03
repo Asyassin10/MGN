@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CreatedAtFilter;
 use App\Http\Requests\StoreCaisseEntryRequest;
 use App\Models\CaisseEntry;
 use App\Models\Client;
@@ -17,11 +18,13 @@ class CaisseController extends Controller
 {
     public function index(Request $request): Response|StreamedResponse
     {
+        $filters = $request->only(['created_from', 'created_to']);
+
         if ($request->boolean('export')) {
-            return $this->export($this->selectedIds($request));
+            return $this->export($this->selectedIds($request), $filters);
         }
 
-        $entries = CaisseEntry::query()
+        $entries = CreatedAtFilter::apply(CaisseEntry::query(), $filters)
             ->with(['client:id,nom', 'fournisseur:id,nom', 'user:id,name'])
             ->latest()
             ->latest('id')
@@ -45,14 +48,15 @@ class CaisseController extends Controller
             'parties' => $this->partyOptions(),
             'kpis' => $request->user()?->isAdmin() ? $this->kpis() : null,
             'newParty' => session('newParty'),
+            'filters' => $filters,
         ]);
     }
 
-    private function export(array $selectedIds): StreamedResponse
+    private function export(array $selectedIds, array $filters = []): StreamedResponse
     {
         $modes = ['espece' => 'Espèce', 'virement' => 'Virement', 'cheque' => 'Chèque', 'effet' => 'Effet'];
 
-        $rows = CaisseEntry::query()
+        $rows = CreatedAtFilter::apply(CaisseEntry::query(), $filters)
             ->with(['client:id,nom', 'fournisseur:id,nom', 'user:id,name'])
             ->when($selectedIds, fn ($query, array $ids) => $query->whereKey($ids))
             ->latest()

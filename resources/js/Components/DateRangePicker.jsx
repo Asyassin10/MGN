@@ -1,13 +1,20 @@
 import * as Popover from '@radix-ui/react-popover';
 import { CalendarDays } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
-export default function DateRangePicker({ from, to, onChange, label = 'Période' }) {
-    const value = from || to ? `${from || 'Début'} - ${to || 'Fin'}` : label;
+export default function DateRangePicker({ from, to, onChange, label = 'Période', showToday = false }) {
+    const [open, setOpen] = useState(false);
+    const value = from && to && from === to ? from : (from || to ? `${from || 'Début'} - ${to || 'Fin'}` : label);
+    const pickToday = () => {
+        const today = new Date().toISOString().slice(0, 10);
+        onChange({ from: today, to: today });
+        setOpen(false);
+    };
 
     return (
-        <Popover.Root>
+        <Popover.Root open={open} onOpenChange={setOpen}>
             <Popover.Trigger asChild>
                 <Button type="button" variant="outline" className="w-full justify-start">
                     <CalendarDays className="h-4 w-4" />
@@ -26,7 +33,8 @@ export default function DateRangePicker({ from, to, onChange, label = 'Période'
                             <Input type="date" value={to || ''} onChange={(event) => onChange({ from, to: event.target.value })} />
                         </label>
                     </div>
-                    <div className="mt-3 flex justify-end">
+                    <div className={'mt-3 flex gap-2 ' + (showToday ? 'justify-between' : 'justify-end')}>
+                        {showToday ? <Button type="button" onClick={pickToday}>Aujourd’hui</Button> : null}
                         <Button type="button" variant="outline" onClick={() => onChange({ from: '', to: '' })}>Effacer</Button>
                     </div>
                 </Popover.Content>

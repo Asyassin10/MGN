@@ -156,7 +156,9 @@
                 </div>
             </td>
             <td style="width: 56%; vertical-align: top; padding-left: 8px;">
-                <div class="doc-title">{{ $document['title'] }}</div>
+                @if (! empty($document['title']))
+                    <div class="doc-title">{{ $document['title'] }}</div>
+                @endif
                 <table class="meta">
                     @foreach ($document['meta'] ?? [] as $row)
                         <tr>
@@ -190,44 +192,37 @@
 
     <table class="totals">
         <tr>
-            <td style="width: {{ ! empty($document['total']) ? '46%' : '100%' }}; vertical-align: top; text-align: right;">
+            <td style="width: {{ (! empty($document['total']) || ! empty($document['payment'])) ? '46%' : '100%' }}; vertical-align: top; text-align: right;">
                 @foreach ($document['stats'] ?? [] as $stat)
                     <div class="stat">{{ $stat['value'] }} &nbsp;&nbsp; {{ $stat['label'] }}</div>
                 @endforeach
             </td>
-            @if (! empty($document['total']))
+            @if (! empty($document['total']) || ! empty($document['payment']))
                 <td style="width: 54%; vertical-align: top;">
-                    <table class="total-box">
-                        <tr>
-                            <td>{{ $document['total']['value'] }}</td>
-                            <td class="label" style="width: 40%;">{{ $document['total']['label'] }}</td>
-                        </tr>
-                    </table>
+                    @if (! empty($document['total']))
+                        <table class="total-box">
+                            <tr>
+                                <td>{{ $document['total']['value'] }}</td>
+                                <td class="label" style="width: 40%;">{{ $document['total']['label'] }}</td>
+                            </tr>
+                        </table>
+                    @endif
+                    @if (! empty($document['payment']))
+                        <table class="pay" style="{{ ! empty($document['total']) ? 'margin-top: 8px;' : '' }}">
+                            <tr>
+                                <th>{{ $document['payment']['amount_label'] }}</th>
+                                <th>{{ $document['payment']['mode_label'] }}</th>
+                            </tr>
+                            <tr>
+                                <td>{{ $document['payment']['amount'] }}</td>
+                                <td>{{ $document['payment']['mode'] }}</td>
+                            </tr>
+                        </table>
+                    @endif
                 </td>
             @endif
         </tr>
     </table>
-
-    @if (! empty($document['payment']))
-        <table style="margin-top: 8px;">
-            <tr>
-                <td style="width: 46%;"></td>
-                <td style="width: 54%;">
-                    <table class="pay">
-                        <tr>
-                            <th>{{ $document['payment']['amount_label'] }}</th>
-                            <th>{{ $document['payment']['mode_label'] }}</th>
-                        </tr>
-                        <tr>
-                            <td>{{ $document['payment']['amount'] }}</td>
-                            <td>{{ $document['payment']['mode'] }}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
-    @endif
-
     @if (! empty($document['note']))
         <div class="note"><strong>Note :</strong> {{ $document['note'] }}</div>
     @endif

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Article;
 use App\Models\ArticleGroup;
 use App\Models\Depot;
@@ -25,7 +26,7 @@ class DevisService
 
     public function list(array $filters): LengthAwarePaginator
     {
-        return Devis::query()
+        return CreatedAtFilter::apply(Devis::query(), $filters)
             ->with(['fournisseur', 'user', 'lines.article', 'lines.depot'])
             ->when($filters['status'] ?? null, fn ($query, $value) => $query->where('status', $value))
             ->when($filters['fournisseur_id'] ?? null, fn ($query, $value) => $query->where('fournisseur_id', $value))

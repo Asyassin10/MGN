@@ -17,6 +17,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const MODULES = ['dashboard', 'depots', 'articles', 'operations', 'bons_commande', 'devis', 'groupes', 'fournisseurs', 'clients', 'cheques', 'caisse'];
+
     protected static function booted(): void
     {
         static::creating(function (self $user): void {

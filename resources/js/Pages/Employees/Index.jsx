@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { Download, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
+import CreatedAtFilter from '@/Components/CreatedAtFilter';
 import CrudDialog from '@/Components/CrudDialog';
 import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
@@ -36,8 +37,9 @@ export default function Index({ employees, filters }) {
 
     return (
         <AppLayout title="RH / Employés" actions={<><a href={route('employees.index', { ...filters, export: 1 })}><Button variant="outline"><Download className="h-4 w-4" />Export Excel</Button></a><CrudDialog title="Nouvel employé" action={route('employees.store')} fields={fields} defaults={{ name: '', telephone: '', salary: '', salary_payment_day: 1, status: 'active' }} trigger={<Button><Plus className="h-4 w-4" />Nouveau</Button>} /></>}>
-            <div className="mb-4">
+            <div className="mb-4 grid max-w-3xl gap-2 md:grid-cols-2">
                 <Input placeholder="Recherche nom" defaultValue={filters.search || ''} onChange={(event) => update('search', event.target.value)} />
+                <CreatedAtFilter routeName="employees.index" filters={filters} />
             </div>
             <ExportableDataTable columns={columns} rows={employees.data} pagination={employees} exportUrl={route('employees.index')} exportParams={{ ...filters, export: 1 }} deleteUrl={route('employees.destroy-selected')} onRowClick={(row) => router.visit(route('employees.show', row.id))} />
         </AppLayout>

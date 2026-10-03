@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\ChequeClient;
 use App\Models\Client;
 use App\Models\ClientEntry;
@@ -224,7 +225,7 @@ class ClientService
 
     private function baseQuery(array $filters): Builder
     {
-        return Client::query()
+        return CreatedAtFilter::apply(Client::query(), $filters)
             ->whereNull('source')
             ->withSum('entries', 'montant')
             ->withSum('payments', 'montant')

@@ -145,6 +145,6 @@ class ActivityLogController extends Controller
 
     private function moduleName(string $module): string
     {
-        return ['dashboard' => 'Dashboard', 'depots' => 'Dépôt', 'fournisseurs' => 'Fournisseurs', 'clients' => 'Clients', 'employees' => 'RH / Employés', 'cheques' => 'Chèques'][$module] ?? $module;
+        return ['dashboard' => 'Dashboard', 'depots' => 'Dépôt', 'articles' => 'Articles', 'operations' => 'Opérations', 'bons_commande' => 'Bons de commande', 'devis' => 'Devis', 'groupes' => 'Groupes', 'caisse' => 'Caisse', 'fournisseurs' => 'Fournisseurs', 'clients' => 'Clients', 'employees' => 'RH / Employés', 'cheques' => 'Chèques'][$module] ?? $module;
     }
 }

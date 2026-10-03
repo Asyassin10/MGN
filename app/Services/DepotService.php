@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Article;
 use App\Models\Depot;
 use App\Support\ExcelExport;
@@ -9,9 +10,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DepotService
 {
-    public function list(): array
+    public function list(array $filters = []): array
     {
-        return Depot::query()
+        return CreatedAtFilter::apply(Depot::query(), $filters)
             ->with('articles')
             ->latest()
             ->get()
@@ -58,9 +59,9 @@ class DepotService
         ];
     }
 
-    public function exportDepots(array $selectedIds = []): StreamedResponse
+    public function exportDepots(array $selectedIds = [], array $filters = []): StreamedResponse
     {
-        $rows = collect($this->list())->when($selectedIds, fn ($depots) => $depots->whereIn('id', $selectedIds))
+        $rows = collect($this->list($filters))->when($selectedIds, fn ($depots) => $depots->whereIn('id', $selectedIds))
             ->map(fn (array $depot) => [
                 $depot['name'],
                 $depot['location'],

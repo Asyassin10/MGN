@@ -24,7 +24,7 @@ class FournisseurController extends Controller
 {
     public function index(Request $request, FournisseurService $service): Response|StreamedResponse
     {
-        $filters = [...$request->only(['search', 'ville', 'balance_min', 'balance_max']), 'selected_ids' => $this->selectedIds($request)];
+        $filters = [...$request->only(['search', 'ville', 'balance_min', 'balance_max', 'created_from', 'created_to']), 'selected_ids' => $this->selectedIds($request)];
 
         if ($request->boolean('export')) {
             return $service->export($filters);

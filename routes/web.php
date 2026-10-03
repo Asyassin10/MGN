@@ -34,14 +34,19 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('permission:depots,admin_delete')->group(function (): void {
         Route::resource('depots', DepotController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
         Route::delete('/depots', [DepotController::class, 'destroySelected'])->name('depots.destroy-selected')->middleware('permission:admin');
+        Route::post('/depots/{depot}/adjust-stock', [DepotController::class, 'adjustStock'])->name('depots.adjust-stock');
+    });
+    Route::middleware('permission:articles,admin_delete')->group(function (): void {
         Route::resource('articles', ArticleController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::delete('/articles', [ArticleController::class, 'destroySelected'])->name('articles.destroy-selected')->middleware('permission:admin');
-        Route::post('/depots/{depot}/adjust-stock', [DepotController::class, 'adjustStock'])->name('depots.adjust-stock');
+    });
+    Route::middleware('permission:operations,admin_delete')->group(function (): void {
         Route::resource('operations', OperationController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
         Route::delete('/operations', [OperationController::class, 'destroySelected'])->name('operations.destroy-selected')->middleware('permission:admin');
         Route::get('/operations/{operation}', [OperationController::class, 'show'])->name('operations.show');
         Route::get('/operations/{operation}/pdf', [OperationController::class, 'pdf'])->name('operations.pdf');
-
+    });
+    Route::middleware('permission:groupes,admin_delete')->group(function (): void {
         Route::get('/groupes', [ArticleGroupController::class, 'index'])->name('groupes.index');
         Route::post('/groupes', [ArticleGroupController::class, 'store'])->name('groupes.store');
         Route::get('/groupes/{groupe}', [ArticleGroupController::class, 'show'])->name('groupes.show');
@@ -49,7 +54,8 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/groupes/{groupe}/retirer', [ArticleGroupController::class, 'remove'])->name('groupes.remove');
         Route::patch('/groupes/{groupe}', [ArticleGroupController::class, 'update'])->name('groupes.update');
         Route::delete('/groupes/{groupe}', [ArticleGroupController::class, 'destroy'])->name('groupes.destroy');
-
+    });
+    Route::middleware('permission:bons_commande,admin_delete')->group(function (): void {
         Route::get('/devis', [DevisController::class, 'index'])->name('devis.index');
         Route::get('/devis/create', [DevisController::class, 'create'])->name('devis.create');
         Route::post('/devis', [DevisController::class, 'store'])->name('devis.store');
@@ -60,11 +66,18 @@ Route::middleware('auth')->group(function (): void {
         Route::patch('/devis/{devis}/lines/{line}/validate', [DevisController::class, 'validateLine'])->name('devis.lines.validate');
         Route::patch('/devis/{devis}/cancel', [DevisController::class, 'cancel'])->name('devis.cancel');
         Route::delete('/devis/{devis}', [DevisController::class, 'destroy'])->name('devis.destroy');
-
+    });
+    Route::middleware('permission:devis,admin_delete')->group(function (): void {
         Route::get('/livraisons', [BonLivraisonController::class, 'index'])->name('livraisons.index');
         Route::get('/livraisons/create', [BonLivraisonController::class, 'create'])->name('livraisons.create');
         Route::post('/livraisons', [BonLivraisonController::class, 'store'])->name('livraisons.store');
         Route::get('/livraisons/{livraison}/pdf', [BonLivraisonController::class, 'pdf'])->name('livraisons.pdf');
+        Route::patch('/livraisons/{livraison}', [BonLivraisonController::class, 'update'])->name('livraisons.update');
+        Route::post('/livraisons/{livraison}/lines', [BonLivraisonController::class, 'addLine'])->name('livraisons.lines.store');
+        Route::patch('/livraisons/{livraison}/lines/{line}', [BonLivraisonController::class, 'updateLine'])->name('livraisons.lines.update');
+        Route::patch('/livraisons/{livraison}/lines/{line}/retirer', [BonLivraisonController::class, 'removeLine'])->name('livraisons.lines.remove');
+        Route::patch('/livraisons/{livraison}/lines/{line}/validate', [BonLivraisonController::class, 'validateLine'])->name('livraisons.lines.validate');
+        Route::patch('/livraisons/{livraison}/cancel', [BonLivraisonController::class, 'cancel'])->name('livraisons.cancel');
         Route::delete('/livraisons/{livraison}', [BonLivraisonController::class, 'destroy'])->name('livraisons.destroy');
     });
     Route::middleware('permission:cheques')->group(function (): void {

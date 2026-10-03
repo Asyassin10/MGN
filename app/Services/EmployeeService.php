@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Employee;
 use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -47,7 +48,7 @@ class EmployeeService
 
     private function baseQuery(array $filters)
     {
-        return Employee::query()
+        return CreatedAtFilter::apply(Employee::query(), $filters)
             ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                 ->where('name', 'like', "%{$value}%")
                 ->orWhere('prenom', 'like', "%{$value}%")

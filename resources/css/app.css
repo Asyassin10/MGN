@@ -177,6 +177,36 @@
     color: #991b1b;
 }
 
+.status-row-caisse-entree-valide,
+.status-row-caisse-entree-valide:hover {
+    background-color: #166534;
+    color: #fff;
+}
+
+.status-row-caisse-entree-attente,
+.status-row-caisse-entree-attente:hover {
+    background-color: #bbf7d0;
+    color: #14532d;
+}
+
+.status-row-caisse-sortie-valide,
+.status-row-caisse-sortie-valide:hover {
+    background-color: #991b1b;
+    color: #fff;
+}
+
+.status-row-caisse-sortie-attente,
+.status-row-caisse-sortie-attente:hover {
+    background-color: #facc15;
+    color: #422006;
+}
+
+.status-row-caisse-entree-valide .text-red-700,
+.status-row-caisse-sortie-valide .text-red-700 {
+    background-color: #fff;
+    color: #991b1b;
+}
+
 .status-row-impaye {
     background-color: #fef2f2;
     color: #991b1b;

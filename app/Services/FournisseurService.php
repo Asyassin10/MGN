@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Fournisseur;
 use App\Models\FournisseurCheque;
 use App\Models\FournisseurReleveCompte;
@@ -150,7 +151,7 @@ class FournisseurService
 
     private function baseQuery(array $filters): Builder
     {
-        return Fournisseur::query()->whereNull('source')->withSum('factures', 'montant')->withSum('cheques', 'montant')->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('nom', 'like', "%{$value}%")->orWhere('telephone', 'like', "%{$value}%")->orWhere('ville', 'like', "%{$value}%")))->when($filters['ville'] ?? null, fn ($query, $value) => $query->where('ville', 'like', "%{$value}%"));
+        return CreatedAtFilter::apply(Fournisseur::query(), $filters)->whereNull('source')->withSum('factures', 'montant')->withSum('cheques', 'montant')->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner->where('nom', 'like', "%{$value}%")->orWhere('telephone', 'like', "%{$value}%")->orWhere('ville', 'like', "%{$value}%")))->when($filters['ville'] ?? null, fn ($query, $value) => $query->where('ville', 'like', "%{$value}%"));
     }
 
     private function relevesQuery(array $filters): Builder

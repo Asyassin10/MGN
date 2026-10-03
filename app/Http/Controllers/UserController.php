@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -47,11 +48,11 @@ class UserController extends Controller
 
     private function validated(Request $request, bool $creating = true): array
     {
-        $modules = collect(['dashboard', 'depots', 'fournisseurs', 'clients', 'cheques', 'caisse'])->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
+        $modules = collect(User::MODULES)->filter(fn (string $module) => $request->boolean('module_'.$module))->values()->all();
         $request->merge(['modules' => $modules]);
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'modules' => ['nullable', 'array'], 'modules.*' => ['in:dashboard,depots,fournisseurs,clients,cheques,caisse'],
+            'modules' => ['nullable', 'array'], 'modules.*' => [Rule::in(User::MODULES)],
             'pin' => [$creating ? 'required' : 'nullable', 'digits:6'],
         ];
         $data = $request->validate($rules);

@@ -8,11 +8,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BonLivraison extends Model
 {
+    public const STATUS_PENDING = 'en_attente';
+    public const STATUS_PARTIAL = 'partiel';
+    public const STATUS_VALIDATED = 'valide';
+    public const STATUS_CANCELLED = 'annule';
+
     public const PAYMENT_MODES = ['espece' => 'Espèce', 'virement' => 'Virement', 'cheque' => 'Chèque', 'effet' => 'Effet'];
 
     protected $table = 'bon_livraisons';
 
-    protected $fillable = ['reference', 'client_id', 'client_nom', 'client_telephone', 'employee_id', 'mode_paiement', 'note'];
+    protected $fillable = ['reference', 'client_id', 'client_nom', 'client_telephone', 'livreur_nom', 'employee_id', 'mode_paiement', 'note'];
 
     public function client(): BelongsTo
     {

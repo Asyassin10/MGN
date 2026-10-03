@@ -20,6 +20,11 @@ class BonLivraisonLine extends Model
 
     protected $fillable = ['bon_livraison_id', 'article_id', 'depot_id', 'operation_id', 'quantity', 'unite', 'price_type', 'prix'];
 
+    protected function casts(): array
+    {
+        return ['validated_at' => 'datetime'];
+    }
+
     public function bonLivraison(): BelongsTo
     {
         return $this->belongsTo(BonLivraison::class);

@@ -17,7 +17,7 @@ class DevisController extends Controller
 {
     public function index(Request $request, DevisService $service): Response
     {
-        $filters = $request->only(['search', 'status', 'fournisseur_id']);
+        $filters = $request->only(['search', 'status', 'fournisseur_id', 'created_from', 'created_to']);
         $options = $service->options();
 
         return Inertia::render('Devis/Index', [

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Article;
 use App\Models\ArticleGroup;
 use App\Models\Depot;
@@ -111,7 +112,7 @@ class ArticleService
 
     private function baseQuery(array $filters)
     {
-        return Article::query()
+        return CreatedAtFilter::apply(Article::query(), $filters)
             ->with('group')
             ->when($filters['search'] ?? null, fn ($query, $value) => $query->where(fn ($inner) => $inner
                 ->where('reference', 'like', "%{$value}%")

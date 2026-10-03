@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\CreatedAtFilter;
 use App\Models\Cheque;
 use App\Support\ExcelExport;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +17,7 @@ class ChequeController extends Controller
 {
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie']);
+        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie', 'created_from', 'created_to']);
 
         return Inertia::render('Cheques/Index', [
             'cheques' => $this->filteredQuery($filters)
@@ -32,7 +33,7 @@ class ChequeController extends Controller
 
     public function export(Request $request): StreamedResponse
     {
-        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie']);
+        $filters = $request->only(['search', 'fournisseur', 'type', 'statut', 'sortie', 'created_from', 'created_to']);
         $selectedIds = $request->validate([
             'selected_ids' => ['nullable', 'array'],
             'selected_ids.*' => ['integer', 'distinct', 'exists:cheques,id'],
@@ -130,7 +131,7 @@ class ChequeController extends Controller
 
     private function filteredQuery(array $filters): Builder
     {
-        return Cheque::query()
+        return CreatedAtFilter::apply(Cheque::query(), $filters)
             ->when($filters['search'] ?? null, fn (Builder $query, string $value) => $query->where(fn (Builder $inner) => $inner
                 ->where('numero_cheque', 'like', "%{$value}%")
                 ->orWhere('client_nom', 'like', "%{$value}%")

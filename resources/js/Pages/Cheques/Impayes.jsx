@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Banknote, Plus } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
+import CreatedAtFilter from '@/Components/CreatedAtFilter';
 import CrudDialog from '@/Components/CrudDialog';
 import ExportableDataTable from '@/Components/ExportableDataTable';
 import DeleteButton from '@/Components/DeleteButton';
@@ -46,10 +47,11 @@ export default function Impayes({ cheques, filters, impayesCount, impayesMontant
 
     return <AppLayout title="Impayés" actions={<CrudDialog title="Ajouter un chèque impayé" action={route('cheques.impayes.store')} fields={fields} defaults={defaults} trigger={<Button><Plus className="h-4 w-4" />Ajouter un impayé</Button>} />}>
         <div className="mb-4 grid gap-3 md:grid-cols-2"><Card><CardContent><div className="text-sm text-zinc-500">Nombre de chèques impayés</div><div className="mt-1 text-2xl font-semibold text-red-700">{impayesCount}</div></CardContent></Card><Card><CardContent><div className="text-sm text-zinc-500">Montant total impayé</div><div className="mt-1 text-2xl font-semibold text-red-700">{money(impayesMontantTotal)}</div></CardContent></Card></div>
-        <div className="mb-4 grid gap-2 md:grid-cols-3">
+        <div className="mb-4 grid gap-2 md:grid-cols-4">
             <Input placeholder="N° chèque, fournisseur, client ou signataire" defaultValue={filters.search || ''} onChange={(event) => updateFilters({ search: event.target.value })} />
             <SearchableSelect value={filters.type || ''} onChange={(type) => updateFilters({ type })} options={types} placeholder="Tous les types" />
             <SearchableSelect value={filters.statut || ''} onChange={(statut) => updateFilters({ statut })} options={statuses} placeholder="Tous les statuts" />
+            <CreatedAtFilter routeName="cheques.impayes.index" filters={filters} />
         </div>
         <ExportableDataTable
             columns={columns}

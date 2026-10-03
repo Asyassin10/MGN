@@ -16,7 +16,7 @@ class ArticleController extends Controller
 {
     public function index(Request $request, ArticleService $service): Response|StreamedResponse
     {
-        $filters = [...$request->only(['search', 'group_id']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
+        $filters = [...$request->only(['search', 'group_id', 'created_from', 'created_to']), 'selected_ids' => $request->validate(['selected_ids' => ['nullable', 'array'], 'selected_ids.*' => ['integer', 'distinct']])['selected_ids'] ?? []];
 
         if ($request->boolean('export')) {
             return $service->export($filters);
